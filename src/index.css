@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --brand: #E8782A;
+  --brand-light: #F5A05A;
+  --brand-bg: #FEF3E9;
+}
+
+html,
+body {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+::selection {
+  background: #FEF3E9;
+  color: #E8782A;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ===== PROSE STYLES ===== */
+.prose-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: #1a1a1a;
+}
+
+.prose-content h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: #1a1a1a;
+}
+
+.prose-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.4rem;
+  color: #1a1a1a;
+}
+
+.prose-content p {
+  margin: 0.6rem 0;
+  color: #444;
+  line-height: 1.7;
+}
+
+.prose-content ul,
+.prose-content ol {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  color: #444;
+}
+
+.prose-content li {
+  margin: 0.25rem 0;
+}
+
+.prose-content strong {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.prose-content a {
+  color: #E8782A;
+  text-decoration: underline;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid #E8782A;
+  padding: 0.5rem 1rem;
+  color: #666;
+  background: #FEF3E9;
+  border-radius: 0 4px 4px 0;
+  margin: 1rem 0;
+}
+
+.prose-content code {
+  background: #f4f4f4;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #333;
+}
+
+.prose-content pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.prose-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.prose-content th {
+  background: #f9f9f9;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.prose-content td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.prose-content hr {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 1.5rem 0;
+}
