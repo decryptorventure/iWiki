@@ -1,39 +1,40 @@
 import React, { useState } from 'react';
-import { Coins, Target, Clock, Search, Filter, Flame, Trophy, Plus, X, ChevronRight, Timer, Megaphone } from 'lucide-react';
+import { Coins, Target, Clock, Search, Filter, Flame, Trophy, Plus, Users, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Bounty } from '../store/useAppStore';
-import { motion, AnimatePresence } from 'motion/react';
 
-const CATEGORIES = ['Tất cả', 'Engineering', 'Product', 'HR', 'Data', 'DevOps', 'Marketing'];
+const CATEGORIES = ['all', 'Engineering', 'Product', 'HR', 'Data', 'DevOps', 'Backend'];
 
 export default function Bounties() {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const { bounties, currentUser } = state;
 
-  const [activeTab, setActiveTab] = useState('Tất cả');
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ title: '', description: '', reward: '', deadline: '', tags: '' });
 
   const filtered = bounties.filter(b => {
-    const matchesTab = activeTab === 'Tất cả' || b.tags.some(t => t.toLowerCase() === activeTab.toLowerCase());
+    const matchesTab = activeTab === 'all' || b.tags.some(t => t.toLowerCase() === activeTab.toLowerCase());
     const matchesSearch = !searchQuery || b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.requester.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
+
+  const totalCoins = currentUser.coins;
 
   const handleAccept = (bountyId: string) => {
     const bounty = bounties.find(b => b.id === bountyId);
     if (!bounty) return;
     const isAccepted = bounty.acceptedBy.includes(currentUser.id);
     dispatch({ type: 'ACCEPT_BOUNTY', bountyId, userId: currentUser.id });
-    addToast(isAccepted ? 'Đã hủy nhận nhiệm vụ' : 'Đã nhận nhiệm vụ!', isAccepted ? 'info' : 'success');
+    addToast(isAccepted ? 'Đã hủy nhận task' : 'Đã nhận task! Hãy viết bài và giao nộp sớm 🎯', isAccepted ? 'info' : 'success');
   };
 
   const handleCreate = () => {
-    if (!createForm.title.trim()) { addToast('Vui lòng nhập tiêu đề', 'warning'); return; }
-    if (!createForm.reward || isNaN(Number(createForm.reward))) { addToast('Vui lòng nhập mức thưởng', 'warning'); return; }
+    if (!createForm.title.trim()) { addToast('Vui lòng nhập tiêu đề nhiệm vụ', 'warning'); return; }
+    if (!createForm.reward || isNaN(Number(createForm.reward))) { addToast('Vui lòng nhập phần thưởng hợp lệ', 'warning'); return; }
 
     const bounty: Bounty = {
       id: `b-${Date.now()}`,
@@ -44,7 +45,7 @@ export default function Bounties() {
       reward: Number(createForm.reward),
       deadline: createForm.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       tags: createForm.tags.split(',').map(t => t.trim()).filter(Boolean),
-      hot: Number(createForm.reward) > 500,
+      hot: false,
       acceptedBy: [],
       status: 'open',
       createdAt: new Date().toISOString().split('T')[0],
@@ -53,171 +54,142 @@ export default function Bounties() {
     dispatch({ type: 'CREATE_BOUNTY', bounty });
     setCreateForm({ title: '', description: '', reward: '', deadline: '', tags: '' });
     setShowCreateModal(false);
-    addToast('Nhiệm vụ đã được niêm yết!', 'success');
+    addToast('Đã đăng nhiệm vụ săn thưởng! 🎯', 'success');
   };
 
   const formatDeadline = (dateStr: string) => {
     const now = new Date();
     const deadline = new Date(dateStr);
     const diff = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    if (diff < 0) return 'Quá hạn';
-    if (diff === 0) return 'Hạn cuối hôm nay';
-    return `Còn ${diff} ngày`;
+    if (diff < 0) return 'Đã hết hạn';
+    if (diff === 0) return 'Hôm nay';
+    if (diff === 1) return 'Ngày mai';
+    if (diff < 7) return `${diff} ngày nữa`;
+    return `${Math.ceil(diff / 7)} tuần nữa`;
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div className="max-w-5xl mx-auto px-8 py-12 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Bảng Nhiệm Vụ 🎯</h1>
-          <p className="text-gray-500 text-sm max-w-lg">
-            Đóng góp những kiến thức còn thiếu để nhận thưởng iKame Coins.
-          </p>
+          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-br from-[#FF6B4A] to-orange-400 rounded-xl text-white shadow-md shadow-[#FF6B4A]/20"><Target size={24} /></div>
+            Săn thưởng tri thức
+          </h1>
+          <p className="text-gray-500">Đóng góp tài liệu còn thiếu để nhận iKame Coins và thăng hạng.</p>
         </div>
-
         <div className="flex items-center gap-4">
-          <div className="bg-white border border-gray-200 rounded-lg px-4 py-2 flex items-center gap-3">
-            <Coins className="text-yellow-500" size={18} />
-            <span className="text-lg font-bold text-gray-900">{currentUser.coins.toLocaleString()}</span>
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-white p-3 rounded-xl shadow-sm"><Trophy className="text-yellow-500" size={24} /></div>
+            <div>
+              <div className="text-sm text-gray-600 font-medium">Số dư của bạn</div>
+              <div className="text-2xl font-bold text-gray-900 flex items-center gap-1">{totalCoins.toLocaleString()} <Coins className="text-yellow-500" size={20} /></div>
+            </div>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="p-2.5 bg-gray-900 text-white rounded-lg hover:bg-orange-500 transition-colors"
-          >
-            <Plus size={20} />
+          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-[#FF6B4A]/20 transition-all duration-200 shadow-md active:scale-95">
+            <Plus size={20} /> Tạo nhiệm vụ
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input
-            type="text"
-            placeholder="Tìm kiếm nhiệm vụ..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-orange-400"
-          />
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 animate-slide-up stagger-1">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input type="text" placeholder="Tìm kiếm nhiệm vụ..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A]/50 outline-none transition-all hover:border-gray-300" />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveTab(cat)}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === cat
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-            >
-              {cat}
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+          {CATEGORIES.map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${activeTab === tab ? 'bg-gray-900 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}>
+              {tab === 'all' ? 'Tất cả' : tab}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filtered.length === 0 ? (
-            <div className="md:col-span-2 text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              <Megaphone size={32} className="text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm font-medium">Không tìm thấy nhiệm vụ nào</p>
-            </div>
-          ) : (
-            filtered.map((bounty) => {
-              const isAccepted = bounty.acceptedBy.includes(currentUser.id);
-              return (
-                <motion.div
-                  key={bounty.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`bg-white border p-6 rounded-lg transition-all flex flex-col justify-between ${isAccepted ? 'border-green-200 bg-green-50/20' : 'border-gray-100 hover:border-orange-200'
-                    }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex gap-2">
-                        {bounty.hot && (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-600 rounded text-[10px] font-bold uppercase tracking-wider">Hot</span>
-                        )}
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                          <Timer size={10} /> {formatDeadline(bounty.deadline)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-orange-500 font-bold text-sm">
-                        +{bounty.reward} <Coins size={14} className="text-yellow-500" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2 leading-snug">{bounty.title}</h3>
-                    <p className="text-gray-500 text-xs leading-relaxed mb-4 line-clamp-2">{bounty.description}</p>
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {bounty.tags.map(t => (
-                        <span key={t} className="px-2 py-0.5 bg-gray-50 text-gray-400 text-[10px] font-semibold rounded">#{t}</span>
-                      ))}
-                    </div>
+      {/* Bounties List */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-20"><p className="text-gray-400 mb-4">Không tìm thấy nhiệm vụ nào</p></div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filtered.map((bounty, i) => {
+            const isAccepted = bounty.acceptedBy.includes(currentUser.id);
+            return (
+              <div key={bounty.id} className={`card-premium p-5 flex flex-col sm:flex-row sm:items-center gap-5 animate-slide-up stagger-${Math.min(i + 2, 6)}`}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    {bounty.hot && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider animate-pulse-glow"><Flame size={12} /> Hot</span>}
+                    <span className="text-xs font-medium text-gray-500 flex items-center gap-1"><Clock size={12} /> Hạn: {formatDeadline(bounty.deadline)}</span>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-1"><Users size={12} /> {bounty.acceptedBy.length} người đang làm</span>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-[10px] font-bold text-orange-600">
-                        {bounty.requester[0]}
-                      </div>
-                      <span className="text-[11px] text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px]">{bounty.requester}</span>
-                    </div>
-                    <button
-                      onClick={() => handleAccept(bounty.id)}
-                      className={`px-4 py-2 rounded-md text-xs font-semibold transition-colors ${isAccepted
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-900 text-white hover:bg-orange-500'
-                        }`}
-                    >
-                      {isAccepted ? '✓ Đã nhận' : 'Nhận nhiệm vụ'}
-                    </button>
+                  <h3 className="text-lg font-bold text-gray-900 hover:text-[#FF6B4A] transition-colors mb-1">{bounty.title}</h3>
+                  {bounty.description && <p className="text-sm text-gray-500 mb-2 line-clamp-2">{bounty.description}</p>}
+                  <p className="text-sm text-gray-500 mb-3">Yêu cầu bởi: <span className="font-medium text-gray-700">{bounty.requester}</span></p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {bounty.tags.map(tag => <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors">{tag}</span>)}
                   </div>
-                </motion.div>
-              );
-            })
-          )}
-        </AnimatePresence>
-      </div>
+                </div>
+                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-4 sm:gap-3 border-t sm:border-t-0 sm:border-l border-gray-100 pt-4 sm:pt-0 sm:pl-5">
+                  <div className="text-center sm:text-right">
+                    <div className="text-xs text-gray-500 font-medium mb-1">Phần thưởng</div>
+                    <div className="text-xl font-extrabold text-yellow-500 flex items-center gap-1.5">+{bounty.reward} <Coins size={20} /></div>
+                  </div>
+                  <button
+                    onClick={() => handleAccept(bounty.id)}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 active:scale-95 ${isAccepted ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white shadow-md hover:shadow-lg hover:shadow-[#FF6B4A]/20'}`}
+                  >
+                    {isAccepted ? '✓ Đã nhận task' : 'Nhận task'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* New Bounty Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCreateModal(false)} className="absolute inset-0 bg-black/40" />
-            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="relative bg-white rounded-lg w-full max-w-md shadow-xl p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Tạo nhiệm vụ mới</h2>
-                <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-modal-backdrop" onClick={e => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-modal-enter">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Tạo nhiệm vụ săn thưởng</h3>
+                <p className="text-sm text-gray-500 mt-1">Mô tả rõ yêu cầu để mọi người nhận task nhanh hơn.</p>
               </div>
-              <div className="space-y-4">
+              <button onClick={() => setShowCreateModal(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all active:scale-90"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề nhiệm vụ *</label>
+                <input type="text" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder="VD: Hướng dẫn setup môi trường Dev..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A] outline-none hover:border-gray-300 transition-all" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết</label>
+                <textarea value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A] outline-none resize-none h-24 hover:border-gray-300 transition-all" placeholder="Mô tả những gì bạn cần người viết đề cập đến..." />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (phân cách bởi dấu phẩy)</label>
+                <input type="text" value={createForm.tags} onChange={e => setCreateForm(f => ({ ...f, tags: e.target.value }))} placeholder="Engineering, Tutorial, SOP..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A] outline-none hover:border-gray-300 transition-all" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tiêu đề *</label>
-                  <input type="text" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-orange-400" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phần thưởng (Coins) *</label>
+                  <input type="number" value={createForm.reward} onChange={e => setCreateForm(f => ({ ...f, reward: e.target.value }))} placeholder="500" min="50" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A] outline-none hover:border-gray-300 transition-all" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Mô tả</label>
-                  <textarea value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-orange-400 h-24 resize-none" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Phần thưởng (Coins)</label>
-                    <input type="number" value={createForm.reward} onChange={e => setCreateForm(f => ({ ...f, reward: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-orange-400" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Hạn chót</label>
-                    <input type="date" value={createForm.deadline} onChange={e => setCreateForm(f => ({ ...f, deadline: e.target.value }))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-orange-400" />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hạn chót</label>
+                  <input type="date" value={createForm.deadline} onChange={e => setCreateForm(f => ({ ...f, deadline: e.target.value }))} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A] outline-none hover:border-gray-300 transition-all" />
                 </div>
               </div>
-              <div className="flex gap-3 mt-8">
-                <button onClick={() => setShowCreateModal(false)} className="flex-1 py-2.5 text-sm font-semibold text-gray-500 hover:bg-gray-100 rounded-lg">Huỷ</button>
-                <button onClick={handleCreate} className="flex-1 py-2.5 bg-gray-900 text-white font-semibold rounded-lg hover:bg-orange-500">Tạo nhiệm vụ</button>
-              </div>
-            </motion.div>
+            </div>
+            <div className="p-4 border-t border-gray-100 bg-gray-50/80 flex justify-end gap-3">
+              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-xl transition-all active:scale-95">Hủy</button>
+              <button onClick={handleCreate} className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] rounded-xl shadow-md hover:shadow-lg hover:shadow-[#FF6B4A]/20 transition-all active:scale-95">Đăng nhiệm vụ</button>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

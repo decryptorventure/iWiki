@@ -13,11 +13,9 @@ import IWikiAI from './components/IWikiAI';
 import EmptyFolderBounty from './components/EmptyFolderBounty';
 import FolderView from './components/FolderView';
 import Notifications from './components/Notifications';
-import Analytics from './components/Analytics';
 import Editor from './components/Editor';
 import { ArticleModal } from './components/ArticleModal';
-import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Bell, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Bell } from 'lucide-react';
 
 // ===== TOAST SYSTEM =====
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -29,37 +27,35 @@ export const useToast = () => React.useContext(ToastContext);
 
 function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast: (id: number) => void }) {
   const icons = {
-    success: <div className="p-1 px-1.5 bg-green-500 rounded-lg text-white shadow-lg shadow-green-500/20"><CheckCircle size={14} /></div>,
-    error: <div className="p-1 px-1.5 bg-red-500 rounded-lg text-white shadow-lg shadow-red-500/20"><AlertCircle size={14} /></div>,
-    warning: <div className="p-1 px-1.5 bg-amber-500 rounded-lg text-white shadow-lg shadow-amber-500/20"><AlertTriangle size={14} /></div>,
-    info: <div className="p-1 px-1.5 bg-indigo-500 rounded-lg text-white shadow-lg shadow-indigo-500/20"><Info size={14} /></div>,
+    success: <CheckCircle size={18} className="text-green-500" />,
+    error: <AlertCircle size={18} className="text-red-500" />,
+    warning: <AlertTriangle size={18} className="text-amber-500" />,
+    info: <Info size={18} className="text-blue-500" />,
   };
+  const borders = { success: 'border-l-green-500', error: 'border-l-red-500', warning: 'border-l-amber-500', info: 'border-l-blue-500' };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] space-y-2 pointer-events-none">
-      <AnimatePresence>
-        {toasts.map((toast) => (
-          <motion.div
-            key={toast.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="pointer-events-auto flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[280px] max-w-[380px]"
-          >
-            {icons[toast.type]}
-            <span className="text-sm font-medium text-gray-800 flex-1">{toast.message}</span>
-            <button onClick={() => removeToast(toast.id)} className="p-0.5 text-gray-400 hover:text-gray-700 transition-colors shrink-0"><X size={14} /></button>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+    <div className="fixed top-4 right-4 z-[100] space-y-3 pointer-events-none">
+      {toasts.map((toast) => (
+        <div key={toast.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-lg border border-gray-100 border-l-4 ${borders[toast.type]} toast-enter min-w-[300px] max-w-[420px]`}>
+          {icons[toast.type]}
+          <span className="text-sm font-medium text-gray-800 flex-1">{toast.message}</span>
+          <button onClick={() => removeToast(toast.id)} className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors shrink-0"><X size={14} /></button>
+        </div>
+      ))}
     </div>
   );
 }
 
-// ===== MAIN APP INNER =====
+// ===== PAGE WRAPPER =====
+function PageTransition({ children, screenKey }: { children: React.ReactNode; screenKey: string }) {
+  return <div key={screenKey} className="page-enter h-full">{children}</div>;
+}
+
+// ===== MAIN APP INNER (accesses context) =====
 function AppInner() {
   const { state, dispatch } = useApp();
-  const { currentScreen, selectedArticleId, articles } = state;
+  const { currentScreen, selectedArticleId, articles, currentUser } = state;
 
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
@@ -67,7 +63,7 @@ function AppInner() {
   const addToast = useCallback((message: string, type: ToastType = 'info') => {
     const id = ++toastIdRef.current;
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
   }, []);
   const removeToast = useCallback((id: number) => setToasts((prev) => prev.filter((t) => t.id !== id)), []);
 
@@ -80,24 +76,62 @@ function AppInner() {
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'dashboard': return <Dashboard onSearch={handleSearch} />;
-      case 'search': return <SearchResult query={state.searchQuery} onBack={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} />;
-      case 'ai': return <IWikiAI />;
-      case 'profile': return <Profile />;
-      case 'my-articles': return <MyArticles />;
-      case 'bounties': return <Bounties />;
-      case 'janitor': return <DataJanitor />;
-      case 'notifications': return <Notifications />;
-      case 'documents': return <DocumentManagement />;
-      case 'permissions': return <PermissionManagement />;
-      case 'analytics': return <Analytics />;
+      case 'dashboard':
+        return <Dashboard onSearch={handleSearch} />;
+      case 'search':
+        return <SearchResult query={state.searchQuery} onBack={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} />;
+      case 'ai':
+        return <IWikiAI />;
+      case 'profile':
+        return <Profile />;
+      case 'my-articles':
+        return <MyArticles />;
+      case 'bounties':
+        return <Bounties />;
+      case 'janitor':
+        return <DataJanitor />;
+      case 'notifications':
+        return <Notifications />;
+      case 'documents':
+        return <DocumentManagement />;
+      case 'permissions':
+        return <PermissionManagement />;
       case 'editor':
         return (
           <Editor
             initialData={state.editorData}
-            onBack={() => dispatch({ type: 'SET_SCREEN', screen: 'my-articles' })}
+            onBack={() => dispatch({ type: 'SET_SCREEN', screen: state.editorData?.id ? 'my-articles' : 'my-articles' })}
           />
         );
+      case 'folder-know-how':
+        return (
+          <FolderView
+            folderId="f-knowhow"
+            title="Know-How"
+            description="Nơi lưu trữ kho Kinh nghiệm, Kiến thức, Kỹ năng, Tư duy, Quy trình tiêu chuẩn, Case studies ở mọi khía cạnh trong công việc."
+            breadcrumbs={['Know-How']}
+          />
+        );
+      case 'folder-company':
+        return (
+          <FolderView
+            folderId="f-company"
+            title="Công ty iKame"
+            description="Tài liệu chính sách và quy trình công ty."
+            breadcrumbs={['Công ty iKame']}
+          />
+        );
+      case 'folder-tech':
+        return (
+          <FolderView
+            folderId="f-tech"
+            title="Phòng Kỹ thuật"
+            description="Tài liệu kỹ thuật nội bộ."
+            breadcrumbs={['Phòng Kỹ thuật']}
+          />
+        );
+      case 'empty-folder':
+        return <EmptyFolderBounty folderId={state.currentFolderId || 'f-process'} folderName="Process & Checklist" breadcrumbs={['Know-How', 'iKame', 'Process & Checklist']} />;
       default:
         if (currentScreen.startsWith('folder-')) {
           const folderId = currentScreen.replace('folder-', '');
@@ -112,33 +146,26 @@ function AppInner() {
             />
           );
         }
-        if (currentScreen === 'empty-folder') return <EmptyFolderBounty folderId={state.currentFolderId || 'f-process'} folderName="Process & Checklist" breadcrumbs={['Know-How', 'iKame', 'Process & Checklist']} />;
-        return <div className="flex items-center justify-center h-full text-gray-500 font-bold uppercase tracking-widest text-xs">Phát triển thêm...</div>;
+        return (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            Tính năng đang được phát triển...
+          </div>
+        );
     }
   };
 
   return (
     <ToastContext.Provider value={{ addToast }}>
-      <div className="flex h-screen bg-white text-gray-900 overflow-hidden">
+      <div className="flex h-screen bg-[#f9fafb] text-gray-900 font-sans overflow-hidden">
         <Sidebar />
-
-        <main className="flex-1 overflow-y-auto relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentScreen}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="h-full"
-            >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
+        <main className="flex-1 overflow-y-auto custom-scrollbar">
+          <PageTransition screenKey={currentScreen}>
+            {renderScreen()}
+          </PageTransition>
         </main>
-
         <ToastContainer toasts={toasts} removeToast={removeToast} />
 
+        {/* Global Article Modal */}
         <ArticleModal
           open={!!selectedArticle}
           article={selectedArticle}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Check, Trash2, Clock, Info, MessageSquare, Heart, Coins, Target, X } from 'lucide-react';
+import { Bell, Check, Trash2, Clock, Info, MessageSquare, Heart, Coins, Target } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 
@@ -21,6 +21,8 @@ export default function Notifications() {
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
+        // In a real app we'd have DELETE_NOTIFICATION, but for now we'll just mark as read or ignore.
+        // Let's assume MARK_NOTIFICATION_READ is enough for this demo or we can add DELETE to reducer later.
         dispatch({ type: 'MARK_NOTIFICATION_READ', notificationId: id });
         addToast('Đã xóa thông báo', 'info');
     };
@@ -30,7 +32,7 @@ export default function Notifications() {
             case 'comment': return <MessageSquare size={16} className="text-blue-500" />;
             case 'like': return <Heart size={16} className="text-red-500" />;
             case 'reward': return <Coins size={16} className="text-yellow-500" />;
-            case 'bounty': return <Target size={16} className="text-orange-500" />;
+            case 'bounty': return <Target size={16} className="text-[#FF6B4A]" />;
             default: return <Info size={16} className="text-gray-400" />;
         }
     };
@@ -49,55 +51,56 @@ export default function Notifications() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto px-6 py-10">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                        <Bell size={24} className="text-orange-500" />
-                        Thông báo
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">Cập nhật những hoạt động mới nhất của bạn</p>
-                </div>
+        <div className="max-w-2xl mx-auto px-8 py-12 animate-fade-in">
+            <div className="flex items-center justify-between mb-8 animate-slide-up">
+                <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl text-white shadow-md shadow-indigo-500/20">
+                        <Bell size={24} />
+                    </div>
+                    Thông báo
+                </h1>
                 {notifications.some(n => !n.isRead) && (
-                    <button onClick={handleMarkAllRead} className="text-xs font-semibold text-orange-500 hover:text-orange-600 transition-colors flex items-center gap-1.5">
-                        <Check size={14} /> Đánh dấu đã đọc
+                    <button onClick={handleMarkAllRead} className="text-sm font-medium text-gray-500 hover:text-[#FF6B4A] transition-colors flex items-center gap-1.5">
+                        <Check size={16} /> Đánh dấu tất cả đã đọc
                     </button>
                 )}
             </div>
 
             <div className="space-y-3">
                 {notifications.length === 0 ? (
-                    <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                        <Bell size={40} className="text-gray-200 mx-auto mb-3" />
-                        <h3 className="text-base font-semibold text-gray-900">Không có thông báo</h3>
-                        <p className="text-sm text-gray-400">Bạn sẽ nhận được thông báo khi có hoạt động mới</p>
+                    <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                        <div className="p-4 bg-white rounded-full inline-block mb-4 shadow-sm">
+                            <Bell size={32} className="text-gray-300" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900">Chưa có thông báo nào</h3>
+                        <p className="text-gray-500">Chúng tôi sẽ báo cho bạn khi có tin mới!</p>
                     </div>
                 ) : (
-                    notifications.map((n) => (
+                    notifications.map((n, i) => (
                         <div
                             key={n.id}
                             onClick={() => handleNotificationClick(n)}
-                            className={`group relative p-4 rounded-lg border transition-all cursor-pointer ${n.isRead ? 'bg-white border-gray-100 hover:border-gray-200' : 'bg-orange-50/30 border-orange-100 shadow-sm'}`}
+                            className={`group relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer animate-slide-up stagger-${Math.min(i + 1, 6)} ${n.isRead ? 'bg-white border-gray-100' : 'bg-gradient-to-r from-orange-50/50 to-white border-orange-100/50 shadow-sm'}`}
                         >
                             {!n.isRead && (
-                                <div className="absolute top-4 right-4 w-2 h-2 bg-orange-500 rounded-full"></div>
+                                <div className="absolute top-5 left-2 w-1.5 h-1.5 bg-[#FF6B4A] rounded-full"></div>
                             )}
                             <div className="flex gap-4">
-                                <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${n.isRead ? 'bg-gray-50' : 'bg-white'}`}>
+                                <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${n.isRead ? 'bg-gray-100' : 'bg-white shadow-sm'}`}>
                                     {getIcon(n.type)}
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-semibold text-gray-900">{n.title || n.message}</span>
-                                        <span className="text-[11px] text-gray-400 flex items-center gap-1"><Clock size={11} /> {n.time}</span>
+                                        <span className="text-sm font-bold text-gray-900">{n.title}</span>
+                                        <span className="text-xs text-gray-400 flex items-center gap-1"><Clock size={12} /> {n.time}</span>
                                     </div>
-                                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                                    <p className="text-sm text-gray-600 line-clamp-2">{n.content}</p>
                                 </div>
                                 <button
                                     onClick={(e) => handleDelete(n.id, e)}
-                                    className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-all opacity-0 group-hover:opacity-100"
+                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all active:scale-90"
                                 >
-                                    <X size={14} />
+                                    <Trash2 size={16} />
                                 </button>
                             </div>
                         </div>

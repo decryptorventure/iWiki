@@ -87,37 +87,20 @@ export interface Bounty {
 }
 
 export interface Notification {
-  id: string;
-  type: 'like' | 'comment' | 'bounty' | 'reward' | 'system';
-  title?: string;
-  content?: string;
-  message?: string;
-  isRead: boolean;
-  link?: string;
-  time?: string;
   createdAt: string;
 }
 
-export interface Role {
-  id: string;
-  name: string;
-  description: string;
-  userCount: number;
-  permissions: { [key: string]: boolean };
-}
-
-export interface ChatMessage {
+export interface AIChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  citations?: string[];
 }
 
-export interface Conversation {
+export interface AIChatSession {
   id: string;
-  title: string;
-  messages: ChatMessage[];
+  topic: string;
+  messages: AIChatMessage[];
   updatedAt: string;
 }
 
@@ -130,12 +113,10 @@ export interface AppState {
   folders: Folder[];
   bounties: Bounty[];
   notifications: Notification[];
-  roles: Role[];
-  editorData: Partial<Article> | null;
+  editorData: Partial<Article> | null; // article being edited
   selectedArticleId: string | null;
   currentFolderId: string | null;
-  conversations: Conversation[];
-  activeConversationId: string | null;
+  aiHistory: AIChatSession[];
 }
 
 // ---- SEED DATA ----
@@ -327,25 +308,18 @@ function loadState(): Partial<AppState> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch { }
+  } catch {}
   return {};
 }
 
 function saveState(state: Partial<AppState>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch { }
+  } catch {}
 }
 
 // ---- INITIAL STATE ----
 const savedState = loadState();
-
-const INITIAL_ROLES: Role[] = [
-  { id: 'admin', name: 'Quản trị viên', description: 'Toàn quyền truy cập và cấu hình hệ thống', userCount: 3, permissions: { view_docs: true, create_docs: true, edit_docs: true, delete_docs: true, manage_folders: true, manage_users: true } },
-  { id: 'manager', name: 'Trưởng phòng', description: 'Quản lý tài liệu và phê duyệt trong phòng ban', userCount: 12, permissions: { view_docs: true, create_docs: true, edit_docs: true, delete_docs: true, manage_folders: true, manage_users: false } },
-  { id: 'editor', name: 'Người viết', description: 'Tạo, chỉnh sửa và xuất bản tài liệu', userCount: 45, permissions: { view_docs: true, create_docs: true, edit_docs: true, delete_docs: false, manage_folders: false, manage_users: false } },
-  { id: 'viewer', name: 'Người đọc', description: 'Chỉ xem và bình luận tài liệu', userCount: 128, permissions: { view_docs: true, create_docs: false, edit_docs: false, delete_docs: false, manage_folders: false, manage_users: false } },
-];
 
 export const initialState: AppState = {
   currentScreen: 'dashboard',
@@ -353,15 +327,13 @@ export const initialState: AppState = {
   userRole: 'admin',
   currentUser: savedState.currentUser || INITIAL_USER,
   articles: savedState.articles || INITIAL_ARTICLES,
-  folders: savedState.folders || INITIAL_FOLDERS,
+  folders: INITIAL_FOLDERS,
   bounties: savedState.bounties || INITIAL_BOUNTIES,
   notifications: savedState.notifications || [],
-  roles: savedState.roles || INITIAL_ROLES,
   editorData: null,
   selectedArticleId: null,
   currentFolderId: null,
-  conversations: savedState.conversations || [],
-  activeConversationId: null,
+  aiHistory: savedState.aiHistory || [],
 };
 
 // ---- ACTIONS ----
@@ -380,18 +352,10 @@ export type AppAction =
   | { type: 'ACCEPT_BOUNTY'; bountyId: string; userId: string }
   | { type: 'UPDATE_USER'; updates: Partial<User> }
   | { type: 'ADD_NOTIFICATION'; notification: Notification }
-  | { type: 'MARK_NOTIFICATION_READ'; notificationId: string }
   | { type: 'MARK_ALL_READ' }
   | { type: 'INCREMENT_VIEWS'; articleId: string }
-  | { type: 'CREATE_FOLDER'; folder: Folder }
-  | { type: 'UPDATE_FOLDER'; folderId: string; updates: Partial<Folder> }
-  | { type: 'DELETE_FOLDER'; folderId: string }
-  | { type: 'MOVE_ITEM'; itemId: string; itemType: 'article' | 'folder'; targetFolderId: string }
-  | { type: 'UPDATE_ROLE_PERMISSIONS'; roleId: string; permissions: { [key: string]: boolean } }
-  | { type: 'UPSERT_ROLE'; role: Role }
-  | { type: 'ADD_CHAT_MESSAGE'; conversationId: string; message: ChatMessage }
-  | { type: 'NEW_CONVERSATION'; conversation: Conversation }
-  | { type: 'CLEAR_CONVERSATIONS' };
+  | { type: 'SAVE_AI_SESSION'; session: AIChatSession }
+  | { type: 'DELETE_AI_SESSION'; sessionId: string };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState;
@@ -468,9 +432,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'ADD_NOTIFICATION':
       newState = { ...state, notifications: [action.notification, ...state.notifications] };
       break;
-    case 'MARK_NOTIFICATION_READ':
-      newState = { ...state, notifications: state.notifications.map(n => n.id === action.notificationId ? { ...n, isRead: true } : n) };
-      break;
     case 'MARK_ALL_READ':
       newState = { ...state, notifications: state.notifications.map(n => ({ ...n, isRead: true })) };
       break;
@@ -481,113 +442,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       newState = { ...state, articles: updated };
       break;
     }
-    case 'CREATE_FOLDER': {
-      if (action.folder.parentId) {
-        // Find parent and add to children
-        const updateChildren = (folders: Folder[]): Folder[] => {
-          return folders.map(f => {
-            if (f.id === action.folder.parentId) {
-              return { ...f, children: [...(f.children || []), action.folder] };
-            }
-            if (f.children) return { ...f, children: updateChildren(f.children) };
-            return f;
-          });
-        };
-        newState = { ...state, folders: updateChildren(state.folders) };
-      } else {
-        newState = { ...state, folders: [...state.folders, action.folder] };
-      }
+    case 'SAVE_AI_SESSION': {
+      const exists = state.aiHistory.find(s => s.id === action.session.id);
+      const updated = exists
+        ? state.aiHistory.map(s => s.id === action.session.id ? action.session : s)
+        : [action.session, ...state.aiHistory];
+      newState = { ...state, aiHistory: updated };
       break;
     }
-    case 'UPDATE_FOLDER': {
-      const updateFolders = (folders: Folder[]): Folder[] => {
-        return folders.map(f => {
-          if (f.id === action.folderId) return { ...f, ...action.updates };
-          if (f.children) return { ...f, children: updateFolders(f.children) };
-          return f;
-        });
-      };
-      newState = { ...state, folders: updateFolders(state.folders) };
-      break;
-    }
-    case 'DELETE_FOLDER': {
-      const deleteFromFolders = (folders: Folder[]): Folder[] => {
-        return folders
-          .filter(f => f.id !== action.folderId)
-          .map(f => (f.children ? { ...f, children: deleteFromFolders(f.children) } : f));
-      };
-      newState = { ...state, folders: deleteFromFolders(state.folders) };
-      break;
-    }
-    case 'MOVE_ITEM': {
-      if (action.itemType === 'article') {
-        newState = { ...state, articles: state.articles.map(a => a.id === action.itemId ? { ...a, folderId: action.targetFolderId } : a) };
-      } else {
-        // Logic for moving folder is complex because of hierarchy, let's simplify or handle top-level for now
-        // For a full implementation, we'd remove from old parent and add to new parent
-        // For this demo, let's just update parentId
-        const moveFolder = (folders: Folder[]): Folder[] => {
-          // First remove the folder from its current position
-          const removeFromOld = (fs: Folder[]): Folder[] => {
-            return fs.filter(f => f.id !== action.itemId).map(f => f.children ? { ...f, children: removeFromOld(f.children) } : f);
-          };
-
-          // Helper to find the folder being moved
-          let movedFolder: Folder | null = null;
-          const findFolder = (fs: Folder[]) => {
-            for (const f of fs) {
-              if (f.id === action.itemId) { movedFolder = f; break; }
-              if (f.children) findFolder(f.children);
-            }
-          };
-          findFolder(state.folders);
-
-          if (!movedFolder) return state.folders; // Should not happen
-
-          const cleanFolders = removeFromOld(state.folders);
-          const updatedMovedFolder = { ...movedFolder, parentId: action.targetFolderId === 'root' ? undefined : action.targetFolderId };
-
-          if (action.targetFolderId === 'root') {
-            return [...cleanFolders, updatedMovedFolder];
-          }
-
-          const addToNew = (fs: Folder[]): Folder[] => {
-            return fs.map(f => {
-              if (f.id === action.targetFolderId) return { ...f, children: [...(f.children || []), updatedMovedFolder!] };
-              if (f.children) return { ...f, children: addToNew(f.children) };
-              return f;
-            });
-          };
-          return addToNew(cleanFolders);
-        };
-        newState = { ...state, folders: moveFolder(state.folders) };
-      }
-      break;
-    }
-    case 'UPDATE_ROLE_PERMISSIONS': {
-      newState = { ...state, roles: state.roles.map(r => r.id === action.roleId ? { ...r, permissions: action.permissions } : r) };
-      break;
-    }
-    case 'UPSERT_ROLE': {
-      const exists = state.roles.find(r => r.id === action.role.id);
-      newState = {
-        ...state,
-        roles: exists ? state.roles.map(r => r.id === action.role.id ? action.role : r) : [...state.roles, action.role]
-      };
-      break;
-    }
-    case 'ADD_CHAT_MESSAGE': {
-      const updated = state.conversations.map(c =>
-        c.id === action.conversationId ? { ...c, messages: [...c.messages, action.message], updatedAt: new Date().toISOString() } : c
-      );
-      newState = { ...state, conversations: updated };
-      break;
-    }
-    case 'NEW_CONVERSATION':
-      newState = { ...state, conversations: [action.conversation, ...state.conversations], activeConversationId: action.conversation.id };
-      break;
-    case 'CLEAR_CONVERSATIONS':
-      newState = { ...state, conversations: [], activeConversationId: null };
+    case 'DELETE_AI_SESSION':
+      newState = { ...state, aiHistory: state.aiHistory.filter(s => s.id !== action.sessionId) };
       break;
     default:
       return state;
@@ -597,11 +461,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
   saveState({
     currentUser: newState.currentUser,
     articles: newState.articles,
-    folders: newState.folders,
     bounties: newState.bounties,
     notifications: newState.notifications,
-    roles: newState.roles,
-    conversations: newState.conversations,
+    aiHistory: newState.aiHistory,
   });
 
   return newState;

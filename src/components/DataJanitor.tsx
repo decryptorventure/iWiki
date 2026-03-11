@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Trash2, RefreshCw, CheckCircle, Sparkles, FileText, Database, Copy, Zap, Check, X, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Trash2, RefreshCw, CheckCircle, ShieldAlert, Sparkles, FileText, Database, FileWarning, Copy } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
-import { motion, AnimatePresence } from 'motion/react';
 
 export default function DataJanitor() {
   const { dispatch } = useApp();
@@ -16,7 +17,7 @@ export default function DataJanitor() {
   };
   const handleDismiss = (taskId: number) => {
     setDismissedIds(prev => [...prev, taskId]);
-    addToast('Đã đánh dấu tài liệu vẫn còn chính xác', 'success');
+    addToast('Đã đánh dấu là vẫn còn chính xác ✓', 'success');
   };
   const handleArchive = (taskId: number) => {
     setDismissedIds(prev => [...prev, taskId]);
@@ -30,50 +31,88 @@ export default function DataJanitor() {
     { id: 4, title: 'API Documentation v1.0', lastUpdated: '20/11/2023', author: 'Backend Team', issue: 'Quá hạn 3 tháng', type: 'outdated', aiSuggestion: 'Phiên bản v2.0 đã được release. Cần thêm cảnh báo deprecated vào bài này.' },
   ];
 
-  const filteredTasks = tasks.filter(t => (activeTab === 'all' || t.type === activeTab) && !dismissedIds.includes(t.id));
+  const filteredTasks = activeTab === 'all' ? tasks : tasks.filter(t => t.type === activeTab);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-5xl mx-auto px-8 py-12">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Dọn Dẹp Dữ Liệu 🧹</h1>
-          <p className="text-sm text-gray-500">Nâng cao chất lượng tri thức bằng cách xử lý thông tin lỗi thời.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-400 rounded-xl text-white shadow-md shadow-orange-500/20">
+              <AlertTriangle size={24} />
+            </div>
+            Dọn rác dữ liệu
+          </h1>
+          <p className="text-gray-500">Giữ cho iWiki luôn sạch sẽ, chính xác và cập nhật.</p>
         </div>
-        <button
-          onClick={() => setShowReport(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-md text-sm font-semibold hover:bg-orange-100 transition-colors"
-        >
-          <Sparkles size={16} /> Báo cáo sức khoẻ
-        </button>
-      </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {[
-          { label: 'Tổng số bài viết', value: '1,248', icon: Database, color: 'text-blue-500' },
-          { label: 'Cần cập nhật', value: '156', icon: Zap, color: 'text-orange-500' },
-          { label: 'Trùng lặp', value: '24', icon: Copy, color: 'text-pink-500' },
-        ].map(m => (
-          <div key={m.label} className="bg-white border border-gray-100 p-4 rounded-lg flex flex-col items-center text-center">
-            <m.icon size={20} className={`${m.color} mb-2`} />
-            <p className="text-xl font-bold text-gray-900">{m.value}</p>
-            <p className="text-[11px] text-gray-500 uppercase tracking-wider font-semibold">{m.label}</p>
+        <div className="flex gap-4">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-xl">
+              <ShieldAlert className="text-green-500" size={24} />
+            </div>
+            <div>
+              <div className="text-sm text-gray-600 font-medium">Sức khỏe dữ liệu</div>
+              <div className="text-2xl font-bold text-gray-900">85%</div>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
 
-      <div className="flex items-center gap-1.5 mb-6 border-b border-gray-100 pb-0.5">
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-slide-up stagger-1">
         {[
-          { id: 'all', label: 'Tất cả' },
-          { id: 'outdated', label: 'Lỗi thời' },
+          { icon: Database, value: '1,248', label: 'Tổng số bài viết', color: 'text-blue-600', bg: 'from-blue-50 to-indigo-50' },
+          { icon: FileWarning, value: '156', label: 'Bài viết quá hạn', color: 'text-orange-600', bg: 'from-orange-50 to-amber-50' },
+          { icon: Copy, value: '24', label: 'Bài viết trùng lặp', color: 'text-purple-600', bg: 'from-purple-50 to-pink-50' },
+        ].map((metric, i) => {
+          const Icon = metric.icon;
+          return (
+            <div key={i} className="bg-white border border-gray-200/80 rounded-2xl p-5 flex items-center gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 group">
+              <div className={`p-3 bg-gradient-to-br ${metric.bg} ${metric.color} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+                <Icon size={24} />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                <div className="text-sm text-gray-500">{metric.label}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* AI Janitor Banner */}
+      <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-100/60 rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-slide-up stagger-2 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-200/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="flex items-start gap-4 relative">
+          <div className="bg-white p-2.5 rounded-xl shadow-sm shrink-0">
+            <Sparkles className="text-indigo-500" size={24} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">AI Janitor đã quét hệ thống</h3>
+            <p className="text-sm text-gray-600">Phát hiện 12 bài viết có thể đã lỗi thời và 3 bài viết trùng lặp trong tuần qua.</p>
+          </div>
+        </div>
+        <Button onClick={() => setShowReport(true)} className="whitespace-nowrap relative" variant="primary">
+          Xem báo cáo AI
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 mb-6 border-b border-gray-200 pb-px animate-slide-up stagger-3">
+        {[
+          { id: 'all', label: 'Tất cả vấn đề' },
+          { id: 'outdated', label: 'Quá hạn' },
           { id: 'duplicate', label: 'Trùng lặp' },
-          { id: 'archived', label: 'Lưu trữ' },
-        ].map(tab => (
+          { id: 'archived', label: 'Cần lưu trữ' },
+        ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                ? 'border-orange-500 text-gray-900'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-all duration-200 ${activeTab === tab.id
+              ? 'border-[#FF6B4A] text-[#FF6B4A]'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
             {tab.label}
@@ -82,70 +121,120 @@ export default function DataJanitor() {
       </div>
 
       <div className="space-y-4">
-        {filteredTasks.length === 0 ? (
-          <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <CheckCircle size={40} className="text-green-400 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Workspace tuyệt vời!</p>
-            <p className="text-xs text-gray-400">Không còn dữ liệu cần xử lý trong mục này.</p>
-          </div>
-        ) : (
-          filteredTasks.map((task) => (
-            <div key={task.id} className="bg-white border border-gray-100 p-5 rounded-lg hover:border-orange-200 transition-all flex flex-col md:flex-row gap-6">
+        {filteredTasks.filter(t => !dismissedIds.includes(t.id)).map((task, i) => (
+          <div key={task.id} className={`card-premium p-5 animate-slide-up stagger-${Math.min(i + 4, 6)}`}>
+            <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${task.type === 'outdated' ? 'bg-orange-100 text-orange-600' :
-                      task.type === 'duplicate' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                <div className="flex items-center gap-3 mb-2">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${task.type === 'outdated' ? 'bg-orange-100 text-orange-700' :
+                    task.type === 'duplicate' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
                     }`}>
                     {task.issue}
                   </span>
-                  <span className="text-[11px] text-gray-400">Cập nhật: {task.lastUpdated}</span>
+                  <span className="text-xs text-gray-500">Cập nhật: {task.lastUpdated}</span>
                 </div>
-                <h3 className="text-base font-bold text-gray-900 mb-1">{task.title}</h3>
-                <p className="text-[11px] text-gray-400 font-medium uppercase mb-4">Tác giả: {task.author}</p>
-                <div className="bg-gray-50 rounded-md p-3 border-l-2 border-orange-300">
-                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[10px] uppercase mb-1">
-                    <Sparkles size={12} /> AI Gợi ý
-                  </div>
-                  <p className="text-sm text-gray-600 italic">"{task.aiSuggestion}"</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <FileText size={18} className="text-gray-400" />
+                  {task.title}
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">Tác giả: <span className="font-medium text-gray-700">{task.author}</span></p>
+
+                {/* AI Suggestion Box */}
+                <div className="bg-gradient-to-r from-indigo-50/80 to-purple-50/40 border-l-4 border-indigo-400 rounded-xl p-4 flex items-start gap-3">
+                  <Sparkles size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                  <p className="text-sm text-indigo-900 leading-relaxed">
+                    <span className="font-semibold">AI Gợi ý:</span> {task.aiSuggestion}
+                  </p>
                 </div>
               </div>
-              <div className="flex md:flex-col gap-2 shrink-0 md:w-36">
-                <button onClick={() => handleUpdate(task.id, task.title)} className="flex-1 py-1.5 bg-gray-900 text-white rounded text-xs font-semibold hover:bg-orange-500 transition-colors flex items-center justify-center gap-2"><RefreshCw size={12} /> Cập nhật</button>
-                <button onClick={() => handleDismiss(task.id)} className="flex-1 py-1.5 bg-white border border-gray-200 text-gray-600 rounded text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"><Check size={12} /> Còn mới</button>
-                <button onClick={() => handleArchive(task.id)} className="flex-1 py-1.5 bg-white border border-gray-200 text-gray-600 rounded text-xs font-semibold hover:bg-red-50 hover:text-red-500 transition-colors flex items-center justify-center gap-2"><Trash2 size={12} /> Lưu trữ</button>
+
+              <div className="flex flex-row lg:flex-col items-center lg:items-end justify-start lg:justify-center gap-2 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 shrink-0">
+                <button
+                  onClick={() => handleUpdate(task.id, task.title)}
+                  className="w-full lg:w-auto px-4 py-2 bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white text-sm font-medium rounded-lg hover:shadow-md hover:shadow-[#FF6B4A]/20 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <RefreshCw size={16} /> Cập nhật
+                </button>
+                <button
+                  onClick={() => handleDismiss(task.id)}
+                  className="w-full lg:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <CheckCircle size={16} className="text-green-500" /> Vẫn chính xác
+                </button>
+                <button
+                  onClick={() => handleArchive(task.id)}
+                  className="w-full lg:w-auto px-4 py-2 bg-white border border-gray-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 hover:border-red-200 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Trash2 size={16} /> Lưu trữ
+                </button>
               </div>
             </div>
-          ))
+          </div>
+        ))}
+        {filteredTasks.filter(t => !dismissedIds.includes(t.id)).length === 0 && (
+          <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200 animate-fade-in">
+            <div className="p-4 bg-white rounded-full inline-block mb-4 shadow-sm">
+              <CheckCircle size={32} className="text-green-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Mọi thứ đã sạch sẽ!</h3>
+            <p className="text-gray-500">Không còn vấn đề nào cần xử lý trong mục này.</p>
+          </div>
         )}
       </div>
 
-      {/* AI Report Modal */}
-      <AnimatePresence>
-        {showReport && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowReport(false)} className="absolute inset-0 bg-black/40" />
-            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="relative bg-white rounded-lg w-full max-w-md shadow-xl overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-100 bg-gray-900 flex items-center justify-between">
-                <h3 className="text-white font-bold">Báo cáo sức khoẻ dữ liệu</h3>
-                <button onClick={() => setShowReport(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
-              </div>
-              <div className="p-6 space-y-6">
-                <div>
-                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">TỔNG QUAN</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                    Workspace của bạn hiện đạt <strong>85%</strong> độ tươi mới. Chúng tôi phát hiện 12 bài viết lỗi thời và 3 bài viết tiềm ẩn sự trùng lặp cần xử lý ngay để tối ưu trải nghiệm đọc.
-                  </p>
-                </div>
-                <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg">
-                  <p className="text-xs font-bold text-orange-600 mb-1">CẢNH BÁO QUAN TRỌNG</p>
-                  <p className="text-sm text-gray-700">45 bài viết về quy trình Release App iOS có thể đã lỗi thời do Apple thay đổi chính sách App Store tuần qua.</p>
-                </div>
-                <button onClick={() => setShowReport(false)} className="w-full py-2.5 bg-gray-900 text-white rounded-md text-sm font-semibold hover:bg-orange-500 transition-colors">Đóng báo cáo</button>
-              </div>
-            </motion.div>
+      <Modal
+        open={showReport}
+        onOpenChange={setShowReport}
+        maxWidthClassName="max-w-2xl"
+        title={
+          <div className="flex items-center gap-2">
+            <Sparkles size={18} className="text-indigo-500" />
+            Báo cáo phân tích AI (Tháng 10/2024)
           </div>
-        )}
-      </AnimatePresence>
+        }
+        footer={
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={() => setShowReport(false)} className="bg-indigo-600 hover:bg-indigo-700">
+              Đã hiểu
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Tóm tắt tình trạng</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Hệ thống iWiki hiện đang lưu trữ 1,248 bài viết. Trong tháng qua, AI đã quét toàn bộ dữ liệu và phát hiện 156 bài viết (chiếm
+              12.5%) có dấu hiệu lỗi thời dựa trên ngày cập nhật và nội dung không còn phù hợp với các quy trình mới.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <h4 className="font-bold text-gray-900 mb-3 text-sm">Các vấn đề chính cần xử lý:</h4>
+            <ul className="space-y-3">
+              {[
+                { color: 'bg-orange-500', text: <><strong>Tài liệu Mobile App:</strong> 45 bài viết liên quan đến quy trình release iOS/Android cần được review do có sự thay đổi từ Apple/Google.</> },
+                { color: 'bg-blue-500', text: <><strong>Trùng lặp nội dung:</strong> Phát hiện 8 cụm bài viết (tổng cộng 24 bài) có nội dung giống nhau trên 80%. Đề xuất gộp để tránh gây nhầm lẫn cho người đọc.</> },
+                { color: 'bg-red-500', text: <><strong>Chính sách nhân sự:</strong> Các bài viết về WFH mùa dịch không còn giá trị áp dụng, cần được chuyển vào kho lưu trữ (Archive).</> },
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <div className={`w-1.5 h-1.5 rounded-full ${item.color} mt-1.5 shrink-0`}></div>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Đề xuất hành động</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Hệ thống đã tự động tạo các nhiệm vụ "Săn thưởng" (Bounties) cho các bài viết quan trọng cần cập nhật gấp. Các bài viết còn lại đã được gắn
+              cờ cảnh báo để tác giả tự review.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

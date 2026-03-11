@@ -1,147 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Search, Sparkles, ExternalLink, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { useState as useStateAlias, useEffect } from 'react';
+import { Sparkles, ArrowLeft, FileText, Search, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { retrieveContext, generateRAGResponse } from '../lib/gemini';
-import { motion, AnimatePresence } from 'motion/react';
-import { Input } from '../ui/Input';
 
-interface Props {
-  query: string;
-  onBack: () => void;
-}
-
-export default function SearchResult({ query, onBack }: Props) {
+export default function SearchResult({ query, onBack }: { query: string, onBack: () => void }) {
   const { state, dispatch } = useApp();
   const { articles } = state;
-
-  const [aiAnswer, setAiAnswer] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState(query);
+  const [currentQuery, setCurrentQuery] = useState(query);
+  const [isGenerating, setIsGenerating] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
-  const published = articles.filter(a => a.status === 'published');
-  const results = published.filter(a =>
-    a.title.toLowerCase().includes(query.toLowerCase()) ||
-    a.content?.toLowerCase().includes(query.toLowerCase()) ||
-    a.excerpt?.toLowerCase().includes(query.toLowerCase()) ||
-    a.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))
-  );
+  // Filter articles by query
+  const matchedArticles = articles.filter(a =>
+    a.status === 'published' && (
+      a.title.toLowerCase().includes(currentQuery.toLowerCase()) ||
+      a.content.toLowerCase().includes(currentQuery.toLowerCase()) ||
+      a.tags.some(t => t.toLowerCase().includes(currentQuery.toLowerCase()))
+    )
+  ).map(a => ({
+    ...a,
+    matchScore: a.title.toLowerCase().includes(currentQuery.toLowerCase()) ? 95
+      : a.tags.some(t => t.toLowerCase().includes(currentQuery.toLowerCase())) ? 82 : 70
+  })).sort((a, b) => b.matchScore - a.matchScore).slice(0, 6);
 
-  useEffect(() => {
-    if (!query) return;
-    const generate = async () => {
-      setIsLoading(true);
-      setAiAnswer('');
-      const ctx = retrieveContext(query, articles);
-      if (ctx.length === 0) { setIsLoading(false); return; }
-      try {
-        await generateRAGResponse(query, ctx, (chunk) => setAiAnswer(chunk));
-      } catch { }
-      setIsLoading(false);
-    };
-    generate();
-  }, [query]);
+  // Simulate AI generation loading
+  React.useEffect(() => {
+    setIsGenerating(true);
+    const timer = setTimeout(() => setIsGenerating(false), 1500);
+    return () => clearTimeout(timer);
+  }, [currentQuery]);
 
-  const openArticle = (id: string) => {
-    dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
-    dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    setCurrentQuery(searchQuery);
   };
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      dispatch({ type: 'SET_SEARCH_QUERY', query: searchQuery.trim() });
-    }
+  const handleCopy = () => {
+    const text = `Kết quả tìm kiếm cho "${currentQuery}" — iWiki iKame`;
+    navigator.clipboard?.writeText(text).catch(() => { });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
+
+  const aiAnswer = matchedArticles.length > 0
+    ? `Dựa trên tài liệu nội bộ của iKame, tôi tìm thấy ${matchedArticles.length} bài viết liên quan đến **"${currentQuery}"**. Bài viết phù hợp nhất là **"${matchedArticles[0]?.title}"** với độ liên quan ${matchedArticles[0]?.matchScore}%. ${matchedArticles[0]?.excerpt || ''}`
+    : `Không tìm thấy tài liệu nào liên quan đến **"${currentQuery}"** trong iWiki. Bạn có thể tạo bounty để yêu cầu đồng nghiệp viết bài về chủ đề này, hoặc tự viết bài đầu tiên!`;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
-      {/* Search bar */}
-      <div className="flex items-center gap-3 mb-10">
-        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-md text-gray-400 transition-colors shrink-0">
-          <ArrowLeft size={18} />
-        </button>
-        <div className="relative flex-1">
-          <Input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearch}
-            placeholder="Tìm kiếm..."
-            className="pl-10"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+    <div className="max-w-4xl mx-auto px-8 py-8 animate-fade-in">
+      {/* Top Bar */}
+      <div className="flex items-center gap-4 mb-8 animate-slide-up">
+        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 text-gray-500 shrink-0 active:scale-90"><ArrowLeft size={20} /></button>
+        <div className="flex-1 relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#FF6B4A]/10 to-orange-300/10 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#FF6B4A] transition-colors" /></div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-24 py-2.5 text-sm text-gray-900 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF6B4A]/20 focus:border-[#FF6B4A]/50 transition-all duration-200 hover:border-gray-300 outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <button onClick={handleSearch} className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white text-xs font-bold rounded-lg hover:shadow-md transition-all duration-200 active:scale-95">Tìm kiếm</button>
+          </div>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Kết quả tìm kiếm</h2>
-        <p className="text-sm text-gray-500">
-          Tìm thấy <strong className="text-gray-900">{results.length}</strong> bài viết cho từ khoá <strong className="text-gray-900">"{query}"</strong>
-        </p>
-      </div>
+      {/* AI Answer Block */}
+      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden mb-8 animate-slide-up stagger-1">
+        <div className="bg-gradient-to-r from-orange-50 via-amber-50/50 to-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[#FF6B4A] font-semibold">
+            <div className="p-1 bg-gradient-to-br from-[#FF6B4A] to-orange-400 rounded-lg text-white"><Sparkles size={14} /></div>
+            <span>iWiki AI trả lời</span>
+          </div>
+          <button onClick={handleCopy} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200 active:scale-90">
+            {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+          </button>
+        </div>
 
-      {/* AI Summary */}
-      <AnimatePresence>
-        {(isLoading || aiAnswer) && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 bg-orange-50/50 border border-orange-100 rounded-lg"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={16} className="text-orange-500" />
-              <span className="text-sm font-bold text-orange-600">iWiki AI Tóm tắt</span>
+        <div className="p-6">
+          {isGenerating ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#FF6B4A] to-orange-400 animate-pulse" />
+                <span className="text-sm text-gray-500 animate-pulse">iWiki AI đang tổng hợp câu trả lời...</span>
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-100 rounded-full w-3/4 animate-shimmer"></div>
+                <div className="h-4 bg-gray-100 rounded-full w-full animate-shimmer stagger-1"></div>
+                <div className="h-4 bg-gray-100 rounded-full w-5/6 animate-shimmer stagger-2"></div>
+              </div>
             </div>
-            {isLoading && !aiAnswer ? (
-              <div className="flex items-center gap-3 text-sm text-orange-400 font-medium font-medium">
-                <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-500 rounded-full animate-spin" />
-                <span>Đang tổng hợp thông tin...</span>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-700 leading-relaxed font-medium">{aiAnswer}</p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Results */}
-      {results.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-          <Search size={40} className="text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-900 font-bold mb-1">Không tìm thấy bài viết nào</p>
-          <p className="text-gray-400 text-xs">Hãy thử dùng từ khoá ngắn hơn hoặc đặt câu hỏi cho AI.</p>
+          ) : (
+            <div className="prose prose-sm max-w-none text-gray-700 animate-fade-in">
+              <p dangerouslySetInnerHTML={{
+                __html: aiAnswer.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+              }} />
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="space-y-4">
-          {results.map((article, i) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => openArticle(article.id)}
-              className="flex items-start gap-5 p-4 bg-white border border-gray-100 rounded-lg cursor-pointer hover:border-orange-200 hover:bg-orange-50/10 transition-all group"
-            >
-              {article.coverUrl && (
-                <img src={article.coverUrl} className="w-24 h-16 object-cover rounded shrink-0" referrerPolicy="no-referrer" />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold text-orange-500 uppercase">{article.folderName}</span>
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-relaxed mb-2">
-                  {article.title}
-                </h3>
-                <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
-                  <div className="flex items-center gap-1.5">
-                    <img src={article.author.avatar} className="w-4 h-4 rounded-full" referrerPolicy="no-referrer" />
-                    <span>{article.author.name}</span>
+
+        {!isGenerating && (
+          <div className="bg-gray-50/80 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xs text-gray-500">Câu trả lời này có hữu ích không?</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setFeedback('up')} className={`p-1.5 rounded-md transition-all duration-200 active:scale-90 ${feedback === 'up' ? 'text-green-600 bg-green-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}><ThumbsUp size={16} /></button>
+              <button onClick={() => setFeedback('down')} className={`p-1.5 rounded-md transition-all duration-200 active:scale-90 ${feedback === 'down' ? 'text-red-600 bg-red-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}><ThumbsDown size={16} /></button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sources Section */}
+      {!isGenerating && matchedArticles.length > 0 && (
+        <div className="animate-slide-up stagger-2">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2"><FileText size={16} className="text-gray-400" /> Nguồn tham khảo ({matchedArticles.length})</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {matchedArticles.slice(0, 3).map((source, i) => {
+              const colors = ['from-green-500 to-emerald-500', 'from-blue-500 to-indigo-500', 'from-purple-500 to-pink-500'];
+              return (
+                <div key={source.id} onClick={() => {
+                  dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: source.id });
+                  dispatch({ type: 'INCREMENT_VIEWS', articleId: source.id });
+                }} className="card-premium p-4 cursor-pointer group flex flex-col h-full">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gradient-to-r ${colors[i] || colors[0]} rounded-full shadow-sm`}>{i + 1}</span>
+                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-md">{source.matchScore}% phù hợp</span>
                   </div>
-                  <span>{article.createdAt}</span>
-                  <span className="flex items-center gap-1"><Eye size={12} /> {article.views}</span>
+                  <h4 className="font-medium text-sm text-gray-900 group-hover:text-[#FF6B4A] transition-colors line-clamp-2 mb-auto">{source.title}</h4>
+                  <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">Tác giả: <span className="font-medium text-gray-700">{source.author.name}</span></p>
                 </div>
-              </div>
-              <ExternalLink size={14} className="text-gray-300 group-hover:text-orange-400 transition-colors mt-1" />
-            </motion.div>
-          ))}
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* No Results */}
+      {!isGenerating && matchedArticles.length === 0 && (
+        <div className="text-center py-12 animate-fade-in">
+          <p className="text-gray-400 mb-4">Không tìm thấy bài viết phù hợp</p>
+          <button
+            onClick={() => dispatch({ type: 'OPEN_EDITOR', article: { title: currentQuery } })}
+            className="px-4 py-2 bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+          >
+            Viết bài về "{currentQuery}"
+          </button>
         </div>
       )}
     </div>
