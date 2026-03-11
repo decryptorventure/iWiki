@@ -117,6 +117,7 @@ export interface AppState {
   selectedArticleId: string | null;
   currentFolderId: string | null;
   aiHistory: AIChatSession[];
+  searchHistory: string[];
 }
 
 // ---- SEED DATA ----
@@ -334,6 +335,12 @@ export const initialState: AppState = {
   selectedArticleId: null,
   currentFolderId: null,
   aiHistory: savedState.aiHistory || [],
+  searchHistory: savedState.searchHistory || [
+    "Quy trình xin nghỉ phép",
+    "Template OKR Q3",
+    "Báo cáo thị trường Hybrid-casual",
+    "Onboarding nhân viên mới"
+  ],
 };
 
 // ---- ACTIONS ----
@@ -355,7 +362,10 @@ export type AppAction =
   | { type: 'MARK_ALL_READ' }
   | { type: 'INCREMENT_VIEWS'; articleId: string }
   | { type: 'SAVE_AI_SESSION'; session: AIChatSession }
-  | { type: 'DELETE_AI_SESSION'; sessionId: string };
+  | { type: 'DELETE_AI_SESSION'; sessionId: string }
+  | { type: 'ADD_SEARCH_HISTORY'; query: string }
+  | { type: 'REMOVE_SEARCH_HISTORY'; query: string }
+  | { type: 'CLEAR_SEARCH_HISTORY' };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState;
@@ -453,6 +463,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DELETE_AI_SESSION':
       newState = { ...state, aiHistory: state.aiHistory.filter(s => s.id !== action.sessionId) };
       break;
+    case 'ADD_SEARCH_HISTORY': {
+      const newHistory = [action.query, ...state.searchHistory.filter(q => q !== action.query)].slice(0, 10);
+      newState = { ...state, searchHistory: newHistory };
+      break;
+    }
+    case 'REMOVE_SEARCH_HISTORY':
+      newState = { ...state, searchHistory: state.searchHistory.filter(q => q !== action.query) };
+      break;
+    case 'CLEAR_SEARCH_HISTORY':
+      newState = { ...state, searchHistory: [] };
+      break;
     default:
       return state;
   }
@@ -464,6 +485,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     bounties: newState.bounties,
     notifications: newState.notifications,
     aiHistory: newState.aiHistory,
+    searchHistory: newState.searchHistory,
   });
 
   return newState;

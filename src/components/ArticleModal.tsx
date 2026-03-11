@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Heart, MessageSquare, Share2, Eye, Bookmark, Send, ArrowUp } from 'lucide-react';
+import { X, Flame, MessageSquare, Share2, Eye, Bookmark, Send, Sparkles, Clock, ChevronRight, Maximize2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
@@ -8,10 +8,10 @@ import { Article } from '../store/useAppStore';
 function MarkdownContent({ content }: { content: string }) {
   const lines = content.split('\n');
   return (
-    <div className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed">
+    <div className="prose prose-orange max-w-none text-gray-800 leading-relaxed font-sans selection:bg-orange-100 italic-quotes">
       {lines.map((line, i) => {
-        if (line.startsWith('# ')) return <h1 key={i} className="text-2xl font-bold text-gray-900 mt-6 mb-3">{line.slice(2)}</h1>;
-        if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold text-gray-900 mt-5 mb-2">{line.slice(3)}</h2>;
+        if (line.startsWith('# ')) return <h1 key={i} className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-10 mb-6 tracking-tight leading-tight">{line.slice(2)}</h1>;
+        if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-bold text-gray-900 mt-8 mb-4 border-b border-gray-100 pb-2">{line.slice(3)}</h2>;
         if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-semibold text-gray-900 mt-4 mb-2">{line.slice(4)}</h3>;
         if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 text-gray-700 mb-1">{renderInline(line.slice(2))}</li>;
         if (line.match(/^\d+\. /)) return <li key={i} className="ml-4 list-decimal text-gray-700 mb-1">{renderInline(line.replace(/^\d+\. /, ''))}</li>;
@@ -46,12 +46,17 @@ interface ArticleModalProps {
 export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps) {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
-  const { currentUser } = state;
+  const { articles, currentUser } = state;
   const [comment, setComment] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const isLiked = article ? article.likedBy.includes(currentUser.id) : false;
+  
+  // Lấy các bài viết liên quan (Mock: cùng thư mục hoặc cùng tác giả, loại trừ bài hiện tại)
+  const relatedArticles = article 
+    ? articles.filter(a => a.id !== article.id && (a.folderId === article.folderId || a.author.id === article.author.id)).slice(0, 3)
+    : [];
 
   // Prevent body scroll
   useEffect(() => {
@@ -71,7 +76,7 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
   const handleLike = () => {
     dispatch({ type: 'TOGGLE_LIKE', articleId: article.id, userId: currentUser.id });
     if (!isLiked) {
-      addToast('Đã thích bài viết! ❤️', 'success');
+      addToast('Đã thắp lửa cho bài viết! 🔥', 'success');
     }
   };
 
@@ -104,41 +109,62 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 px-4 animate-modal-backdrop" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}>
-      <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden animate-modal-enter relative">
-        {/* Cover Image */}
-        {article.coverUrl && (
-          <div className="h-56 overflow-hidden relative group">
-            <img src={article.coverUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          </div>
-        )}
+      <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden animate-modal-enter relative flex flex-col md:flex-row max-h-[90vh]">
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+          {/* Cover Image */}
+          {article.coverUrl && (
+            <div className="h-48 md:h-64 overflow-hidden relative group">
+              <img src={article.coverUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </div>
+          )}
 
         {/* Close Button */}
         <button onClick={() => onOpenChange(false)} className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white rounded-full transition-all duration-200 shadow-md active:scale-90 z-10">
           <X size={20} />
         </button>
 
-        <div className="p-8">
-          {/* Author & Meta */}
-          <div className="flex items-center gap-3 mb-4">
-            <img src={article.author.avatar || `https://picsum.photos/seed/${article.author.id}/100/100`} alt="Avatar" className="w-10 h-10 rounded-full ring-2 ring-[#FF6B4A]/20" referrerPolicy="no-referrer" />
-            <div>
-              <div className="text-sm font-bold text-gray-900">{article.author.name}</div>
-              <div className="text-xs text-gray-500">{article.author.role} · {article.createdAt}</div>
+            <div className="p-8 md:p-12">
+            {/* Meta Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-gray-100">
+              <div className="flex items-center gap-4">
+                <img src={article.author.avatar || `https://picsum.photos/seed/${article.author.id}/100/100`} alt="Avatar" className="w-12 h-12 rounded-2xl shadow-sm object-cover ring-2 ring-gray-50 shrink-0" referrerPolicy="no-referrer" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 text-base">{article.author.name}</span>
+                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-[10px] font-bold rounded-md uppercase tracking-wider">{article.author.role}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
+                    <span className="flex items-center gap-1"><Clock size={14}/> {article.createdAt}</span>
+                    <span>•</span>
+                    <span>{article.folderName}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'article-detail' })} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Xem toàn trang"><Maximize2 size={20} /></button>
+                <button onClick={handleShare} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Chia sẻ"><Share2 size={20} /></button>
+                <button onClick={() => { setBookmarked(!bookmarked); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }} className={`p-2.5 rounded-xl transition-all active:scale-90 ${bookmarked ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100 text-gray-500'}`} title="Lưu bài viết"><Bookmark size={20} className={bookmarked ? 'fill-current' : ''} /></button>
+              </div>
             </div>
-          </div>
 
-          {/* Tags */}
-          {article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {article.tags.map(tag => (
-                <span key={tag} className="px-2.5 py-1 bg-orange-50 text-[#FF6B4A] text-xs font-medium rounded-full">{tag}</span>
-              ))}
-            </div>
-          )}
+            {/* Tags */}
+            {article.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {article.tags.map(tag => (
+                  <span key={tag} className="px-2.5 py-1 bg-orange-50/80 hover:bg-orange-100 text-[#FF6B4A] text-xs font-bold rounded-lg border border-orange-100/50 cursor-pointer transition-colors">#{tag}</span>
+                ))}
+              </div>
+            )}
 
           {/* Title */}
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-6 leading-snug">{article.title}</h2>
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-8 leading-tight tracking-tight">{article.title}</h1>
+
+          {/* Personalized Badge Mock */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-blue-700 rounded-2xl text-xs font-bold mb-10 shadow-sm">
+            <Sparkles size={14} className="animate-pulse" /> Gợi ý riêng cho {currentUser.role} • iWiki AI
+          </div>
 
           {/* Content */}
           <div className="mb-8">
@@ -149,24 +175,30 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
             )}
           </div>
 
-          {/* Action Bar */}
-          <div className="flex items-center justify-between py-4 border-t border-b border-gray-100 mb-6">
-            <div className="flex items-center gap-4">
-              <button onClick={handleLike} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 ${isLiked ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'}`}>
-                <Heart size={18} className={isLiked ? 'fill-current' : ''} />
-                {article.likes} Thích
+          {/* Action Footer Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-6 border-t border-gray-100 mb-10 gap-4">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleLike} 
+                className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 shadow-sm hover:shadow-md ${isLiked ? 'bg-orange-500 text-white shadow-orange-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-orange-200 hover:text-orange-600'}`}
+              >
+                <Flame size={20} className={isLiked ? 'fill-current animate-bounce' : 'text-orange-500'} />
+                {isLiked ? 'Đã Thắp Lửa' : 'Thắp Lửa'}
+                <span className={`ml-1 ${isLiked ? 'text-white/90' : 'text-gray-400'}`}>{article.likes}</span>
               </button>
-              <button onClick={() => commentRef.current?.focus()} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 active:scale-95">
-                <MessageSquare size={18} />
-                {article.comments.length} Bình luận
-              </button>
-              <button onClick={() => { setBookmarked(!bookmarked); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 ${bookmarked ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-yellow-600'}`}>
-                <Bookmark size={18} className={bookmarked ? 'fill-current' : ''} />
+              
+              <button onClick={() => commentRef.current?.focus()} className="flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold bg-white border border-gray-200 text-gray-700 hover:border-blue-200 hover:text-blue-600 transition-all duration-300 active:scale-95 shadow-sm">
+                <MessageSquare size={20} className="text-blue-500" />
+                Bình thảo luận
+                <span className="ml-1 text-gray-400 font-medium">{article.comments.length}</span>
               </button>
             </div>
-            <div className="flex items-center gap-4 text-xs text-gray-400">
-              <span className="flex items-center gap-1"><Eye size={14} /> {article.views}</span>
-              <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 transition-all duration-200 active:scale-95"><Share2 size={14} /> Chia sẻ</button>
+            
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
+                <Eye size={18} />
+                <span>{article.views.toLocaleString()} lượt đọc</span>
+              </div>
             </div>
           </div>
 
@@ -195,20 +227,21 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
               </div>
             )}
 
-            {/* Comments List */}
-            <div className="space-y-4">
               {article.comments.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-4">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                <div className="text-center py-6 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                  <MessageSquare size={24} className="mx-auto text-gray-300 mb-2" />
+                  <p className="text-gray-400 text-sm font-medium">Chưa có bình luận nào. Hãy là người đầu tiên thảo luận!</p>
+                </div>
               ) : (
                 article.comments.map((c) => (
                   <div key={c.id} className="flex gap-3 group">
-                    <img src={c.authorAvatar || `https://picsum.photos/seed/${c.authorId}/100/100`} alt={c.authorName} className="w-8 h-8 rounded-full ring-1 ring-gray-100 shrink-0" referrerPolicy="no-referrer" />
-                    <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
-                      <div className="flex items-center gap-2 mb-1">
+                    <img src={c.authorAvatar || `https://picsum.photos/seed/${c.authorId}/100/100`} alt={c.authorName} className="w-8 h-8 rounded-full ring-1 ring-gray-100 shrink-0 mt-1" referrerPolicy="no-referrer" />
+                    <div className="flex-1 bg-gray-50/80 rounded-2xl px-5 py-4 border border-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-bold text-gray-900">{c.authorName}</span>
-                        <span className="text-xs text-gray-400">{c.createdAt}</span>
+                        <span className="text-[10px] text-gray-400 font-medium px-2 py-0.5 bg-white rounded-md border border-gray-100">{c.createdAt}</span>
                       </div>
-                      <p className="text-sm text-gray-700">{c.content}</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">{c.content}</p>
                     </div>
                   </div>
                 ))
@@ -216,7 +249,61 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
             </div>
           </div>
         </div>
+        
+        {/* Right Sidebar: Knowledge Context (Related Articles) */}
+        <div className="w-full md:w-80 bg-gray-50 border-l border-gray-100 flex flex-col overflow-y-auto custom-scrollbar">
+          <div className="p-6 sticky top-0 bg-gray-50/90 backdrop-blur-md z-10 border-b border-gray-100">
+            <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 uppercase tracking-wide">
+              <Sparkles size={16} className="text-orange-500" />
+              Liên kết Tri thức
+            </h3>
+          </div>
+          
+          <div className="p-6 space-y-6 flex-1">
+            {/* Outline / Mục lục (Giả lập) */}
+            <div className="space-y-3">
+               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mục lục</h4>
+               <ul className="space-y-2 text-sm">
+                 <li className="text-orange-600 font-bold border-l-2 border-orange-500 pl-3">Performance Checkpoint tại iKame</li>
+                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Quy trình triển khai</li>
+                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Tiêu chí đánh giá</li>
+                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Lưu ý quan trọng</li>
+               </ul>
+            </div>
+
+            <hr className="border-gray-200/60" />
+
+            {/* Thống kê đóng góp (Mock) */}
+             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Đóng góp & Cập nhật</h4>
+               <p className="text-sm text-gray-900 mb-1">Cập nhật lần cuối: <span className="font-bold">{article.updatedAt}</span></p>
+               <p className="text-xs text-gray-500">Bởi: {article.author.name}</p>
+             </div>
+
+            {/* Related Articles */}
+            {relatedArticles.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mở rộng tri thức</h4>
+                <div className="space-y-4">
+                  {relatedArticles.map(ral => (
+                    <div key={ral.id} className="group cursor-pointer bg-white p-3 rounded-xl border border-transparent hover:border-orange-100 hover:shadow-sm transition-all duration-300">
+                       <h5 className="text-sm font-bold text-gray-800 leading-snug group-hover:text-orange-600 transition-colors line-clamp-2 mb-2">{ral.title}</h5>
+                       <div className="flex items-center justify-between text-[10px] text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1"><Eye size={12}/> {ral.views}</span>
+                            <span>•</span>
+                            <span className="font-medium">{ral.author.name}</span>
+                          </div>
+                          <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
   );
 }

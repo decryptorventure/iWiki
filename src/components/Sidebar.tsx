@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import {
-  Home, FileText, Target, AlertTriangle, User, Flame, FolderTree, Shield,
-  ShieldCheck, ChevronDown, Plus, Edit, ChevronsUpDown, File, Sparkles, Settings, Bell
-} from 'lucide-react';
+import { BookOpen, FolderTree, FileText, ChevronDown, User, Star, Settings, File, Award, Zap, Bell, Sparkles, Shield, Compass, Search, Target, Briefcase, Plus, TrendingUp, Cpu, Flame, CheckCircle, Clock, Gift, ShieldCheck, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown } from 'lucide-react';
 
 const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge }: { title: string, children: React.ReactNode, defaultExpanded?: boolean, onAdd?: () => void, badge?: string }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -158,6 +155,7 @@ export default function Sidebar() {
         {currentUser.role === 'admin' && (
           <div className="px-2">
             <SidebarSection title="Quản trị hệ thống" badge="Admin">
+              <NavItem icon={BarChart} label="Dashboard Quản trị" isActive={currentScreen === 'admin-dashboard'} onClick={() => navigate('admin-dashboard')} />
               <NavItem icon={FolderTree} label="Quản lý tài liệu" isActive={currentScreen === 'documents'} onClick={() => navigate('documents')} />
               <NavItem icon={Shield} label="Phân quyền" isActive={currentScreen === 'permissions'} onClick={() => navigate('permissions')} />
               <NavItem icon={Settings} label="Cài đặt hệ thống" isActive={currentScreen === 'settings'} onClick={() => navigate('settings')} />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Check, Trash2, Clock, Info, MessageSquare, Heart, Coins, Target } from 'lucide-react';
+import { Bell, Check, Trash2, Clock, Info, MessageSquare, Flame, Coins, Target } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 
@@ -30,7 +30,7 @@ export default function Notifications() {
     const getIcon = (type: string) => {
         switch (type) {
             case 'comment': return <MessageSquare size={16} className="text-blue-500" />;
-            case 'like': return <Heart size={16} className="text-red-500" />;
+            case 'like': return <Flame size={16} className="text-orange-500" />;
             case 'reward': return <Coins size={16} className="text-yellow-500" />;
             case 'bounty': return <Target size={16} className="text-[#FF6B4A]" />;
             default: return <Info size={16} className="text-gray-400" />;

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, AlignLeft, Type, Table, Languages, ArrowLeft, Save, Send, Folder, Tag, Shield, Globe, Lock, X, Check, Bold, Italic, List, Heading } from 'lucide-react';
+import { Sparkles, AlignLeft, Type, Table, Languages, ArrowLeft, Save, Send, Folder, Tag, Shield, Globe, Lock, X, Check, Bold, Italic, List, Heading, FileText, ChevronDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
@@ -31,6 +31,19 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
   const [isPublishing, setIsPublishing] = useState(false);
 
   const isEditing = !!initialData?.id;
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  const templates = [
+    { id: 't1', title: 'Meeting Minutes', content: '# Meeting Minutes\n\n## 1. Thông tin chung\n- **Thời gian:** \n- **Địa điểm:** \n- **Thành phần tham gia:** \n\n## 2. Nội dung chính thảo luận\n- \n- \n\n## 3. Action Items\n| Việc cần làm | Người phụ trách | Deadline | Trạng thái |\n|---|---|---|---|\n| | | | |\n' },
+    { id: 't2', title: 'Template SOP / Quy trình', content: '# Quy trình [Tên quy trình]\n\n## 1. Mục đích\nQuy trình này nhằm...\n\n## 2. Phạm vi áp dụng\nÁp dụng cho bộ phận/cá nhân...\n\n## 3. Định nghĩa & Viết tắt\n- \n\n## 4. Nội dung chi tiết quy trình\n### Bước 1: [Tên bước]\n- **Người thực hiện:** \n- **Mô tả:** \n\n### Bước 2: ...\n' },
+    { id: 't3', title: 'Weekly Report', content: '# Báo cáo tuần [Số tuần/Tháng]\n\n## 1. Những việc đã hoàn thành\n- \n- \n\n## 2. OKRs / KPIs Progress\n- Mục tiêu 1: [Tiến độ %]\n- Mục tiêu 2: [Tiến độ %]\n\n## 3. Khó khăn & Blocker (Nếu có)\n- \n\n## 4. Kế hoạch tuần tới\n- \n' }
+  ];
+
+  const handleApplyTemplate = (templateContent: string) => {
+    setContent(templateContent);
+    setShowTemplates(false);
+    addToast('Đã áp dụng mẫu thành công', 'success');
+  };
 
   // Flat folder list for select
   const allFolders = folders.flatMap(f => [f, ...(f.children || [])]);
@@ -205,20 +218,52 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         </div>
       </div>
 
-      {/* Markdown Toolbar */}
-      <div className="flex items-center gap-1 mb-4 p-1.5 bg-gray-50 border border-gray-200 rounded-xl">
-        {[
-          { icon: Heading, action: () => insertMarkdown('## '), title: 'Tiêu đề' },
-          { icon: Bold, action: () => insertMarkdown('**', '**'), title: 'In đậm' },
-          { icon: Italic, action: () => insertMarkdown('*', '*'), title: 'In nghiêng' },
-          { icon: List, action: () => insertMarkdown('\n- '), title: 'Danh sách' },
-        ].map(({ icon: Icon, action, title }) => (
-          <button key={title} title={title} onClick={action} className="p-2 text-gray-500 hover:text-gray-800 hover:bg-white rounded-lg transition-all duration-200 active:scale-90" type="button">
-            <Icon size={16} />
+      {/* Markdown & Template Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-1 p-1.5 bg-gray-50 border border-gray-200 rounded-xl">
+          {[
+            { icon: Heading, action: () => insertMarkdown('## '), title: 'Tiêu đề' },
+            { icon: Bold, action: () => insertMarkdown('**', '**'), title: 'In đậm' },
+            { icon: Italic, action: () => insertMarkdown('*', '*'), title: 'In nghiêng' },
+            { icon: List, action: () => insertMarkdown('\n- '), title: 'Danh sách' },
+          ].map(({ icon: Icon, action, title }) => (
+            <button key={title} title={title} onClick={action} className="p-2 text-gray-500 hover:text-gray-800 hover:bg-white rounded-lg transition-all duration-200 active:scale-90" type="button">
+              <Icon size={16} />
+            </button>
+          ))}
+          <div className="h-4 w-px bg-gray-200 mx-1" />
+          <span className="text-xs text-gray-400 px-2 hidden sm:inline">Hỗ trợ Markdown • Gõ <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd> để gọi AI</span>
+        </div>
+
+        {/* Template Selector dropdown */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowTemplates(!showTemplates)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all shadow-sm active:scale-95"
+          >
+            <FileText size={16} className="text-gray-500" />
+            Chọn biểu mẫu
+            <ChevronDown size={14} className="text-gray-400" />
           </button>
-        ))}
-        <div className="h-4 w-px bg-gray-200 mx-1" />
-        <span className="text-xs text-gray-400 px-2">Hỗ trợ Markdown • Gõ <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd> để gọi AI</span>
+          
+          {showTemplates && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-fade-in origin-top-right">
+              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 mb-1">
+                Biểu mẫu nhanh
+              </div>
+              {templates.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleApplyTemplate(t.content)}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2 group"
+                >
+                  <FileText size={14} className="text-gray-400 group-hover:text-orange-500" />
+                  {t.title}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <input

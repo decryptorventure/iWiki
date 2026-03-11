@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
-import { Search, Sparkles, Eye, MessageSquare, Flame, Trophy, Medal, TrendingUp, BookOpen, Award } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Sparkles, Eye, MessageSquare, Flame, Trophy, Medal, TrendingUp, BookOpen, Award, Clock, ArrowRight, Zap, Target } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Dashboard({ onSearch }: { onSearch: (q: string) => void }) {
   const { state, dispatch } = useApp();
-  const { articles, currentUser } = state;
+  const { articles, currentUser, searchHistory } = state;
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearch = (q: string) => {
+    if (q.trim()) {
+      dispatch({ type: 'ADD_SEARCH_HISTORY', query: q.trim() });
+      onSearch(q);
+      setIsFocused(false);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && query.trim()) onSearch(query);
+    if (e.key === 'Enter') handleSearch(query);
   };
 
   const publishedArticles = articles.filter(a => a.status === 'published');
@@ -19,6 +38,12 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
     .filter(a => a.status === 'published')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 5);
+
+  const smartSuggestions = [
+    { text: `Quy trình cho ${currentUser.role}`, icon: Target, intent: 'role' },
+    { text: "Kế hoạch quý này của Product Team", icon: Zap, intent: 'team' },
+    { text: "Hướng dẫn Onboarding cho người mới", icon: BookOpen, intent: 'general' }
+  ];
 
   const leaderboard = [
     { rank: 1, name: 'Nguyễn Văn A', role: 'Product Manager', score: currentUser.xp, avatar: currentUser.avatar },
@@ -67,54 +92,119 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
         </h1>
         <p className="text-lg text-gray-500 mb-8 animate-slide-up stagger-1">Tìm kiếm kiến thức, hướng dẫn và tài liệu nội bộ</p>
 
-        <div className={`w-full max-w-3xl relative group animate-slide-up stagger-2 ${isFocused ? 'z-50' : 'z-10'}`}>
+        <div ref={searchRef} className={`w-full max-w-3xl relative group animate-slide-up stagger-2 ${isFocused ? 'z-50' : 'z-10'}`}>
           <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6B4A]/20 to-orange-300/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <Sparkles className="h-5 w-5 text-[#FF6B4A]" />
+              <Sparkles className={`h-5 w-5 transition-colors ${isFocused ? 'text-orange-500' : 'text-[#FF6B4A]'}`} />
             </div>
             <input
               type="text"
-              className="block w-full pl-14 pr-14 py-4 text-base text-gray-900 bg-white border border-gray-200 rounded-full focus:ring-4 focus:ring-[#FF6B4A]/15 focus:border-[#FF6B4A]/50 shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-300 placeholder:text-gray-400"
-              placeholder="Hỏi AI hoặc tìm kiếm bài viết..."
+              className={`block w-full pl-14 pr-14 py-4 text-base text-gray-900 bg-white border ${isFocused ? 'border-[#FF6B4A]/50 ring-4 ring-[#FF6B4A]/15 rounded-t-3xl rounded-b-none shadow-md' : 'border-gray-200 rounded-full focus:ring-4 focus:ring-[#FF6B4A]/15 focus:border-[#FF6B4A]/50 shadow-sm'} transition-all duration-300 hover:shadow-md hover:border-gray-300 placeholder:text-gray-400 outline-none`}
+              placeholder="Tìm kiếm thông minh hoặc đặt câu hỏi cho AI..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => setIsFocused(true)}
-              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-              <button onClick={() => query.trim() && onSearch(query)} className="p-2.5 text-white bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] rounded-full hover:shadow-md hover:shadow-[#FF6B4A]/25 transition-all duration-200 active:scale-95">
+              <button onClick={() => query.trim() && handleSearch(query)} className="p-2.5 text-white bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] rounded-full hover:shadow-md hover:shadow-[#FF6B4A]/25 transition-all duration-200 active:scale-95">
                 <Search size={18} />
               </button>
             </div>
 
-            {/* Recent Articles Dropdown */}
-            {isFocused && !query && recentArticles.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in py-2">
-                <div className="px-5 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Flame size={12} className="text-[#FF6B4A]" />
-                  Bài viết xem gần đây
-                </div>
-                {recentArticles.map((article) => (
-                  <button
-                    key={article.id}
-                    onClick={() => openArticle(article.id)}
-                    className="w-full px-5 py-3 flex items-center gap-3 hover:bg-orange-50/50 transition-colors text-left group"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-[#FF6B4A] transition-colors shrink-0">
-                      <BookOpen size={16} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-gray-900 truncate group-hover:text-[#FF6B4A] transition-colors">{article.title}</div>
-                      <div className="text-xs text-gray-500 truncate mt-0.5 flex items-center gap-2">
-                        <span>{article.author.name}</span>
-                        <span>•</span>
-                        <span>{article.views} lượt xem</span>
+            {/* Smart Search Dropdown */}
+            {isFocused && (
+              <div className="absolute top-full left-0 right-0 bg-white shadow-xl border border-gray-100 rounded-b-3xl overflow-hidden z-50 animate-slide-down origin-top custom-scrollbar max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                  {/* Left Column: Intention & History */}
+                  <div className="p-4 space-y-6">
+                    {/* Smart Suggestion */}
+                    {!query && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <Target size={14} className="text-orange-500" />
+                          Gợi ý theo ngữ cảnh
+                        </div>
+                        <div className="space-y-1">
+                          {smartSuggestions.map((item, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => { setQuery(item.text); handleSearch(item.text); }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all flex items-center gap-3 group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-orange-100/50 flex items-center justify-center text-orange-500 group-hover:bg-white group-hover:shadow-sm transition-all shrink-0">
+                                <item.icon size={16} />
+                              </div>
+                              <span className="font-medium">{item.text}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
+                    )}
+
+                    {/* Search History */}
+                    {!query && searchHistory.length > 0 && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Clock size={14} /> Tìm kiếm gần đây
+                          </div>
+                          <button onClick={() => dispatch({ type: 'CLEAR_SEARCH_HISTORY'})} className="text-gray-400 hover:text-red-500 lowercase text-[10px]">Xóa lịch sử</button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {searchHistory.slice(0, 5).map((historyItem, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => { setQuery(historyItem); handleSearch(historyItem); }}
+                              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-lg text-xs transition-colors flex items-center gap-1.5"
+                            >
+                              <Clock size={12} className="text-gray-400" />
+                              {historyItem}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Knowledge Results OR Recent */}
+                  <div className="bg-gray-50/50 p-4">
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                       <Flame size={14} className={query ? "text-[#FF6B4A]" : "text-gray-400"} />
+                       {query ? 'Kết quả tri thức liên quan' : 'Đang nổi bật trong tuần'}
                     </div>
-                  </button>
-                ))}
+                    
+                    <div className="space-y-2">
+                      {(query ? articles.filter(a => a.title.toLowerCase().includes(query.toLowerCase()) || a.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))) : recentArticles).slice(0, 4).map((article) => (
+                        <button
+                          key={article.id}
+                          onClick={() => openArticle(article.id)}
+                          className="w-full p-3 bg-white border border-gray-100 hover:border-orange-200 hover:shadow-md rounded-xl transition-all text-left group flex gap-3 items-start"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors shrink-0 mt-0.5">
+                            <BookOpen size={16} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-orange-600 transition-colors mb-1">{article.title}</div>
+                            <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                              <span className="font-medium text-gray-700">{article.author.name}</span>
+                              <span>•</span>
+                              <span>{article.folderName}</span>
+                            </div>
+                          </div>
+                          <ArrowRight size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />
+                        </button>
+                      ))}
+                      
+                      {query && (
+                         <button onClick={() => handleSearch(query)} className="w-full mt-2 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-lg transition-colors flex items-center justify-center gap-1">
+                           Xem tất cả kết quả <ArrowRight size={12} />
+                         </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

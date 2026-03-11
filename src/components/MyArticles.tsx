@@ -77,7 +77,7 @@ export default function MyArticles() {
         {[
           { label: 'Bài viết', value: published.length, icon: BookOpen, color: 'from-blue-500 to-indigo-500', bg: 'from-blue-50 to-indigo-50' },
           { label: 'Lượt xem', value: totalViews.toLocaleString(), icon: Eye, color: 'from-green-500 to-emerald-500', bg: 'from-green-50 to-emerald-50' },
-          { label: 'Lượt thích', value: totalLikes, icon: Flame, color: 'from-orange-500 to-red-500', bg: 'from-orange-50 to-red-50' },
+          { label: 'Được thắp lửa', value: totalLikes, icon: Flame, color: 'from-orange-500 to-red-500', bg: 'from-orange-50 to-red-50' },
           { label: 'Bình luận', value: totalComments, icon: MessageSquare, color: 'from-purple-500 to-pink-500', bg: 'from-purple-50 to-pink-50' },
         ].map((stat) => {
           const Icon = stat.icon;

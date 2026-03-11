@@ -9,12 +9,14 @@ import Bounties from './components/Bounties';
 import DataJanitor from './components/DataJanitor';
 import DocumentManagement from './components/DocumentManagement';
 import PermissionManagement from './components/PermissionManagement';
+import AdminDashboard from './components/AdminDashboard';
 import IWikiAI from './components/IWikiAI';
 import EmptyFolderBounty from './components/EmptyFolderBounty';
 import FolderView from './components/FolderView';
 import Notifications from './components/Notifications';
 import Editor from './components/Editor';
 import { ArticleModal } from './components/ArticleModal';
+import ArticleFullView from './components/ArticleFullView';
 import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Bell } from 'lucide-react';
 
 // ===== TOAST SYSTEM =====
@@ -96,6 +98,10 @@ function AppInner() {
         return <DocumentManagement />;
       case 'permissions':
         return <PermissionManagement />;
+      case 'admin-dashboard':
+        return <AdminDashboard />;
+      case 'article-detail':
+        return <ArticleFullView />;
       case 'editor':
         return (
           <Editor
@@ -167,7 +173,7 @@ function AppInner() {
 
         {/* Global Article Modal */}
         <ArticleModal
-          open={!!selectedArticle}
+          open={!!selectedArticle && currentScreen !== 'article-detail'}
           article={selectedArticle}
           onOpenChange={(open) => {
             if (!open) dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: null });
