@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { Folder, FileText, ChevronRight, ChevronDown, Plus, MoreVertical, Search, FolderPlus, FilePlus, Shield, GripVertical, Lock, Users, X, Globe } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { can } from '../lib/permissions';
 
 export default function DocumentManagement() {
+  const { state } = useApp();
+  if (!can(state.currentUser, 'admin.access')) {
+    return <div className="h-full flex items-center justify-center text-gray-500">Bạn không có quyền truy cập quản lý tài liệu hệ thống.</div>;
+  }
+
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['1', '1-1']);
   const [selectedFolder, setSelectedFolder] = useState<string>('1-1');
   const [draggedFolder, setDraggedFolder] = useState<string | null>(null);

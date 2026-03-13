@@ -1,32 +1,30 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { BarChart3, Users, FileText, AlertTriangle, CheckCircle, Clock, Trash2, ShieldAlert } from 'lucide-react';
+import { getBaseline } from '../lib/analytics';
+import { can } from '../lib/permissions';
 
 export default function AdminDashboard() {
   const { state, dispatch } = useApp();
   const { articles, currentUser } = state;
   const [activeTab, setActiveTab] = useState<'analytics' | 'maintenance' | 'approval'>('analytics');
 
-  // Mock Data
+  const baseline = getBaseline(state);
+  const pendingArticles = articles.filter(a => a.status === 'in_review');
+
   const stats = {
     totalArticles: articles.length,
-    activeUsers: 142,
-    pendingApproval: 3,
-    needsMaintenance: 5
+    activeUsers: baseline.activeUsers30d,
+    pendingApproval: pendingArticles.length,
+    needsMaintenance: articles.filter(a => Date.now() - new Date(a.updatedAt).getTime() > 180 * 24 * 60 * 60 * 1000).length
   };
-
-  const pendingArticles = [
-    { id: 'p1', title: 'Quy trình xử lý khủng hoảng truyền thông', author: 'Lê Văn C', date: '2024-05-25', folderId: 'f-hr' },
-    { id: 'p2', title: 'Tài liệu API Đối tác VNPAY', author: 'Nguyễn B', date: '2024-05-24', folderId: 'f-be' },
-    { id: 'p3', title: 'Design System Guidelines v2', author: 'Trần D', date: '2024-05-23', folderId: 'f-fe' },
-  ];
 
   const maintenanceArticles = [
     { id: 'm1', title: 'Chính sách WFH 2021', status: 'Outdated (Không cập nhật > 2 năm)', author: 'HR Team' },
     { id: 'm2', title: 'Hướng dẫn cài đặt môi trường Dev cũ', status: 'Cảnh báo mâu thuẫn nội dung', author: 'DevOps' },
   ];
 
-  if (currentUser.role !== 'admin') {
+  if (!can(currentUser, 'admin.access')) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6">
         <ShieldAlert size={64} className="text-red-400 mb-4" />
@@ -56,7 +54,7 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
            <div className="flex items-center gap-4 mb-2">
              <div className="p-3 bg-green-50 text-green-600 rounded-xl"><Users size={24} /></div>
-             <div><p className="text-sm font-medium text-gray-500">Active Users (MAU)</p><h3 className="text-2xl font-bold text-gray-900">{stats.activeUsers}</h3></div>
+             <div><p className="text-sm font-medium text-gray-500">Active Users (30d)</p><h3 className="text-2xl font-bold text-gray-900">{stats.activeUsers}</h3></div>
            </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-orange-300 transition-colors" onClick={() => setActiveTab('approval')}>
@@ -98,27 +96,51 @@ export default function AdminDashboard() {
          {activeTab === 'analytics' && (
            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
              <BarChart3 size={64} className="text-gray-200 mb-4" />
-             <h3 className="text-lg font-bold text-gray-900 mb-2">Analytics Dashboard</h3>
-             <p className="text-gray-500 max-w-md">Khu vực này sẽ hiển thị các biểu đồ tương tác thực tế kết nối qua API (VD: Lượt đọc theo phòng ban, Đóng góp theo quý).</p>
+             <h3 className="text-lg font-bold text-gray-900 mb-2">Analytics Baseline</h3>
+             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left mt-4 max-w-2xl">
+               <Metric label="Search" value={baseline.totalSearches} />
+               <Metric label="Zero-result rate" value={`${baseline.zeroResultRate}%`} />
+               <Metric label="Open article" value={baseline.openArticleEvents} />
+               <Metric label="Favorites" value={baseline.favorites} />
+               <Metric label="Submit review" value={baseline.reviewSubmitted} />
+               <Metric label="Approve/Reject" value={`${baseline.approved}/${baseline.rejected}`} />
+             </div>
            </div>
          )}
 
          {activeTab === 'approval' && (
            <div>
-             <h3 className="text-lg font-bold text-gray-900 mb-4">Danh sách chờ phê duyệt (Mock)</h3>
+             <h3 className="text-lg font-bold text-gray-900 mb-4">Danh sách chờ phê duyệt</h3>
              <div className="space-y-4">
-               {pendingArticles.map(p => (
-                 <div key={p.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+              {pendingArticles.map(p => (
+                <div key={p.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
                    <div>
                      <h4 className="font-bold text-gray-900">{p.title}</h4>
-                     <p className="text-xs text-gray-500 mt-1">Gửi bởi: {p.author} • Ngày: {p.date}</p>
+                    <p className="text-xs text-gray-500 mt-1">Gửi bởi: {p.author.name} • Ngày: {p.approval?.submittedAt?.slice(0, 10) || p.updatedAt}</p>
                    </div>
                    <div className="flex gap-2 mt-4 sm:mt-0">
-                     <button className="px-4 py-2 text-sm font-bold text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors">Duyệt</button>
-                     <button className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors">Từ chối</button>
+                    <button
+                      onClick={() => {
+                        dispatch({ type: 'APPROVE_ARTICLE', articleId: p.id, approverId: currentUser.id });
+                        dispatch({ type: 'TRACK_EVENT', event: { type: 'approve', userId: currentUser.id, articleId: p.id } });
+                      }}
+                      className="px-4 py-2 text-sm font-bold text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
+                    >
+                      Duyệt
+                    </button>
+                    <button
+                      onClick={() => {
+                        dispatch({ type: 'REJECT_ARTICLE', articleId: p.id, approverId: currentUser.id, reason: 'Cần chuẩn hóa cấu trúc và nguồn tham chiếu.' });
+                        dispatch({ type: 'TRACK_EVENT', event: { type: 'reject', userId: currentUser.id, articleId: p.id } });
+                      }}
+                      className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      Từ chối
+                    </button>
                    </div>
                  </div>
                ))}
+              {pendingArticles.length === 0 && <p className="text-sm text-gray-500">Không có bài chờ duyệt.</p>}
              </div>
            </div>
          )}
@@ -144,6 +166,15 @@ export default function AdminDashboard() {
            </div>
          )}
       </div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-3">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-lg font-bold text-gray-900">{value}</p>
     </div>
   );
 }

@@ -56,7 +56,8 @@ export default function ArticleFullView() {
   const [qaInput, setQaInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiChat, setAiChat] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
-  const [bookmarked, setBookmarked] = useState(false);
+  const favoriteIds = state.favoritesByUser[currentUser.id] || [];
+  const bookmarked = favoriteIds.includes(article?.id || '');
   const [comment, setComment] = useState('');
   const commentRef = useRef<HTMLTextAreaElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -294,7 +295,14 @@ export default function ArticleFullView() {
                                 <span className="ml-1 opacity-60 font-medium">{article.likes}</span>
                             </button>
                             
-                            <button onClick={() => { setBookmarked(!bookmarked); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }} className={`p-3 rounded-xl transition-all border ${bookmarked ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 hover:shadow-sm'}`}>
+                            <button
+                                onClick={() => {
+                                    dispatch({ type: 'TOGGLE_FAVORITE', articleId: article.id, userId: currentUser.id });
+                                    dispatch({ type: 'TRACK_EVENT', event: { type: 'favorite', userId: currentUser.id, articleId: article.id } });
+                                    addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
+                                }}
+                                className={`p-3 rounded-xl transition-all border ${bookmarked ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 hover:shadow-sm'}`}
+                            >
                                 <Bookmark size={20} className={bookmarked ? 'fill-current' : ''} />
                             </button>
                          </div>

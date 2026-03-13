@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
-import { TrendingUp, Award, Coins, Eye, MessageSquare, Flame, Edit3, X, Check, User, Camera, Zap } from 'lucide-react';
+import { TrendingUp, Award, Coins, Eye, MessageSquare, Flame, Edit3, X, Check, Zap, Heart } from 'lucide-react';
 
 export default function Profile() {
   const { state, dispatch } = useApp();
@@ -12,6 +12,8 @@ export default function Profile() {
   const [editForm, setEditForm] = useState({ name: currentUser.name, title: currentUser.title, avatar: currentUser.avatar });
 
   const myArticles = articles.filter(a => a.author.id === currentUser.id && a.status === 'published');
+  const favoriteIds = state.favoritesByUser[currentUser.id] || [];
+  const favoriteArticles = articles.filter((a) => favoriteIds.includes(a.id));
   const totalViews = myArticles.reduce((s, a) => s + a.views, 0);
   const totalLikes = myArticles.reduce((s, a) => s + a.likes, 0);
   const totalComments = myArticles.reduce((s, a) => s + a.comments.length, 0);
@@ -153,6 +155,40 @@ export default function Profile() {
                       <span>{article.createdAt}</span>
                     </div>
                   </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4 flex items-center gap-2">
+            <Heart size={20} className="text-rose-500" />
+            Bài viết đã lưu
+          </h2>
+          <div className="space-y-3">
+            {favoriteArticles.length === 0 ? (
+              <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-2xl">
+                <Heart size={28} className="mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">Bạn chưa lưu bài viết nào</p>
+              </div>
+            ) : (
+              favoriteArticles.slice(0, 4).map((article) => (
+                <div
+                  key={article.id}
+                  onClick={() => {
+                    dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id });
+                    dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id });
+                  }}
+                  className="card-premium p-4 cursor-pointer flex items-start gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-gray-900 line-clamp-1 hover:text-[#FF6B4A] transition-colors">{article.title}</p>
+                    <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                      <span className="flex items-center gap-1"><Eye size={12} /> {article.views}</span>
+                      <span className="flex items-center gap-1"><Flame size={12} className="text-[#FF6B4A]" /> {article.likes}</span>
+                      <span>{article.createdAt}</span>
+                    </div>
+                  </div>
+                  <Heart className="text-rose-500 fill-current shrink-0" size={16} />
                 </div>
               ))
             )}

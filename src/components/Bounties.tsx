@@ -29,6 +29,15 @@ export default function Bounties() {
     if (!bounty) return;
     const isAccepted = bounty.acceptedBy.includes(currentUser.id);
     dispatch({ type: 'ACCEPT_BOUNTY', bountyId, userId: currentUser.id });
+    if (!isAccepted) {
+      dispatch({
+        type: 'UPDATE_USER',
+        updates: {
+          coins: currentUser.coins + 25,
+          xp: Math.min(currentUser.xp + 30, currentUser.xpToNext),
+        },
+      });
+    }
     addToast(isAccepted ? 'Đã hủy nhận task' : 'Đã nhận task! Hãy viết bài và giao nộp sớm 🎯', isAccepted ? 'info' : 'success');
   };
 
@@ -91,6 +100,12 @@ export default function Bounties() {
             <Plus size={20} /> Tạo nhiệm vụ
           </button>
         </div>
+      </div>
+
+      {/* Controls */}
+      <div className="mb-6 bg-white border border-gray-200 rounded-2xl p-4">
+        <h3 className="font-bold text-gray-900 mb-2">Quest tuần này</h3>
+        <p className="text-sm text-gray-600">Hoàn thành 2 bounty hoặc cập nhật 1 bài outdated để nhận thêm 200 XP + badge "Knowledge Ranger".</p>
       </div>
 
       {/* Controls */}

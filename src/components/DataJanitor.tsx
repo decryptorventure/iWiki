@@ -6,11 +6,12 @@ import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 
 export default function DataJanitor() {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('outdated');
   const [showReport, setShowReport] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const handleUpdate = (taskId: number, title: string) => {
     dispatch({ type: 'OPEN_EDITOR', article: { title } });
@@ -24,14 +25,46 @@ export default function DataJanitor() {
     addToast('Đã lưu trữ tài liệu', 'info');
   };
 
-  const tasks = [
-    { id: 1, title: 'Quy trình Release App iOS', lastUpdated: '12/05/2023', author: 'Mobile Team', issue: 'Quá hạn 6 tháng', type: 'outdated', aiSuggestion: 'Có vẻ Apple đã thay đổi chính sách review app mới. Cần cập nhật phần 3.' },
-    { id: 2, title: 'Hướng dẫn setup môi trường Dev (Cũ)', lastUpdated: '01/02/2022', author: 'Nguyễn Văn A', issue: 'Trùng lặp nội dung', type: 'duplicate', aiSuggestion: 'Bài viết này trùng 85% với "Setup Environment 2024". Đề xuất gộp hoặc lưu trữ.' },
-    { id: 3, title: 'Chính sách WFH mùa dịch', lastUpdated: '15/08/2021', author: 'HR Dept', issue: 'Không còn phù hợp', type: 'archived', aiSuggestion: 'Chính sách này có thể đã hết hạn. Đề xuất chuyển vào kho lưu trữ.' },
-    { id: 4, title: 'API Documentation v1.0', lastUpdated: '20/11/2023', author: 'Backend Team', issue: 'Quá hạn 3 tháng', type: 'outdated', aiSuggestion: 'Phiên bản v2.0 đã được release. Cần thêm cảnh báo deprecated vào bài này.' },
-  ];
+  const tasks = state.articles.map((article, idx) => {
+    const ageDays = Math.floor((Date.now() - new Date(article.updatedAt).getTime()) / (24 * 60 * 60 * 1000));
+    const duplicate = state.articles.some(other =>
+      other.id !== article.id &&
+      other.title.toLowerCase() === article.title.toLowerCase()
+    );
+    const lowQuality = article.content.trim().length < 80;
+    let type: 'outdated' | 'duplicate' | 'archived' = 'outdated';
+    let issue = `Quá hạn ${ageDays} ngày`;
+    let aiSuggestion = 'Cần kiểm tra và cập nhật lại nội dung cho phù hợp với quy trình hiện tại.';
+    if (duplicate) {
+      type = 'duplicate';
+      issue = 'Trùng tiêu đề/nội dung';
+      aiSuggestion = 'Đề xuất gộp bài viết trùng để tạo một source of truth duy nhất.';
+    } else if (lowQuality) {
+      type = 'archived';
+      issue = 'Nội dung quá ngắn';
+      aiSuggestion = 'Đề xuất bổ sung sections chuẩn hoặc chuyển sang draft để hoàn thiện.';
+    }
+    return {
+      id: idx + 1,
+      articleId: article.id,
+      title: article.title,
+      lastUpdated: article.updatedAt,
+      author: article.author.name,
+      issue,
+      type,
+      aiSuggestion,
+    };
+  }).filter(item => item.type !== 'outdated' || Number(item.issue.replace(/\D/g, '')) > 120);
 
-  const filteredTasks = activeTab === 'all' ? tasks : tasks.filter(t => t.type === activeTab);
+  const filteredTasks = (activeTab === 'all' ? tasks : tasks.filter(t => t.type === activeTab))
+    .filter(t => !dismissedIds.includes(t.id));
+
+  const bulkMarkAccurate = () => {
+    if (selectedIds.length === 0) return;
+    setDismissedIds(prev => [...prev, ...selectedIds]);
+    setSelectedIds([]);
+    addToast(`Đã xử lý ${selectedIds.length} mục`, 'success');
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-12">
@@ -121,10 +154,26 @@ export default function DataJanitor() {
       </div>
 
       <div className="space-y-4">
-        {filteredTasks.filter(t => !dismissedIds.includes(t.id)).map((task, i) => (
+        {filteredTasks.length > 0 && (
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-sm text-gray-500">Đã chọn {selectedIds.length} mục</span>
+            <button onClick={bulkMarkAccurate} className="px-3 py-1.5 text-xs font-bold bg-gray-900 text-white rounded-lg">Bulk xử lý</button>
+          </div>
+        )}
+        {filteredTasks.map((task, i) => (
           <div key={task.id} className={`card-premium p-5 animate-slide-up stagger-${Math.min(i + 4, 6)}`}>
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
+                <label className="inline-flex items-center gap-2 text-xs text-gray-500 mb-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(task.id)}
+                    onChange={(e) => {
+                      setSelectedIds(prev => e.target.checked ? [...prev, task.id] : prev.filter(id => id !== task.id));
+                    }}
+                  />
+                  Chọn cho bulk action
+                </label>
                 <div className="flex items-center gap-3 mb-2">
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${task.type === 'outdated' ? 'bg-orange-100 text-orange-700' :
                     task.type === 'duplicate' ? 'bg-blue-100 text-blue-700' :
@@ -172,7 +221,7 @@ export default function DataJanitor() {
             </div>
           </div>
         ))}
-        {filteredTasks.filter(t => !dismissedIds.includes(t.id)).length === 0 && (
+        {filteredTasks.length === 0 && (
           <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200 animate-fade-in">
             <div className="p-4 bg-white rounded-full inline-block mb-4 shadow-sm">
               <CheckCircle size={32} className="text-green-500" />

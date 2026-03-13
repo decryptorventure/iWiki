@@ -3,6 +3,7 @@ import { Sparkles, AlignLeft, Type, Table, Languages, ArrowLeft, Save, Send, Fol
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
+import { can } from '../lib/permissions';
 
 const AUTOSAVE_KEY = 'iwiki_editor_autosave';
 
@@ -32,11 +33,31 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
 
   const isEditing = !!initialData?.id;
   const [showTemplates, setShowTemplates] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const [aiCitations, setAiCitations] = useState<string[]>([]);
 
   const templates = [
-    { id: 't1', title: 'Meeting Minutes', content: '# Meeting Minutes\n\n## 1. Thông tin chung\n- **Thời gian:** \n- **Địa điểm:** \n- **Thành phần tham gia:** \n\n## 2. Nội dung chính thảo luận\n- \n- \n\n## 3. Action Items\n| Việc cần làm | Người phụ trách | Deadline | Trạng thái |\n|---|---|---|---|\n| | | | |\n' },
-    { id: 't2', title: 'Template SOP / Quy trình', content: '# Quy trình [Tên quy trình]\n\n## 1. Mục đích\nQuy trình này nhằm...\n\n## 2. Phạm vi áp dụng\nÁp dụng cho bộ phận/cá nhân...\n\n## 3. Định nghĩa & Viết tắt\n- \n\n## 4. Nội dung chi tiết quy trình\n### Bước 1: [Tên bước]\n- **Người thực hiện:** \n- **Mô tả:** \n\n### Bước 2: ...\n' },
-    { id: 't3', title: 'Weekly Report', content: '# Báo cáo tuần [Số tuần/Tháng]\n\n## 1. Những việc đã hoàn thành\n- \n- \n\n## 2. OKRs / KPIs Progress\n- Mục tiêu 1: [Tiến độ %]\n- Mục tiêu 2: [Tiến độ %]\n\n## 3. Khó khăn & Blocker (Nếu có)\n- \n\n## 4. Kế hoạch tuần tới\n- \n' }
+    {
+      id: 't1',
+      title: 'Biên bản họp (Meeting Minutes)',
+      description: 'Ghi lại nhanh nội dung, quyết định và action items sau mỗi cuộc họp.',
+      content:
+        '# Meeting Minutes\n\n## 1. Thông tin chung\n- **Thời gian:** \n- **Địa điểm:** \n- **Thành phần tham gia:** \n\n## 2. Nội dung chính thảo luận\n- \n- \n\n## 3. Action Items\n| Việc cần làm | Người phụ trách | Deadline | Trạng thái |\n|---|---|---|---|\n| | | | |\n',
+    },
+    {
+      id: 't2',
+      title: 'SOP / Quy trình chuẩn',
+      description: 'Chuẩn hóa quy trình vận hành, dễ theo dõi – phù hợp để share cho toàn team.',
+      content:
+        '# Quy trình [Tên quy trình]\n\n## 1. Mục đích\nQuy trình này nhằm...\n\n## 2. Phạm vi áp dụng\nÁp dụng cho bộ phận/cá nhân...\n\n## 3. Định nghĩa & Viết tắt\n- \n\n## 4. Nội dung chi tiết quy trình\n### Bước 1: [Tên bước]\n- **Người thực hiện:** \n- **Mô tả:** \n\n### Bước 2: ...\n',
+    },
+    {
+      id: 't3',
+      title: 'Weekly Report',
+      description: 'Tổng hợp nhanh công việc đã làm, tiến độ OKR/KPI và kế hoạch tuần tới.',
+      content:
+        '# Báo cáo tuần [Số tuần/Tháng]\n\n## 1. Những việc đã hoàn thành\n- \n- \n\n## 2. OKRs / KPIs Progress\n- Mục tiêu 1: [Tiến độ %]\n- Mục tiêu 2: [Tiến độ %]\n\n## 3. Khó khăn & Blocker (Nếu có)\n- \n\n## 4. Kế hoạch tuần tới\n- \n',
+    },
   ];
 
   const handleApplyTemplate = (templateContent: string) => {
@@ -97,8 +118,8 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
     setIsStreaming(true);
 
     const streamMap: Record<string, string[]> = {
-      summarize: ['Đang tóm tắt...', '**Tóm tắt:**\n', '**Tóm tắt:**\nBài viết trình bày 3 điểm chính:\n', '**Tóm tắt:**\nBài viết trình bày 3 điểm chính:\n1. Nội dung chính\n2. Quy trình thực hiện\n3. Lưu ý quan trọng\n'],
-      rewrite: ['Đang viết lại...', 'Đây là phiên bản được viết lại rõ ràng hơn:\n\n', 'Đây là phiên bản được viết lại rõ ràng hơn:\n\nNội dung đã được tái cấu trúc để dễ hiểu hơn...\n'],
+      summarize: ['Đang tóm tắt...', '**Tóm tắt:**\n', '**Tóm tắt:**\nBài viết trình bày 3 điểm chính:\n', '**Tóm tắt:**\nBài viết trình bày 3 điểm chính:\n1. Nội dung chính\n2. Quy trình thực hiện\n3. Lưu ý quan trọng\n\n[Nguồn AI: Internal Knowledge Base]\n'],
+      rewrite: ['Đang viết lại...', 'Đây là phiên bản được viết lại rõ ràng hơn:\n\n', 'Đây là phiên bản được viết lại rõ ràng hơn:\n\nNội dung đã được tái cấu trúc để dễ hiểu hơn...\n\n[Nguồn AI: Writing Assistant]\n'],
       table: ['Đang tạo bảng...', '| Cột 1 | Cột 2 | Cột 3 |\n|-------|-------|-------|\n', '| Cột 1 | Cột 2 | Cột 3 |\n|-------|-------|-------|\n| Dữ liệu 1 | Dữ liệu 2 | Dữ liệu 3 |\n'],
       translate: ['Đang dịch...', '**English translation:**\n\n', '**English translation:**\n\nThis document outlines the key processes and guidelines for...\n'],
       outline: ['Đang tạo dàn ý...', '## Dàn ý bài viết\n\n1. Giới thiệu\n', '## Dàn ý bài viết\n\n1. Giới thiệu\n2. Nội dung chính\n   - Mục 2.1\n   - Mục 2.2\n3. Kết luận\n']
@@ -116,6 +137,11 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         clearInterval(interval);
         setIsStreaming(false);
         setContent(prev => prev + '\n\n' + steps[steps.length - 1]);
+        dispatch({
+          type: 'TRACK_EVENT',
+          event: { type: 'ai_write', userId: currentUser.id, meta: { action } },
+        });
+        setAiCitations(prev => [`AI action: ${action}`, ...prev].slice(0, 4));
         setGhostText('');
       }
     }, 700);
@@ -132,7 +158,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       folderName: allFolders.find(f => f.id === selectedFolderId)?.name,
       tags,
       author: { id: currentUser.id, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar },
-      status: 'draft',
+      status: initialData?.status === 'rejected' ? 'rejected' : 'draft',
       viewPermission,
       allowComments,
       views: initialData?.views || 0,
@@ -163,7 +189,9 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         folderName: allFolders.find(f => f.id === selectedFolderId)?.name,
         tags,
         author: { id: currentUser.id, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar },
-        status: 'published',
+        status: can(currentUser, 'article.approve', { ...initialData, folderId: selectedFolderId } as Article) || currentUser.role === 'admin'
+          ? 'published'
+          : 'in_review',
         viewPermission,
         allowComments,
         views: initialData?.views || 0,
@@ -177,7 +205,13 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       localStorage.removeItem(AUTOSAVE_KEY);
       setIsPublishing(false);
       setIsPublishModalOpen(false);
-      addToast(isEditing ? 'Bài viết đã được cập nhật' : 'Bài viết đã được xuất bản thành công! 🎉', 'success');
+      if (currentUser.role === 'manager' || currentUser.role === 'admin') {
+        addToast(isEditing ? 'Bài viết đã được cập nhật' : 'Bài viết đã được xuất bản thành công! 🎉', 'success');
+        dispatch({ type: 'TRACK_EVENT', event: { type: 'publish', userId: currentUser.id, articleId: article.id } });
+      } else {
+        addToast('Bài viết đã được gửi duyệt thành công', 'success');
+        dispatch({ type: 'TRACK_EVENT', event: { type: 'submit_review', userId: currentUser.id, articleId: article.id } });
+      }
       dispatch({ type: 'UPDATE_USER', updates: { xp: Math.min(state.currentUser.xp + 150, state.currentUser.xpToNext) } });
     }, 1200);
   };
@@ -213,10 +247,16 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
             <Save size={16} /> Lưu nháp
           </button>
           <button onClick={() => setIsPublishModalOpen(true)} className="px-4 py-2 bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-[#FF6B4A]/20 transition-all duration-200 flex items-center gap-2 shadow-md active:scale-95">
-            <Send size={16} /> Xuất bản
+            <Send size={16} /> {currentUser.role === 'manager' || currentUser.role === 'admin' ? 'Xuất bản' : 'Gửi duyệt'}
           </button>
         </div>
       </div>
+      {aiCitations.length > 0 && (
+        <div className="mb-4 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl p-3">
+          <div className="font-semibold text-gray-700 mb-1">AI Trace</div>
+          {aiCitations.map(item => <div key={item}>- {item}</div>)}
+        </div>
+      )}
 
       {/* Markdown & Template Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -235,34 +275,21 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
           <span className="text-xs text-gray-400 px-2 hidden sm:inline">Hỗ trợ Markdown • Gõ <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd> để gọi AI</span>
         </div>
 
-        {/* Template Selector dropdown */}
+        {/* Template Selector button (opens modal) */}
         <div className="relative">
-          <button 
-            onClick={() => setShowTemplates(!showTemplates)}
+          <button
+            onClick={() => {
+              if (!activeTemplateId && templates.length > 0) {
+                setActiveTemplateId(templates[0].id);
+              }
+              setShowTemplates(true);
+            }}
             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all shadow-sm active:scale-95"
           >
             <FileText size={16} className="text-gray-500" />
             Chọn biểu mẫu
             <ChevronDown size={14} className="text-gray-400" />
           </button>
-          
-          {showTemplates && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-fade-in origin-top-right">
-              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 mb-1">
-                Biểu mẫu nhanh
-              </div>
-              {templates.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => handleApplyTemplate(t.content)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2 group"
-                >
-                  <FileText size={14} className="text-gray-400 group-hover:text-orange-500" />
-                  {t.title}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -391,6 +418,132 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
               <button onClick={handlePublish} disabled={!selectedFolderId || isPublishing} className="px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] hover:shadow-lg hover:shadow-[#FF6B4A]/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-200 shadow-md flex items-center gap-2 active:scale-95">
                 {isPublishing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang xuất bản...</> : <><Send size={16} /> {isEditing ? 'Cập nhật bài viết' : 'Xác nhận xuất bản'}</>}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Modal with preview + AI assist */}
+      {showTemplates && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-modal-backdrop">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-enter">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <FileText size={18} className="text-[#FF6B4A]" />
+                  Chọn biểu mẫu bài viết
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Chọn template phù hợp, xem preview trước khi áp dụng. Có thể kết hợp cùng iWiki AI để sinh dàn ý tự động.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTemplates(false)}
+                className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all duration-200 active:scale-90"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex flex-1 overflow-hidden">
+              {/* Template list */}
+              <div className="w-72 border-r border-gray-100 bg-gray-50/60 p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Biểu mẫu gợi ý
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-[10px] font-medium text-[#FF6B4A] border border-orange-100">
+                    <Sparkles size={10} /> AI friendly
+                  </span>
+                </div>
+                {templates.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTemplateId(t.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm mb-1 transition-all flex flex-col gap-1 ${
+                      (activeTemplateId || templates[0]?.id) === t.id
+                        ? 'border-[#FF6B4A]/70 bg-white shadow-sm'
+                        : 'border-gray-200 bg-white/80 hover:bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-gray-900 line-clamp-2">{t.title}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{t.description}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* Preview + actions */}
+              <div className="flex-1 flex flex-col">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Preview biểu mẫu
+                    </p>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      Nội dung chỉ là khung gợi ý. Bạn có thể chỉnh sửa lại toàn bộ sau khi áp dụng.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const activeTemplate =
+                        templates.find((t) => t.id === (activeTemplateId || templates[0]?.id)) ||
+                        templates[0];
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!activeTemplate) return;
+                              handleApplyTemplate(activeTemplate.content);
+                            }}
+                            className="px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                          >
+                            Dùng template
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!activeTemplate) return;
+                              handleApplyTemplate(activeTemplate.content);
+                              handleAiAction('outline');
+                            }}
+                            className="px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#FF6B4A] to-[#FF8A6A] text-white shadow-md hover:shadow-lg hover:shadow-[#FF6B4A]/25 transition-all active:scale-95 inline-flex items-center gap-1.5"
+                          >
+                            <Sparkles size={14} />
+                            Dùng template + AI dàn ý
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white">
+                  {(() => {
+                    const activeTemplate =
+                      templates.find((t) => t.id === (activeTemplateId || templates[0]?.id)) ||
+                      templates[0];
+                    if (!activeTemplate) return null;
+                    return (
+                      <div className="border border-dashed border-gray-200 rounded-2xl bg-gray-50/70 p-4 h-full">
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            {activeTemplate.title}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {activeTemplate.description}
+                          </p>
+                        </div>
+                        <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed max-h-[380px] overflow-y-auto custom-scrollbar bg-white rounded-xl border border-gray-200 p-3">
+{activeTemplate.content}
+                        </pre>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { Shield, Users, Check, X, Search, Plus, Edit2, Trash2, Settings, Database, Folder, UserPlus, Save } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { can } from '../lib/permissions';
 
 export default function PermissionManagement() {
+  const { state } = useApp();
   const [activeTab, setActiveTab] = useState('roles');
+  if (!can(state.currentUser, 'admin.access')) {
+    return (
+      <div className="h-full flex items-center justify-center text-gray-500">
+        Bạn không có quyền truy cập cấu hình phân quyền.
+      </div>
+    );
+  }
+
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<any>(null);

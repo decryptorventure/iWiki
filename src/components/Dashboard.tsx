@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Search, Sparkles, Eye, MessageSquare, Flame, Trophy, Medal, TrendingUp, BookOpen, Award, Clock, ArrowRight, Zap, Target } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { getAccessibleArticles } from '../lib/permissions';
 
 export default function Dashboard({ onSearch }: { onSearch: (q: string) => void }) {
   const { state, dispatch } = useApp();
-  const { articles, currentUser, searchHistory } = state;
+  const { currentUser, searchHistory } = state;
+  const articles = getAccessibleArticles(state);
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -22,6 +24,10 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
   const handleSearch = (q: string) => {
     if (q.trim()) {
       dispatch({ type: 'ADD_SEARCH_HISTORY', query: q.trim() });
+      dispatch({
+        type: 'TRACK_EVENT',
+        event: { type: 'search', userId: currentUser.id, query: q.trim(), meta: { source: 'dashboard' } },
+      });
       onSearch(q);
       setIsFocused(false);
     }
@@ -33,7 +39,23 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
 
   const publishedArticles = articles.filter(a => a.status === 'published');
   const featuredArticles = publishedArticles.slice(0, 5);
-  const allArticles = publishedArticles.slice(0, 10);
+
+  const [allArticlesFilter, setAllArticlesFilter] = useState<'recent' | 'popular' | 'trending'>('recent');
+  const allArticles = useMemo(() => {
+    const base = [...publishedArticles];
+    if (allArticlesFilter === 'recent') {
+      base.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } else if (allArticlesFilter === 'popular') {
+      base.sort((a, b) => b.views - a.views);
+    } else {
+      base.sort((a, b) => {
+        const engagementA = a.likes + a.comments.length * 2;
+        const engagementB = b.likes + b.comments.length * 2;
+        return engagementB - engagementA;
+      });
+    }
+    return base.slice(0, 10);
+  }, [publishedArticles, allArticlesFilter]);
   const recentArticles = articles
     .filter(a => a.status === 'published')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -63,6 +85,7 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
   const openArticle = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
     dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
+    dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: currentUser.id, articleId: id } });
   };
 
   return (
@@ -281,9 +304,46 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-slide-up stagger-4">
         {/* All Articles */}
         <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Tất cả bài viết</h2>
-            <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'folder-f-company' })} className="text-sm text-gray-500 hover:text-[#FF6B4A] font-medium transition-colors">Xem thêm →</button>
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-gray-900">Tất cả bài viết</h2>
+              <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'folder-f-company' })} className="text-sm text-gray-500 hover:text-[#FF6B4A] font-medium transition-colors">Xem thêm →</button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setAllArticlesFilter('recent')}
+                className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  allArticlesFilter === 'recent'
+                    ? 'bg-[#FF6B4A] text-white shadow-md shadow-[#FF6B4A]/20'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                <Clock size={14} className="inline mr-1.5 -mt-0.5" />
+                Gần nhất
+              </button>
+              <button
+                onClick={() => setAllArticlesFilter('popular')}
+                className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  allArticlesFilter === 'popular'
+                    ? 'bg-[#FF6B4A] text-white shadow-md shadow-[#FF6B4A]/20'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                <Eye size={14} className="inline mr-1.5 -mt-0.5" />
+                Phổ biến nhất
+              </button>
+              <button
+                onClick={() => setAllArticlesFilter('trending')}
+                className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  allArticlesFilter === 'trending'
+                    ? 'bg-[#FF6B4A] text-white shadow-md shadow-[#FF6B4A]/20'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                <TrendingUp size={14} className="inline mr-1.5 -mt-0.5" />
+                Xu hướng
+              </button>
+            </div>
           </div>
           <div className="space-y-4">
             {allArticles.map((article) => (

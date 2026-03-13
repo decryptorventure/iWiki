@@ -3,12 +3,13 @@ import { Plus, Search, Eye, Flame, MessageSquare, Edit2, Trash2, MoreVertical, B
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
+import { can } from '../lib/permissions';
 
 export default function MyArticles() {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const { articles, currentUser } = state;
-  const [activeTab, setActiveTab] = useState<'published' | 'draft'>('published');
+  const [activeTab, setActiveTab] = useState<'published' | 'draft' | 'in_review' | 'rejected' | 'approved'>('published');
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -16,7 +17,19 @@ export default function MyArticles() {
   const myArticles = articles.filter(a => a.author.id === currentUser.id);
   const published = myArticles.filter(a => a.status === 'published');
   const drafts = myArticles.filter(a => a.status === 'draft');
-  const filtered = (activeTab === 'published' ? published : drafts).filter(a =>
+  const inReview = myArticles.filter(a => a.status === 'in_review');
+  const rejected = myArticles.filter(a => a.status === 'rejected');
+  const approved = myArticles.filter(a => a.status === 'approved');
+  const source = activeTab === 'published'
+    ? published
+    : activeTab === 'draft'
+      ? drafts
+      : activeTab === 'in_review'
+        ? inReview
+        : activeTab === 'approved'
+          ? approved
+          : rejected;
+  const filtered = source.filter(a =>
     a.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -49,7 +62,23 @@ export default function MyArticles() {
   const tabs = [
     { id: 'published', label: 'Đã xuất bản', icon: CheckCircle, count: published.length },
     { id: 'draft', label: 'Bản nháp', icon: FileText, count: drafts.length },
+    { id: 'in_review', label: 'Chờ duyệt', icon: Eye, count: inReview.length },
+    { id: 'approved', label: 'Đã duyệt', icon: CheckCircle, count: approved.length },
+    { id: 'rejected', label: 'Bị từ chối', icon: X, count: rejected.length },
   ] as const;
+
+  const submitForReview = (article: Article) => {
+    if (!can(currentUser, 'article.submit_review', article)) {
+      addToast('Bạn không có quyền gửi bài này để duyệt', 'warning');
+      return;
+    }
+    dispatch({ type: 'SUBMIT_ARTICLE_REVIEW', articleId: article.id, userId: currentUser.id });
+    dispatch({
+      type: 'TRACK_EVENT',
+      event: { type: 'submit_review', userId: currentUser.id, articleId: article.id },
+    });
+    addToast('Đã gửi bài viết sang hàng chờ duyệt', 'success');
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-12 animate-fade-in">
@@ -151,6 +180,9 @@ export default function MyArticles() {
               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleView(article.id)}>
                 <div className="flex items-center gap-2 mb-1">
                   {article.status === 'draft' && <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-md">Nháp</span>}
+                  {article.status === 'in_review' && <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md">Chờ duyệt</span>}
+                  {article.status === 'approved' && <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md">Đã duyệt</span>}
+                  {article.status === 'rejected' && <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-md">Bị từ chối</span>}
                   <h3 className="font-bold text-gray-900 text-sm truncate hover:text-[#FF6B4A] transition-colors">{article.title}</h3>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -178,6 +210,25 @@ export default function MyArticles() {
                   <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden animate-scale-in">
                     <button onClick={() => handleView(article.id)} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><Eye size={16} className="text-gray-400" /> Xem bài viết</button>
                     <button onClick={() => handleEdit(article)} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><Edit2 size={16} className="text-blue-500" /> Chỉnh sửa</button>
+                    {(article.status === 'draft' || article.status === 'rejected') && (
+                      <button onClick={() => submitForReview(article)} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><CheckCircle size={16} className="text-emerald-500" /> Gửi duyệt</button>
+                    )}
+                    {article.status === 'approved' && (
+                      <button
+                        onClick={() => {
+                          dispatch({ type: 'PUBLISH_APPROVED_ARTICLE', articleId: article.id });
+                          dispatch({
+                            type: 'TRACK_EVENT',
+                            event: { type: 'publish', userId: currentUser.id, articleId: article.id },
+                          });
+                          addToast('Bài viết đã được xuất bản', 'success');
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <CheckCircle size={16} className="text-orange-500" /> Xuất bản ngay
+                      </button>
+                    )}
                     <div className="border-t border-gray-100" />
                     <button onClick={() => { setConfirmDeleteId(article.id); setOpenMenuId(null); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={16} /> Xóa bài viết</button>
                   </div>

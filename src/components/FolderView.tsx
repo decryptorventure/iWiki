@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Search, Plus, Eye, Flame, MessageSquare, Users, FolderOpen, BookOpen } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Search, Plus, Eye, Flame, MessageSquare, FolderOpen, BookOpen, ArrowRight, Layers } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { useToast } from '../App';
+import { can } from '../lib/permissions';
 
 interface FolderViewProps {
   folderId: string;
@@ -12,29 +12,54 @@ interface FolderViewProps {
 
 export default function FolderView({ folderId, title, description, breadcrumbs = [] }: FolderViewProps) {
   const { state, dispatch } = useApp();
-  const { addToast } = useToast();
   const { articles, folders, currentUser } = state;
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get this folder's subfolders
   const parentFolder = folders.find(f => f.id === folderId);
-  const subfolders = parentFolder?.children || folders.flatMap(f => f.children || []).filter(f => f.parentId === folderId) || [];
+  const isParentFolder = Boolean(parentFolder);
+  const subfolders = parentFolder?.children || [];
+  const childFolderIds = subfolders.map((item) => item.id);
 
-  // Get articles in this folder
-  const folderArticles = articles.filter(a => a.folderId === folderId && a.status === 'published').filter(a =>
-    !searchQuery || a.title.toLowerCase().includes(searchQuery.toLowerCase()) || (a.author.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const scopedArticles = useMemo(() => {
+    return articles
+      .filter((article) => {
+        if (article.status !== 'published') return false;
+        if (!can(currentUser, 'article.read', article)) return false;
+        if (isParentFolder) return childFolderIds.includes(article.folderId);
+        return article.folderId === folderId;
+      })
+      .filter((article) => {
+        if (!searchQuery.trim()) return true;
+        const needle = searchQuery.toLowerCase();
+        return (
+          article.title.toLowerCase().includes(needle) ||
+          (article.author.name || '').toLowerCase().includes(needle) ||
+          article.tags.some((tag) => tag.toLowerCase().includes(needle))
+        );
+      })
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [articles, childFolderIds, currentUser, folderId, isParentFolder, searchQuery]);
 
-  const featuredArticle = folderArticles[0] || null;
-  const otherArticles = folderArticles.slice(1);
+  const featuredArticle = scopedArticles[0] || null;
+
+  const groupedBySubfolder = useMemo(() => {
+    if (!isParentFolder) return [];
+    return subfolders
+      .map((subfolder) => ({
+        subfolder,
+        articles: scopedArticles.filter((item) => item.folderId === subfolder.id),
+      }))
+      .filter((item) => item.articles.length > 0);
+  }, [isParentFolder, scopedArticles, subfolders]);
 
   const openArticle = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
     dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
+    dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: currentUser.id, articleId: id } });
   };
 
   const handleNewArticle = () => {
-    dispatch({ type: 'OPEN_EDITOR', article: { folderId } });
+    dispatch({ type: 'OPEN_EDITOR', article: { folderId: isParentFolder ? subfolders[0]?.id || folderId : folderId } });
   };
 
   return (
@@ -56,8 +81,10 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{title}</h1>
           {description && <p className="text-gray-500 max-w-2xl">{description}</p>}
           <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
-            <span className="flex items-center gap-1.5"><BookOpen size={15} /> {folderArticles.length} bài viết</span>
-            {subfolders.length > 0 && <span className="flex items-center gap-1.5"><FolderOpen size={15} /> {subfolders.length} thư mục con</span>}
+            <span className="flex items-center gap-1.5"><BookOpen size={15} /> {scopedArticles.length} bài viết</span>
+            {isParentFolder && (
+              <span className="flex items-center gap-1.5"><Layers size={15} /> {subfolders.length} danh mục con</span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -77,13 +104,13 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
         </div>
       </div>
 
-      {/* Subfolders */}
-      {subfolders.length > 0 && !searchQuery && (
+      {/* Category Cards (for parent folders) */}
+      {isParentFolder && !searchQuery && (
         <div className="mb-10 animate-slide-up stagger-2">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Thư mục con</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Danh mục nổi bật</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {subfolders.map((sub, i) => {
-              const subArticleCount = articles.filter(a => a.folderId === sub.id && a.status === 'published').length;
+              const subArticleCount = scopedArticles.filter((article) => article.folderId === sub.id).length;
               return (
                 <div
                   key={sub.id}
@@ -95,15 +122,18 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
                       dispatch({ type: 'SET_SCREEN', screen: `folder-${sub.id}` });
                     }
                   }}
-                  className={`card-premium p-5 cursor-pointer flex items-center gap-3 group animate-slide-up stagger-${i + 2}`}
+                  className={`card-premium p-5 cursor-pointer flex items-center justify-between gap-3 group animate-slide-up stagger-${i + 2}`}
                 >
-                  <div className="p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl text-[#FF6B4A] group-hover:scale-110 transition-transform duration-300">
-                    <FolderOpen size={22} />
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl text-[#FF6B4A] group-hover:scale-110 transition-transform duration-300">
+                      <FolderOpen size={22} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 text-sm truncate group-hover:text-[#FF6B4A] transition-colors">{sub.name}</p>
+                      <p className="text-xs text-gray-400">{subArticleCount} bài viết</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-gray-900 text-sm truncate group-hover:text-[#FF6B4A] transition-colors">{sub.name}</p>
-                    <p className="text-xs text-gray-400">{subArticleCount} bài viết</p>
-                  </div>
+                  <ArrowRight size={16} className="text-gray-300 group-hover:text-[#FF6B4A] transition-colors" />
                 </div>
               );
             })}
@@ -111,7 +141,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
         </div>
       )}
 
-      {folderArticles.length === 0 ? (
+      {scopedArticles.length === 0 ? (
         <div className="text-center py-20 animate-fade-in">
           <div className="w-20 h-20 bg-gradient-to-br from-orange-50 to-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-float">
             <BookOpen size={32} className="text-[#FF6B4A]" />
@@ -125,42 +155,76 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-slide-up stagger-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Featured Article */}
-            {featuredArticle && !searchQuery && (
-              <div onClick={() => openArticle(featuredArticle.id)} className="rounded-2xl overflow-hidden bg-white border border-gray-200/80 shadow-sm cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                {featuredArticle.coverUrl && (
-                  <div className="h-48 overflow-hidden relative">
-                    <img src={featuredArticle.coverUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <div className="text-xs font-semibold bg-[#FF6B4A]/90 backdrop-blur-sm px-2 py-0.5 rounded-full mb-2 inline-block">Bài viết nổi bật</div>
+        <div className="space-y-8 animate-slide-up stagger-3">
+          {/* Featured Article */}
+          {featuredArticle && !searchQuery && (
+            <div onClick={() => openArticle(featuredArticle.id)} className="rounded-2xl overflow-hidden bg-white border border-gray-200/80 shadow-sm cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+              {featuredArticle.coverUrl && (
+                <div className="h-52 overflow-hidden relative">
+                  <img src={featuredArticle.coverUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <div className="text-xs font-semibold bg-[#FF6B4A]/90 backdrop-blur-sm px-2 py-0.5 rounded-full mb-2 inline-block">
+                      Bài viết nổi bật
                     </div>
                   </div>
-                )}
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <img src={featuredArticle.author.avatar} alt="Avatar" className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
-                    <span className="text-sm font-semibold text-gray-900">{featuredArticle.author.name}</span>
-                    <span className="text-xs text-gray-400">· {featuredArticle.createdAt}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#FF6B4A] transition-colors">{featuredArticle.title}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4">{featuredArticle.excerpt || featuredArticle.content?.slice(0, 120)}</p>
-                  <div className="flex items-center gap-4 text-xs text-gray-400">
-                    <span className="flex items-center gap-1"><Eye size={14} /> {featuredArticle.views}</span>
-                    <span className="flex items-center gap-1"><Flame size={14} className="text-[#FF6B4A]" /> {featuredArticle.likes}</span>
-                    <span className="flex items-center gap-1"><MessageSquare size={14} /> {featuredArticle.comments.length}</span>
-                    {featuredArticle.tags.slice(0, 2).map(t => <span key={t} className="px-2 py-0.5 bg-orange-50 text-[#FF6B4A] rounded-full font-medium">{t}</span>)}
-                  </div>
+                </div>
+              )}
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <img src={featuredArticle.author.avatar} alt="Avatar" className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
+                  <span className="text-sm font-semibold text-gray-900">{featuredArticle.author.name}</span>
+                  <span className="text-xs text-gray-400">· {featuredArticle.createdAt}</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#FF6B4A] transition-colors">{featuredArticle.title}</h3>
+                <p className="text-sm text-gray-500 line-clamp-2 mb-4">{featuredArticle.excerpt || featuredArticle.content?.slice(0, 120)}</p>
+                <div className="flex items-center gap-4 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><Eye size={14} /> {featuredArticle.views}</span>
+                  <span className="flex items-center gap-1"><Flame size={14} className="text-[#FF6B4A]" /> {featuredArticle.likes}</span>
+                  <span className="flex items-center gap-1"><MessageSquare size={14} /> {featuredArticle.comments.length}</span>
+                  {featuredArticle.tags.slice(0, 2).map(t => <span key={t} className="px-2 py-0.5 bg-orange-50 text-[#FF6B4A] rounded-full font-medium">{t}</span>)}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Other Articles */}
+          {/* Magazine-style sections by category */}
+          {isParentFolder && groupedBySubfolder.length > 0 ? (
+            groupedBySubfolder.map((group, idx) => (
+              <section key={group.subfolder.id} className={`bg-white border border-gray-200/80 rounded-2xl p-5 animate-slide-up stagger-${Math.min(idx + 2, 6)}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <FolderOpen size={18} className="text-[#FF6B4A]" />
+                    {group.subfolder.name}
+                  </h2>
+                  <button
+                    onClick={() => dispatch({ type: 'SET_SCREEN', screen: `folder-${group.subfolder.id}` })}
+                    className="text-xs font-bold text-[#FF6B4A] hover:text-[#e55a2b] transition-colors"
+                  >
+                    Xem tất cả
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {group.articles.slice(0, 4).map((article) => (
+                    <button
+                      key={article.id}
+                      onClick={() => openArticle(article.id)}
+                      className="text-left border border-gray-100 hover:border-orange-200 rounded-xl p-4 transition-all hover:shadow-sm"
+                    >
+                      <p className="font-bold text-sm text-gray-900 line-clamp-2">{article.title}</p>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{article.excerpt || article.content.slice(0, 90)}</p>
+                      <div className="flex items-center gap-3 text-xs text-gray-400 mt-2">
+                        <span className="flex items-center gap-1"><Eye size={12} /> {article.views}</span>
+                        <span className="flex items-center gap-1"><Flame size={12} className="text-[#FF6B4A]" /> {article.likes}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))
+          ) : (
             <div className="space-y-3">
-              {(searchQuery ? folderArticles : otherArticles).map((article, i) => (
+              {scopedArticles.slice(searchQuery ? 0 : 1).map((article, i) => (
                 <div key={article.id} onClick={() => openArticle(article.id)} className={`card-premium p-4 cursor-pointer flex items-start gap-4 animate-slide-up stagger-${i + 3}`}>
                   {article.coverUrl && (
                     <div className="w-16 h-14 rounded-lg overflow-hidden shrink-0 hidden sm:block">
@@ -179,47 +243,22 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Top Contributors */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2"><Users size={16} className="text-indigo-500" /> Top đóng góp</h3>
+          {/* Search results in parent mode */}
+          {isParentFolder && searchQuery && (
+            <section className="bg-white border border-gray-200/80 rounded-2xl p-5">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">Kết quả tìm kiếm</h2>
               <div className="space-y-3">
-                {Array.from(new Set(folderArticles.map(a => a.author.id))).slice(0, 4).map(authorId => {
-                  const authorArticles = folderArticles.filter(a => a.author.id === authorId);
-                  const author = authorArticles[0]?.author;
-                  if (!author) return null;
-                  return (
-                    <div key={authorId} className="flex items-center gap-3">
-                      <img src={author.avatar} alt={author.name} className="w-8 h-8 rounded-full ring-1 ring-gray-100" referrerPolicy="no-referrer" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{author.name}</div>
-                        <div className="text-xs text-gray-400">{authorArticles.length} bài viết</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Trending in folder */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2"><Flame size={16} className="text-[#FF6B4A]" /> Được xem nhiều</h3>
-              <div className="space-y-3">
-                {[...folderArticles].sort((a, b) => b.views - a.views).slice(0, 5).map((article, i) => (
-                  <button key={article.id} onClick={() => openArticle(article.id)} className="w-full text-left flex items-start gap-3 group">
-                    <span className="text-lg font-extrabold text-gray-200 leading-none">{String(i + 1).padStart(2, '0')}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-[#FF6B4A] transition-colors">{article.title}</p>
-                      <span className="text-xs text-gray-400 flex items-center gap-1 mt-1"><Eye size={12} /> {article.views}</span>
-                    </div>
+                {scopedArticles.map((article) => (
+                  <button key={article.id} onClick={() => openArticle(article.id)} className="w-full text-left border border-gray-100 hover:border-orange-200 rounded-xl p-4 transition-all">
+                    <p className="font-bold text-sm text-gray-900">{article.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">{article.folderName || article.folderId}</p>
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
+            </section>
+          )}
         </div>
       )}
     </div>

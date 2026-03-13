@@ -21,9 +21,7 @@ export default function Notifications() {
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        // In a real app we'd have DELETE_NOTIFICATION, but for now we'll just mark as read or ignore.
-        // Let's assume MARK_NOTIFICATION_READ is enough for this demo or we can add DELETE to reducer later.
-        dispatch({ type: 'MARK_NOTIFICATION_READ', notificationId: id });
+        dispatch({ type: 'DELETE_NOTIFICATION', notificationId: id });
         addToast('Đã xóa thông báo', 'info');
     };
 
@@ -44,6 +42,7 @@ export default function Notifications() {
                 const articleId = n.link.split(':')[1];
                 dispatch({ type: 'SET_SELECTED_ARTICLE', articleId });
                 dispatch({ type: 'INCREMENT_VIEWS', articleId });
+                dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
             } else if (n.link === 'bounties') {
                 dispatch({ type: 'SET_SCREEN', screen: 'bounties' });
             }

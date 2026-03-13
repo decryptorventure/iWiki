@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useState as useStateAlias, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, ArrowLeft, FileText, Search, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generateRagAnswer } from '../lib/rag';
 
 export default function SearchResult({ query, onBack }: { query: string, onBack: () => void }) {
   const { state, dispatch } = useApp();
@@ -12,24 +12,33 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
-  // Filter articles by query
-  const matchedArticles = articles.filter(a =>
-    a.status === 'published' && (
-      a.title.toLowerCase().includes(currentQuery.toLowerCase()) ||
-      a.content.toLowerCase().includes(currentQuery.toLowerCase()) ||
-      a.tags.some(t => t.toLowerCase().includes(currentQuery.toLowerCase()))
-    )
-  ).map(a => ({
-    ...a,
-    matchScore: a.title.toLowerCase().includes(currentQuery.toLowerCase()) ? 95
-      : a.tags.some(t => t.toLowerCase().includes(currentQuery.toLowerCase())) ? 82 : 70
-  })).sort((a, b) => b.matchScore - a.matchScore).slice(0, 6);
+  const rag = generateRagAnswer(state.currentUser, articles, currentQuery);
+  const matchedArticles = rag.citations.map(citation => {
+    const source = articles.find(a => a.id === citation.articleId)!;
+    return {
+      ...source,
+      matchScore: citation.score,
+      snippet: citation.snippet,
+    };
+  });
 
   // Simulate AI generation loading
-  React.useEffect(() => {
+  useEffect(() => {
     setIsGenerating(true);
     const timer = setTimeout(() => setIsGenerating(false), 1500);
     return () => clearTimeout(timer);
+  }, [currentQuery]);
+
+  useEffect(() => {
+    dispatch({
+      type: 'TRACK_EVENT',
+      event: {
+        type: 'search',
+        userId: state.currentUser.id,
+        query: currentQuery,
+        meta: { resultsCount: matchedArticles.length },
+      },
+    });
   }, [currentQuery]);
 
   const handleSearch = () => {
@@ -44,9 +53,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const aiAnswer = matchedArticles.length > 0
-    ? `Dựa trên tài liệu nội bộ của iKame, tôi tìm thấy ${matchedArticles.length} bài viết liên quan đến **"${currentQuery}"**. Bài viết phù hợp nhất là **"${matchedArticles[0]?.title}"** với độ liên quan ${matchedArticles[0]?.matchScore}%. ${matchedArticles[0]?.excerpt || ''}`
-    : `Không tìm thấy tài liệu nào liên quan đến **"${currentQuery}"** trong iWiki. Bạn có thể tạo bounty để yêu cầu đồng nghiệp viết bài về chủ đề này, hoặc tự viết bài đầu tiên!`;
+  const aiAnswer = rag.answer;
 
   return (
     <div className="max-w-4xl mx-auto px-8 py-8 animate-fade-in">
@@ -125,6 +132,10 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
                 <div key={source.id} onClick={() => {
                   dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: source.id });
                   dispatch({ type: 'INCREMENT_VIEWS', articleId: source.id });
+                  dispatch({
+                    type: 'TRACK_EVENT',
+                    event: { type: 'open_article', userId: state.currentUser.id, articleId: source.id },
+                  });
                 }} className="card-premium p-4 cursor-pointer group flex flex-col h-full">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gradient-to-r ${colors[i] || colors[0]} rounded-full shadow-sm`}>{i + 1}</span>
@@ -132,6 +143,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
                   </div>
                   <h4 className="font-medium text-sm text-gray-900 group-hover:text-[#FF6B4A] transition-colors line-clamp-2 mb-auto">{source.title}</h4>
                   <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">Tác giả: <span className="font-medium text-gray-700">{source.author.name}</span></p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{source.snippet}</p>
                 </div>
               );
             })}

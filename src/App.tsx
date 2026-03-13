@@ -7,17 +7,23 @@ import Profile from './components/Profile';
 import MyArticles from './components/MyArticles';
 import Bounties from './components/Bounties';
 import DataJanitor from './components/DataJanitor';
+import Favorites from './components/Favorites';
+import CustomFeed from './components/CustomFeed';
 import DocumentManagement from './components/DocumentManagement';
 import PermissionManagement from './components/PermissionManagement';
 import AdminDashboard from './components/AdminDashboard';
+import ManagerDashboard from './components/ManagerDashboard';
 import IWikiAI from './components/IWikiAI';
 import EmptyFolderBounty from './components/EmptyFolderBounty';
 import FolderView from './components/FolderView';
 import Notifications from './components/Notifications';
 import Editor from './components/Editor';
+import NotificationBell from './components/NotificationBell';
 import { ArticleModal } from './components/ArticleModal';
 import ArticleFullView from './components/ArticleFullView';
-import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Bell } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import { APP_SCREENS } from './constants/screens';
+import { can } from './lib/permissions';
 
 // ===== TOAST SYSTEM =====
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -76,37 +82,53 @@ function AppInner() {
 
   const selectedArticle = selectedArticleId ? articles.find(a => a.id === selectedArticleId) || null : null;
 
+  const renderProtectedScreen = (screen: string, component: React.ReactNode) => {
+    if (screen === APP_SCREENS.ADMIN_DASHBOARD && !can(currentUser, 'admin.access')) {
+      return <div className="p-10 text-center text-gray-500">Bạn không có quyền truy cập trang Admin.</div>;
+    }
+    if (screen === APP_SCREENS.MANAGER_DASHBOARD && !can(currentUser, 'manager.access') && currentUser.role !== 'admin') {
+      return <div className="p-10 text-center text-gray-500">Bạn không có quyền truy cập Manager View.</div>;
+    }
+    return component;
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'dashboard':
+      case APP_SCREENS.DASHBOARD:
         return <Dashboard onSearch={handleSearch} />;
-      case 'search':
-        return <SearchResult query={state.searchQuery} onBack={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} />;
-      case 'ai':
+      case APP_SCREENS.SEARCH:
+        return <SearchResult query={state.searchQuery} onBack={() => dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.DASHBOARD })} />;
+      case APP_SCREENS.AI:
         return <IWikiAI />;
-      case 'profile':
+      case APP_SCREENS.PROFILE:
         return <Profile />;
-      case 'my-articles':
+      case APP_SCREENS.MY_ARTICLES:
         return <MyArticles />;
-      case 'bounties':
+      case APP_SCREENS.CUSTOM_FEED:
+        return <CustomFeed />;
+      case APP_SCREENS.BOUNTIES:
         return <Bounties />;
-      case 'janitor':
+      case APP_SCREENS.JANITOR:
         return <DataJanitor />;
-      case 'notifications':
+      case APP_SCREENS.FAVORITES:
+        return <Favorites />;
+      case APP_SCREENS.NOTIFICATIONS:
         return <Notifications />;
-      case 'documents':
-        return <DocumentManagement />;
-      case 'permissions':
-        return <PermissionManagement />;
-      case 'admin-dashboard':
-        return <AdminDashboard />;
-      case 'article-detail':
+      case APP_SCREENS.DOCUMENTS:
+        return renderProtectedScreen(APP_SCREENS.DOCUMENTS, <DocumentManagement />);
+      case APP_SCREENS.PERMISSIONS:
+        return renderProtectedScreen(APP_SCREENS.PERMISSIONS, <PermissionManagement />);
+      case APP_SCREENS.ADMIN_DASHBOARD:
+        return renderProtectedScreen(APP_SCREENS.ADMIN_DASHBOARD, <AdminDashboard />);
+      case APP_SCREENS.MANAGER_DASHBOARD:
+        return renderProtectedScreen(APP_SCREENS.MANAGER_DASHBOARD, <ManagerDashboard />);
+      case APP_SCREENS.ARTICLE_DETAIL:
         return <ArticleFullView />;
-      case 'editor':
+      case APP_SCREENS.EDITOR:
         return (
           <Editor
             initialData={state.editorData}
-            onBack={() => dispatch({ type: 'SET_SCREEN', screen: state.editorData?.id ? 'my-articles' : 'my-articles' })}
+            onBack={() => dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.MY_ARTICLES })}
           />
         );
       case 'folder-know-how':
@@ -136,7 +158,7 @@ function AppInner() {
             breadcrumbs={['Phòng Kỹ thuật']}
           />
         );
-      case 'empty-folder':
+      case APP_SCREENS.EMPTY_FOLDER:
         return <EmptyFolderBounty folderId={state.currentFolderId || 'f-process'} folderName="Process & Checklist" breadcrumbs={['Know-How', 'iKame', 'Process & Checklist']} />;
       default:
         if (currentScreen.startsWith('folder-')) {
@@ -164,11 +186,19 @@ function AppInner() {
     <ToastContext.Provider value={{ addToast }}>
       <div className="flex h-screen bg-[#f9fafb] text-gray-900 font-sans overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto custom-scrollbar">
-          <PageTransition screenKey={currentScreen}>
-            {renderScreen()}
-          </PageTransition>
-        </main>
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          <header className="h-14 shrink-0 border-b border-gray-200/80 bg-white px-6 flex items-center justify-between z-20 relative">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">iWiki</p>
+            </div>
+            <NotificationBell />
+          </header>
+          <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+            <PageTransition screenKey={currentScreen}>
+              {renderScreen()}
+            </PageTransition>
+          </main>
+        </div>
         <ToastContainer toasts={toasts} removeToast={removeToast} />
 
         {/* Global Article Modal */}

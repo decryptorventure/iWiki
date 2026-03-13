@@ -48,7 +48,8 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
   const { addToast } = useToast();
   const { articles, currentUser } = state;
   const [comment, setComment] = useState('');
-  const [bookmarked, setBookmarked] = useState(false);
+  const favoriteIds = state.favoritesByUser[currentUser.id] || [];
+  const bookmarked = article ? favoriteIds.includes(article.id) : false;
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const isLiked = article ? article.likedBy.includes(currentUser.id) : false;
@@ -145,7 +146,17 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
               <div className="flex items-center gap-3">
                 <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'article-detail' })} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Xem toàn trang"><Maximize2 size={20} /></button>
                 <button onClick={handleShare} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Chia sẻ"><Share2 size={20} /></button>
-                <button onClick={() => { setBookmarked(!bookmarked); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }} className={`p-2.5 rounded-xl transition-all active:scale-90 ${bookmarked ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100 text-gray-500'}`} title="Lưu bài viết"><Bookmark size={20} className={bookmarked ? 'fill-current' : ''} /></button>
+                <button
+                  onClick={() => {
+                    dispatch({ type: 'TOGGLE_FAVORITE', articleId: article.id, userId: currentUser.id });
+                    dispatch({ type: 'TRACK_EVENT', event: { type: 'favorite', userId: currentUser.id, articleId: article.id } });
+                    addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
+                  }}
+                  className={`p-2.5 rounded-xl transition-all active:scale-90 ${bookmarked ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100 text-gray-500'}`}
+                  title="Lưu bài viết"
+                >
+                  <Bookmark size={20} className={bookmarked ? 'fill-current' : ''} />
+                </button>
               </div>
             </div>
 
