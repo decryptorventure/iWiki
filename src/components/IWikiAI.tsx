@@ -421,10 +421,10 @@ export default function IWikiAI() {
         </div>
 
         {/* Input */}
-        <div className={`${isConversationStarted ? 'border-t border-gray-100' : ''} p-3 bg-white`}>
-          <div className={`w-full relative group ${!isConversationStarted ? 'max-w-3xl mx-auto' : ''}`}>
+        <div className={`${isConversationStarted ? 'border-t border-gray-100' : ''} p-3 bg-white overflow-visible`}>
+          <div className={`w-full relative group overflow-visible ${!isConversationStarted ? 'max-w-3xl mx-auto' : ''}`}>
             <div className="absolute -inset-1 bg-gradient-to-r from-orange-400/20 via-amber-400/10 to-purple-500/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-            <div className="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md focus-within:shadow-xl focus-within:border-orange-200 focus-within:bg-white ring-offset-2 focus-within:ring-2 ring-orange-100">
+            <div className="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-visible transition-all duration-300 hover:shadow-md focus-within:shadow-xl focus-within:border-orange-200 focus-within:bg-white ring-offset-2 focus-within:ring-2 ring-orange-100">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -445,8 +445,9 @@ export default function IWikiAI() {
                       <ChevronDown size={11} className={`transition-transform duration-200 text-gray-400 ${showModelDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showModelDropdown && (
-                      <div className="absolute bottom-full left-0 mb-2 w-52 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden py-1 animate-scale-in">
-                        <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Mô hình AI</div>
+                      <div className="absolute bottom-full left-0 mb-2 w-52 max-h-[280px] flex flex-col bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] py-1 animate-scale-in">
+                        <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 shrink-0">Mô hình AI</div>
+                        <div className="overflow-y-auto overflow-x-hidden min-h-0 py-1">
                         {MODELS.map((model) => (
                           <button key={model.id} onClick={() => { setSelectedModel(model.name); setShowModelDropdown(false); }} className="w-full px-3 py-2 text-left flex items-center justify-between hover:bg-gray-50 transition-all duration-150">
                             <span className="text-xs font-medium text-gray-700 flex items-center gap-2">
@@ -461,6 +462,7 @@ export default function IWikiAI() {
                             </div>
                           </button>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>

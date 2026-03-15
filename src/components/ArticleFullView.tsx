@@ -16,6 +16,8 @@ function MarkdownContent({ content }: { content: string }) {
         if (line.match(/^\d+\. /)) return <li key={i} className="ml-4 list-decimal text-gray-700 mb-2 marker:text-orange-500 marker:font-bold">{renderInline(line.replace(/^\d+\. /, ''))}</li>;
         if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-orange-500 bg-orange-50/30 px-5 py-3 rounded-r-xl italic text-gray-700 my-6">{line.slice(2)}</blockquote>;
         if (line.startsWith('```') || line === '') return <br key={i} />;
+        const imgMatch = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
+        if (imgMatch) return <figure key={i} className="my-6"><img src={imgMatch[2]} alt={imgMatch[1] || ''} className="rounded-xl w-full object-cover max-h-[420px] shadow-md border border-gray-100" loading="lazy" /><figcaption className="text-sm text-gray-500 mt-2 text-center">{imgMatch[1] || ''}</figcaption></figure>;
         if (line.startsWith('| ')) {
           const cells = line.split('|').filter(c => c.trim());
           if (line.includes('---')) return null;

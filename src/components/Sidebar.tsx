@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, ShieldCheck, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, ShieldCheck, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 import ComingSoonModal from './ComingSoonModal';
@@ -129,15 +129,11 @@ export default function Sidebar() {
         {/* Footer / User Profile */}
         <div className="p-3 border-t border-gray-200/60 bg-[#f8f8f6]">
           <button
-            onClick={() => {
-              const roleCycle = ['viewer', 'editor', 'manager', 'admin'] as const;
-              const idx = roleCycle.findIndex(r => r === currentUser.role);
-              dispatch({ type: 'SET_ROLE', role: roleCycle[(idx + 1) % roleCycle.length] });
-            }}
-            className="w-full flex items-center justify-center gap-2 mb-3 px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow"
+            onClick={() => dispatch({ type: 'LOGOUT' })}
+            className="w-full flex items-center justify-center gap-2 mb-3 px-3 py-2 bg-white border border-gray-200 hover:border-red-200 hover:bg-red-50 hover:text-red-700 text-gray-600 rounded-lg text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow"
           >
-            <ShieldCheck size={14} className={currentUser.role === 'admin' ? 'text-indigo-600' : 'text-gray-400'} />
-            Role: {currentUser.role}
+            <LogOut size={14} />
+            Đăng xuất
           </button>
           <div onClick={() => navigate(APP_SCREENS.PROFILE)} className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-black/5 cursor-pointer transition-all duration-200 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF6B4A] to-[#FF8A6A] overflow-hidden shrink-0 shadow-sm ring-2 ring-white">

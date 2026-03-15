@@ -152,6 +152,7 @@ export interface CustomFeedPrefs {
 }
 
 export interface AppState {
+  isLoggedIn: boolean;
   currentScreen: string;
   searchQuery: string;
   userRole: UserRole;
@@ -168,6 +169,8 @@ export interface AppState {
   favoritesByUser: Record<string, string[]>;
   analyticsEvents: AnalyticsEvent[];
   customFeedPrefs: CustomFeedPrefs;
+  /** User id -> đã xem onboarding lần đầu (chỉ hiện tour 1 lần mỗi user) */
+  onboardingCompletedForUsers: Record<string, boolean>;
 }
 
 const INITIAL_USER: User = {
@@ -193,6 +196,79 @@ const INITIAL_USER: User = {
     { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
   ],
 };
+
+/** Preset users cho màn đăng nhập: Nhân viên mới (viewer), Nhân viên chính thức (editor), Admin (admin) */
+export const PRESET_USERS: Record<'viewer' | 'editor' | 'admin', User> = {
+  viewer: {
+    id: 'user-new',
+    name: 'Nguyễn Thành Viên',
+    role: 'viewer',
+    title: 'Nhân viên mới',
+    avatar: 'https://picsum.photos/seed/newemp/100/100',
+    level: 1,
+    xp: 0,
+    xpToNext: 500,
+    coins: 0,
+    scopes: [
+      { folderId: 'f-company', level: 'read' },
+      { folderId: 'f-process', level: 'read' },
+    ],
+    badges: [
+      { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: false },
+      { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: false },
+      { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: false },
+      { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
+    ],
+  },
+  editor: {
+    id: 'user-official',
+    name: 'Trần Nhân Viên',
+    role: 'editor',
+    title: 'Nhân viên chính thức',
+    avatar: 'https://picsum.photos/seed/official/100/100',
+    level: 8,
+    xp: 3200,
+    xpToNext: 5000,
+    coins: 450,
+    scopes: [
+      { folderId: 'f-company', level: 'read' },
+      { folderId: 'f-process', level: 'write' },
+      { folderId: 'f-knowhow', level: 'write' },
+      { folderId: 'f-tech', level: 'read' },
+    ],
+    badges: [
+      { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: true },
+      { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: true },
+      { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: false },
+      { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
+    ],
+  },
+  admin: {
+    id: 'user-admin',
+    name: 'Admin iKame',
+    role: 'admin',
+    title: 'Quản trị viên',
+    avatar: 'https://picsum.photos/seed/admin/100/100',
+    level: 15,
+    xp: 12000,
+    xpToNext: 15000,
+    coins: 2000,
+    scopes: [
+      { folderId: 'f-company', level: 'admin' },
+      { folderId: 'f-tech', level: 'admin' },
+      { folderId: 'f-knowhow', level: 'admin' },
+      { folderId: 'f-product', level: 'admin' },
+    ],
+    badges: [
+      { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: true },
+      { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: true },
+      { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: true },
+      { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: true },
+    ],
+  },
+};
+
+import { ARTICLE_CONTENTS } from '../data/articleContents';
 
 const INITIAL_FOLDERS: Folder[] = [
   {
@@ -291,7 +367,161 @@ const INITIAL_ARTICLES: Article[] = [
     views: 0, likes: 0, likedBy: [], comments: [],
     createdAt: '2024-05-12', updatedAt: '2024-05-12',
   },
+  // --- Bài viết mẫu bổ sung (published) ---
+  {
+    id: 'a-6', title: 'Quy trình xin nghỉ phép và chính sách PTO',
+    content: '# Chính sách nghỉ phép (PTO)\n\nHướng dẫn cách đăng ký nghỉ phép, số ngày được hưởng theo thâm niên và quy trình phê duyệt.',
+    excerpt: 'Hướng dẫn đăng ký nghỉ phép, số ngày PTO và quy trình phê duyệt.',
+    coverUrl: 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&q=80&w=800',
+    folderId: 'f-hr', folderName: 'Chính sách nhân sự',
+    tags: ['HR', 'PTO', 'Nghỉ phép'],
+    author: { id: 'user-hr', name: 'Nguyễn Thị Nguyệt', role: 'CHRO', avatar: 'https://picsum.photos/seed/nguyet/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 2103, likes: 42, likedBy: [], comments: [],
+    createdAt: '2024-01-15', updatedAt: '2024-06-10',
+  },
+  {
+    id: 'a-7', title: 'Code style và linting cho React/TypeScript',
+    content: '# Frontend Guidelines — Code Style\n\nESLint, Prettier, quy ước đặt tên component và file. Cách viết hook và type an toàn.',
+    excerpt: 'Chuẩn code style, ESLint/Prettier và best practices cho React + TypeScript.',
+    coverUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&q=80&w=800',
+    folderId: 'f-fe', folderName: 'Frontend Guidelines',
+    tags: ['Frontend', 'React', 'TypeScript', 'ESLint'],
+    author: { id: 'user-fe', name: 'Lê Minh Tuấn', role: 'Tech Lead Frontend', avatar: 'https://picsum.photos/seed/tuan/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1567, likes: 38, likedBy: [], comments: [],
+    createdAt: '2024-02-20', updatedAt: '2024-08-01',
+  },
+  {
+    id: 'a-8', title: 'Kiến trúc microservices và cách triển khai tại iKame',
+    content: '# Backend Architecture — Microservices\n\nTổng quan kiến trúc, service discovery, API gateway và chuẩn REST/gRPC nội bộ.',
+    excerpt: 'Tổng quan microservices, service discovery và chuẩn API nội bộ.',
+    folderId: 'f-be', folderName: 'Backend Architecture',
+    tags: ['Backend', 'Microservices', 'Architecture'],
+    author: { id: 'user-2', name: 'Trần Hoàng Huy', role: 'Solution BE Developer', avatar: 'https://picsum.photos/seed/huy/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1892, likes: 51, likedBy: [], comments: [],
+    createdAt: '2024-03-05', updatedAt: '2024-07-22',
+  },
+  {
+    id: 'a-9', title: 'CI/CD với GitHub Actions và deploy staging',
+    content: '# DevOps — CI/CD Pipeline\n\nCấu hình workflow GitHub Actions, chạy test, build và deploy lên staging/production.',
+    excerpt: 'Pipeline CI/CD với GitHub Actions và quy trình deploy staging.',
+    coverUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=800',
+    folderId: 'f-devops', folderName: 'DevOps & Infrastructure',
+    tags: ['DevOps', 'CI/CD', 'GitHub Actions'],
+    author: { id: 'user-devops', name: 'Phạm Quang Dũng', role: 'DevOps Engineer', avatar: 'https://picsum.photos/seed/dung/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1245, likes: 29, likedBy: [], comments: [],
+    createdAt: '2024-04-12', updatedAt: '2024-09-15',
+  },
+  {
+    id: 'a-10', title: 'Giá trị cốt lõi và văn hóa iKame',
+    content: '# Văn hóa & Giá trị\n\nCác giá trị cốt lõi: Khách hàng làm trung tâm, Minh bạch, Học hỏi liên tục. Cách chúng ta làm việc mỗi ngày.',
+    excerpt: 'Giá trị cốt lõi và văn hóa làm việc tại iKame.',
+    folderId: 'f-culture', folderName: 'Văn hóa & Giá trị',
+    tags: ['Văn hóa', 'Values', 'iKame'],
+    author: { id: 'user-hr', name: 'Nguyễn Thị Nguyệt', role: 'CHRO', avatar: 'https://picsum.photos/seed/nguyet/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 3201, likes: 89, likedBy: [], comments: [],
+    createdAt: '2023-10-01', updatedAt: '2024-05-20',
+  },
+  {
+    id: 'a-11', title: 'Mindset Growth — Học từ thất bại và phản hồi',
+    content: '# Mindset — Học từ thất bại\n\nCách chuyển phản hồi và thất bại thành cơ hội học hỏi. Thực hành retrospective cá nhân.',
+    excerpt: 'Cách biến thất bại và phản hồi thành cơ hội phát triển.',
+    folderId: 'f-mindset', folderName: 'Mindset',
+    tags: ['Mindset', 'Growth', 'Feedback'],
+    author: { id: 'user-1', name: 'Nguyễn Văn A', role: 'Product Manager', avatar: 'https://picsum.photos/seed/ikame/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 987, likes: 34, likedBy: [], comments: [],
+    createdAt: '2024-05-18', updatedAt: '2024-08-30',
+  },
+  {
+    id: 'a-12', title: 'Checklist review code và merge request',
+    content: '# Process & Checklist — Code Review\n\nChecklist trước khi tạo MR, tiêu chí review và quy ước approve. SLA review trong team.',
+    excerpt: 'Checklist và quy ước review code, merge request và SLA.',
+    folderId: 'f-checklist', folderName: 'Process & Checklist',
+    tags: ['Process', 'Code Review', 'Checklist'],
+    author: { id: 'user-fe', name: 'Lê Minh Tuấn', role: 'Tech Lead Frontend', avatar: 'https://picsum.photos/seed/tuan/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1456, likes: 41, likedBy: [], comments: [],
+    createdAt: '2024-03-28', updatedAt: '2024-07-10',
+  },
+  {
+    id: 'a-13', title: 'Kỹ năng thuyết trình và trình bày ý tưởng',
+    content: '# Soft Skills — Thuyết trình\n\nCấu trúc slide, storytelling, xử lý Q&A và tips cho demo nội bộ và khách hàng.',
+    excerpt: 'Cách chuẩn bị và thuyết trình ý tưởng hiệu quả.',
+    coverUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=800',
+    folderId: 'f-softskills', folderName: 'Soft Skills',
+    tags: ['Soft Skills', 'Presentation', 'Communication'],
+    author: { id: 'user-1', name: 'Nguyễn Văn A', role: 'Product Manager', avatar: 'https://picsum.photos/seed/ikame/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1123, likes: 27, likedBy: [], comments: [],
+    createdAt: '2024-06-01', updatedAt: '2024-09-05',
+  },
+  {
+    id: 'a-14', title: 'Template PRD (Product Requirements Document)',
+    content: '# Product Templates — PRD\n\nMẫu PRD chuẩn: problem statement, user stories, acceptance criteria, metrics và timeline.',
+    excerpt: 'Mẫu PRD chuẩn cho sản phẩm: problem, user stories, criteria.',
+    folderId: 'f-pm-templates', folderName: 'Templates',
+    tags: ['Product', 'PRD', 'Template'],
+    author: { id: 'user-1', name: 'Nguyễn Văn A', role: 'Product Manager', avatar: 'https://picsum.photos/seed/ikame/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 2341, likes: 67, likedBy: [], comments: [],
+    createdAt: '2024-02-10', updatedAt: '2024-08-18',
+  },
+  {
+    id: 'a-15', title: 'Quy trình phê duyệt tài liệu và xuất bản',
+    content: '# Quy trình chung — Phê duyệt tài liệu\n\nLuồng draft → gửi duyệt → approve/reject → publish. Role và quyền theo folder.',
+    excerpt: 'Luồng phê duyệt tài liệu từ draft đến publish.',
+    folderId: 'f-process', folderName: 'Quy trình chung',
+    tags: ['Quy trình', 'Approval', 'Publish'],
+    author: { id: 'user-hr', name: 'Nguyễn Thị Nguyệt', role: 'CHRO', avatar: 'https://picsum.photos/seed/nguyet/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 876, likes: 22, likedBy: [], comments: [],
+    createdAt: '2024-04-01', updatedAt: '2024-07-01',
+  },
+  {
+    id: 'a-16', title: 'Hướng dẫn sử dụng iWiki cho thành viên mới',
+    content: '# iWiki — Hướng dẫn sử dụng\n\nCách tìm kiếm, đọc bài, đóng góp nội dung, dùng AI và quản lý bài viết của bạn.',
+    excerpt: 'Hướng dẫn nhanh tìm kiếm, đọc và đóng góp nội dung trên iWiki.',
+    folderId: 'f-process', folderName: 'Quy trình chung',
+    tags: ['iWiki', 'Onboarding', 'Hướng dẫn'],
+    author: { id: 'user-1', name: 'Nguyễn Văn A', role: 'Product Manager', avatar: 'https://picsum.photos/seed/ikame/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 4521, likes: 112, likedBy: [], comments: [],
+    createdAt: '2024-01-08', updatedAt: '2024-10-01',
+  },
+  {
+    id: 'a-17', title: 'Quy trình release sản phẩm và go-live',
+    content: '# Product Processes — Release & Go-live\n\nChecklist trước go-live, rollback plan, communication và post-launch review.',
+    excerpt: 'Checklist release, rollback và post-launch review.',
+    folderId: 'f-pm-process', folderName: 'Product Processes',
+    tags: ['Product', 'Release', 'Go-live'],
+    author: { id: 'user-1', name: 'Nguyễn Văn A', role: 'Product Manager', avatar: 'https://picsum.photos/seed/ikame/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1678, likes: 45, likedBy: [], comments: [],
+    createdAt: '2024-05-05', updatedAt: '2024-09-20',
+  },
+  {
+    id: 'a-18', title: 'Bảo mật thông tin và quy tắc bảo mật nội bộ',
+    content: '# Chính sách — Bảo mật thông tin\n\nPhân loại dữ liệu, quy tắc lưu trữ, chia sẻ và xử lý khi có sự cố.',
+    excerpt: 'Phân loại dữ liệu, quy tắc bảo mật và xử lý sự cố.',
+    folderId: 'f-hr', folderName: 'Chính sách nhân sự',
+    tags: ['Security', 'Bảo mật', 'Compliance'],
+    author: { id: 'user-hr', name: 'Nguyễn Thị Nguyệt', role: 'CHRO', avatar: 'https://picsum.photos/seed/nguyet/100/100' },
+    status: 'published', viewPermission: 'public', allowComments: true,
+    views: 1987, likes: 38, likedBy: [], comments: [],
+    createdAt: '2024-03-15', updatedAt: '2024-08-12',
+  },
 ];
+
+// Gắn nội dung chi tiết + hình ảnh từ articleContents (nếu có)
+const INITIAL_ARTICLES_WITH_CONTENT: Article[] = INITIAL_ARTICLES.map((a) => ({
+  ...a,
+  content: ARTICLE_CONTENTS[a.id] ?? a.content,
+}));
 
 const INITIAL_BOUNTIES: Bounty[] = [
   { id: 'b-1', title: 'Best Practices tối ưu React Native 2024', description: 'Cần bài viết chi tiết về best practices mới nhất.', requester: 'Mobile Guild', requesterId: 'user-mobile', reward: 500, deadline: '2026-04-15', tags: ['Engineering', 'Mobile'], hot: true, acceptedBy: [], status: 'open', createdAt: '2026-03-10' },
@@ -334,6 +564,7 @@ function saveState(state: Partial<AppState>) {
 const savedState = loadState();
 
 export const initialState: AppState = {
+  isLoggedIn: savedState.isLoggedIn ?? false,
   currentScreen: 'dashboard',
   searchQuery: '',
   userRole: savedState.currentUser?.role || INITIAL_USER.role,
@@ -344,7 +575,10 @@ export const initialState: AppState = {
       ? savedState.currentUser.scopes
       : INITIAL_USER.scopes,
   },
-  articles: savedState.articles || INITIAL_ARTICLES,
+  articles: (savedState.articles || INITIAL_ARTICLES_WITH_CONTENT).map((a) => ({
+    ...a,
+    content: ARTICLE_CONTENTS[a.id] ?? a.content,
+  })),
   folders: INITIAL_FOLDERS,
   bounties: savedState.bounties || INITIAL_BOUNTIES,
   notifications: savedState.notifications || INITIAL_NOTIFICATIONS,
@@ -356,9 +590,12 @@ export const initialState: AppState = {
   favoritesByUser: savedState.favoritesByUser || {},
   analyticsEvents: savedState.analyticsEvents || [],
   customFeedPrefs: savedState.customFeedPrefs || { tags: [], folderIds: [] },
+  onboardingCompletedForUsers: savedState.onboardingCompletedForUsers || {},
 };
 
 export type AppAction =
+  | { type: 'LOGIN'; role: 'viewer' | 'editor' | 'admin' }
+  | { type: 'LOGOUT' }
   | { type: 'SET_SCREEN'; screen: string }
   | { type: 'SET_SEARCH_QUERY'; query: string }
   | { type: 'SET_ROLE'; role: UserRole }
@@ -388,12 +625,27 @@ export type AppAction =
   | { type: 'REMOVE_SEARCH_HISTORY'; query: string }
   | { type: 'CLEAR_SEARCH_HISTORY' }
   | { type: 'UPDATE_CUSTOM_FEED_PREFS'; prefs: Partial<CustomFeedPrefs> }
-  | { type: 'TRACK_EVENT'; event: Omit<AnalyticsEvent, 'id' | 'createdAt'> };
+  | { type: 'TRACK_EVENT'; event: Omit<AnalyticsEvent, 'id' | 'createdAt'> }
+  | { type: 'COMPLETE_ONBOARDING'; userId: string };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState;
 
   switch (action.type) {
+    case 'LOGIN': {
+      const user = PRESET_USERS[action.role];
+      newState = {
+        ...state,
+        isLoggedIn: true,
+        currentUser: user,
+        userRole: user.role,
+        currentScreen: 'dashboard',
+      };
+      break;
+    }
+    case 'LOGOUT':
+      newState = { ...state, isLoggedIn: false, currentScreen: 'dashboard' };
+      break;
     case 'SET_SCREEN':
       newState = { ...state, currentScreen: action.screen };
       break;
@@ -592,11 +844,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ].slice(0, 2000),
       };
       break;
+    case 'COMPLETE_ONBOARDING':
+      newState = {
+        ...state,
+        onboardingCompletedForUsers: {
+          ...state.onboardingCompletedForUsers,
+          [action.userId]: true,
+        },
+      };
+      break;
     default:
       return state;
   }
 
   saveState({
+    isLoggedIn: newState.isLoggedIn,
     currentUser: newState.currentUser,
     articles: newState.articles,
     bounties: newState.bounties,
@@ -606,6 +868,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     favoritesByUser: newState.favoritesByUser,
     analyticsEvents: newState.analyticsEvents,
     customFeedPrefs: newState.customFeedPrefs,
+    onboardingCompletedForUsers: newState.onboardingCompletedForUsers,
   });
 
   return newState;

@@ -15,6 +15,8 @@ import AdminDashboard from './components/AdminDashboard';
 import ManagerDashboard from './components/ManagerDashboard';
 import IWikiAI from './components/IWikiAI';
 import EmptyFolderBounty from './components/EmptyFolderBounty';
+import Login from './components/Login';
+import OnboardingTour from './components/OnboardingTour';
 import FolderView from './components/FolderView';
 import Notifications from './components/Notifications';
 import Editor from './components/Editor';
@@ -63,7 +65,12 @@ function PageTransition({ children, screenKey }: { children: React.ReactNode; sc
 // ===== MAIN APP INNER (accesses context) =====
 function AppInner() {
   const { state, dispatch } = useApp();
-  const { currentScreen, selectedArticleId, articles, currentUser } = state;
+  const { isLoggedIn, currentScreen, selectedArticleId, articles, currentUser, onboardingCompletedForUsers } = state;
+  const showOnboarding = isLoggedIn && !onboardingCompletedForUsers[currentUser.id];
+
+  if (!isLoggedIn) {
+    return <Login />;
+  }
 
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
@@ -182,8 +189,20 @@ function AppInner() {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    dispatch({ type: 'COMPLETE_ONBOARDING', userId: currentUser.id });
+  };
+
   return (
     <ToastContext.Provider value={{ addToast }}>
+      {showOnboarding && (
+        <OnboardingTour
+          user={currentUser}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingComplete}
+          onNavigate={(screen) => dispatch({ type: 'SET_SCREEN', screen })}
+        />
+      )}
       <div className="flex h-screen bg-[#f9fafb] text-gray-900 font-sans overflow-hidden">
         <Sidebar />
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
