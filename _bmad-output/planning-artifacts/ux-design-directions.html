@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iWiki 4.0 — Design Directions</title>
+<style>
+  :root {
+    --orange: #f76226;
+    --orange-subtle: #fef4f0;
+    --orange-border: #fcc8b5;
+    --blue: #0d87f2;
+    --blue-subtle: #f6fafe;
+    --green: #02b644;
+    --green-subtle: #e3fcec;
+    --purple: #ad43ff;
+    --purple-subtle: #faf5ff;
+    --red: #d3222e;
+    --amber: #fa9900;
+    --text-primary: #32312f;
+    --text-secondary: #55524e;
+    --text-tertiary: #8a857f;
+    --bg-primary: #fff;
+    --bg-secondary: #fafafa;
+    --bg-tertiary: #f0f0ef;
+    --bg-quaternary: #e7e6e4;
+    --border-primary: #f0f0ef;
+    --border-secondary: #ebebea;
+    --border-tertiary: #dfdedd;
+    --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.06), 0px 1px 2px 0px rgba(0,0,0,0.04);
+    --shadow-m: 0px 4px 6px 0px rgba(0,0,0,0.08), 0px 2px 4px 0px rgba(0,0,0,0.05);
+    --shadow-l: 0px 8px 12px 0px rgba(0,0,0,0.12), 0px 4px 8px 0px rgba(0,0,0,0.08);
+    --radius-6: 6px;
+    --radius-8: 8px;
+    --radius-12: 12px;
+    --radius-round: 625rem;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-primary); background: var(--bg-secondary); }
+
+  /* === NAV === */
+  .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--bg-primary); border-bottom:1px solid var(--border-secondary); display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 24px; }
+  .nav-btn { padding:10px 20px; border-radius:var(--radius-round); border:2px solid var(--border-tertiary); background:var(--bg-primary); color:var(--text-secondary); font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .nav-btn:hover { border-color:var(--orange); color:var(--orange); }
+  .nav-btn.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+  .nav-label { font-size:13px; color:var(--text-tertiary); margin:0 8px; }
+
+  /* === SECTIONS === */
+  .direction { display:none; padding-top:64px; min-height:100vh; }
+  .direction.active { display:block; }
+  .dir-header { text-align:center; padding:32px 24px 16px; }
+  .dir-header h1 { font-size:28px; font-weight:700; margin-bottom:8px; }
+  .dir-header p { font-size:15px; color:var(--text-secondary); max-width:640px; margin:0 auto; line-height:1.6; }
+  .dir-header .tag { display:inline-block; padding:4px 12px; border-radius:var(--radius-round); font-size:12px; font-weight:600; margin-bottom:12px; }
+
+  /* === MOCKUP FRAME === */
+  .mockup-frame { max-width:1200px; margin:24px auto; border-radius:var(--radius-12); overflow:hidden; box-shadow:var(--shadow-l); border:1px solid var(--border-secondary); background:var(--bg-primary); }
+
+  /* === TOPBAR === */
+  .topbar { display:flex; align-items:center; height:52px; padding:0 16px; border-bottom:1px solid var(--border-primary); background:var(--bg-primary); gap:12px; }
+  .topbar .logo { font-weight:700; font-size:18px; color:var(--orange); }
+  .topbar .logo span { color:var(--text-primary); }
+  .topbar .search-bar { flex:1; max-width:480px; height:34px; border-radius:var(--radius-6); border:1px solid var(--border-secondary); background:var(--bg-secondary); display:flex; align-items:center; padding:0 12px; color:var(--text-tertiary); font-size:13px; cursor:pointer; transition:border-color .2s; }
+  .topbar .search-bar:hover { border-color:var(--orange-border); }
+  .topbar .search-bar .kbd { margin-left:auto; background:var(--bg-tertiary); padding:2px 6px; border-radius:4px; font-size:11px; color:var(--text-tertiary); }
+  .topbar .spacer { flex:1; }
+  .topbar .icon-btn { width:34px; height:34px; border-radius:var(--radius-6); display:flex; align-items:center; justify-content:center; border:none; background:transparent; cursor:pointer; color:var(--text-secondary); font-size:16px; transition:background .2s; }
+  .topbar .icon-btn:hover { background:var(--bg-tertiary); }
+  .topbar .icon-btn.ai { color:var(--purple); background:var(--purple-subtle); }
+  .topbar .avatar { width:30px; height:30px; border-radius:var(--radius-round); background:var(--orange-subtle); border:2px solid var(--orange-border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--orange); }
+
+  /* === LAYOUT === */
+  .layout { display:flex; min-height:560px; }
+  .sidebar { width:240px; border-right:1px solid var(--border-primary); background:var(--bg-secondary); padding:12px 8px; flex-shrink:0; overflow-y:auto; }
+  .sidebar-section { margin-bottom:16px; }
+  .sidebar-title { font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-tertiary); padding:4px 12px; letter-spacing:.5px; }
+  .sidebar-item { display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:var(--radius-6); font-size:13px; color:var(--text-secondary); cursor:pointer; transition:all .15s; }
+  .sidebar-item:hover { background:var(--bg-tertiary); color:var(--text-primary); }
+  .sidebar-item.active { background:var(--orange-subtle); color:var(--orange); font-weight:500; }
+  .sidebar-item .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .sidebar-item .badge { margin-left:auto; font-size:11px; background:var(--bg-tertiary); padding:1px 6px; border-radius:var(--radius-round); color:var(--text-tertiary); }
+
+  .main { flex:1; overflow-y:auto; padding:24px; }
+  .right-panel { width:280px; border-left:1px solid var(--border-primary); padding:16px; flex-shrink:0; background:var(--bg-secondary); }
+
+  /* === CARDS === */
+  .card { background:var(--bg-primary); border:1px solid var(--border-primary); border-radius:var(--radius-8); padding:16px; margin-bottom:12px; cursor:pointer; transition:all .2s; }
+  .card:hover { box-shadow:var(--shadow-m); border-color:var(--border-tertiary); transform:translateY(-1px); }
+  .card-meta { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:12px; color:var(--text-tertiary); }
+  .card-meta .avatar-sm { width:22px; height:22px; border-radius:50%; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; }
+  .card h3 { font-size:15px; font-weight:600; margin-bottom:6px; line-height:1.4; }
+  .card p { font-size:13px; color:var(--text-secondary); line-height:1.5; }
+  .card-footer { display:flex; align-items:center; gap:12px; margin-top:10px; font-size:12px; color:var(--text-tertiary); }
+  .card-tag { display:inline-block; padding:2px 8px; border-radius:var(--radius-round); font-size:11px; background:var(--bg-tertiary); color:var(--text-secondary); }
+  .card-tag.ai { background:var(--purple-subtle); color:var(--purple); }
+  .card-tag.new { background:var(--green-subtle); color:var(--green); }
+
+  /* === SECTION HEADERS === */
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .section-header h2 { font-size:16px; font-weight:600; }
+  .section-header .see-all { font-size:13px; color:var(--blue); cursor:pointer; text-decoration:none; }
+
+  /* === AI CHAT === */
+  .ai-chat-panel { background:var(--bg-primary); border-radius:var(--radius-12); border:1px solid var(--border-secondary); overflow:hidden; }
+  .ai-chat-header { padding:12px 16px; border-bottom:1px solid var(--border-primary); display:flex; align-items:center; gap:8px; }
+  .ai-chat-header .ai-icon { width:28px; height:28px; border-radius:var(--radius-6); background:linear-gradient(135deg, var(--purple), var(--blue)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
+  .ai-chat-header span { font-size:14px; font-weight:600; }
+  .ai-chat-body { padding:16px; min-height:200px; }
+  .ai-msg { margin-bottom:12px; }
+  .ai-msg.user { text-align:right; }
+  .ai-msg .bubble { display:inline-block; max-width:85%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.5; text-align:left; }
+  .ai-msg.user .bubble { background:var(--orange); color:#fff; border-bottom-right-radius:4px; }
+  .ai-msg.bot .bubble { background:var(--bg-secondary); color:var(--text-primary); border-bottom-left-radius:4px; }
+  .ai-msg .source { display:inline-block; margin-top:6px; padding:3px 8px; border-radius:var(--radius-round); background:var(--blue-subtle); color:var(--blue); font-size:11px; cursor:pointer; }
+  .ai-chat-input { border-top:1px solid var(--border-primary); padding:12px 16px; display:flex; gap:8px; }
+  .ai-chat-input input { flex:1; height:36px; border:1px solid var(--border-secondary); border-radius:var(--radius-round); padding:0 14px; font-size:13px; outline:none; }
+  .ai-chat-input input:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(173,67,255,0.1); }
+  .ai-chat-input button { height:36px; padding:0 16px; border-radius:var(--radius-round); border:none; background:var(--purple); color:#fff; font-size:13px; font-weight:500; cursor:pointer; }
+
+  /* === ARTICLE VIEW === */
+  .article-view { max-width:720px; margin:0 auto; }
+  .article-view .breadcrumb { font-size:12px; color:var(--text-tertiary); margin-bottom:16px; }
+  .article-view .breadcrumb a { color:var(--blue); text-decoration:none; }
+  .article-view h1 { font-size:28px; font-weight:700; line-height:1.3; margin-bottom:12px; }
+  .article-view .article-meta { display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-primary); font-size:13px; color:var(--text-secondary); }
+  .article-view .article-body { font-size:16px; line-height:1.8; color:var(--text-primary); }
+  .article-view .article-body p { margin-bottom:16px; }
+  .article-view .article-body h2 { font-size:20px; font-weight:600; margin:32px 0 12px; }
+  .article-view .article-body code { background:var(--bg-tertiary); padding:2px 6px; border-radius:4px; font-size:14px; }
+  .article-view .reaction-bar { display:flex; gap:8px; margin-top:24px; padding-top:16px; border-top:1px solid var(--border-primary); }
+  .article-view .reaction-bar button { display:flex; align-items:center; gap:4px; padding:6px 12px; border-radius:var(--radius-round); border:1px solid var(--border-secondary); background:var(--bg-primary); font-size:13px; color:var(--text-secondary); cursor:pointer; transition:all .15s; }
+  .article-view .reaction-bar button:hover { background:var(--orange-subtle); border-color:var(--orange-border); color:var(--orange); }
+
+  /* === TOC === */
+  .toc { position:sticky; top:0; }
+  .toc h4 { font-size:12px; font-weight:600; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:12px; letter-spacing:.5px; }
+  .toc-item { display:block; padding:4px 0 4px 12px; font-size:13px; color:var(--text-secondary); text-decoration:none; border-left:2px solid var(--border-primary); transition:all .15s; }
+  .toc-item:hover { color:var(--text-primary); border-color:var(--text-tertiary); }
+  .toc-item.active { color:var(--orange); border-color:var(--orange); font-weight:500; }
+
+  /* === DIRECTION SPECIFIC === */
+
+  /* Direction A: Feed-Centric */
+  .dir-a .main { max-width:800px; margin:0 auto; padding:24px 32px; }
+  .dir-a .feed-tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border-primary); padding-bottom:0; }
+  .dir-a .feed-tab { padding:8px 16px; font-size:14px; color:var(--text-secondary); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; font-weight:500; }
+  .dir-a .feed-tab:hover { color:var(--text-primary); }
+  .dir-a .feed-tab.active { color:var(--orange); border-bottom-color:var(--orange); }
+
+  /* Direction B: Workspace */
+  .dir-b .sidebar { width:260px; }
+  .dir-b .sidebar .create-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:8px; border-radius:var(--radius-6); border:none; background:var(--orange); color:#fff; font-size:13px; font-weight:500; cursor:pointer; margin-bottom:16px; }
+  .dir-b .breadcrumb-bar { padding:8px 24px; border-bottom:1px solid var(--border-primary); font-size:13px; color:var(--text-tertiary); background:var(--bg-primary); }
+  .dir-b .breadcrumb-bar a { color:var(--blue); text-decoration:none; }
+
+  /* Direction C: AI-First */
+  .dir-c .ai-hero { text-align:center; padding:48px 24px 32px; max-width:640px; margin:0 auto; }
+  .dir-c .ai-hero h2 { font-size:24px; font-weight:700; margin-bottom:8px; }
+  .dir-c .ai-hero p { color:var(--text-secondary); font-size:14px; margin-bottom:24px; }
+  .dir-c .ai-hero .ai-input { display:flex; max-width:560px; margin:0 auto; gap:8px; }
+  .dir-c .ai-hero .ai-input input { flex:1; height:44px; border:2px solid var(--border-secondary); border-radius:var(--radius-round); padding:0 20px; font-size:15px; outline:none; transition:border-color .2s; }
+  .dir-c .ai-hero .ai-input input:focus { border-color:var(--purple); box-shadow:0 0 0 4px rgba(173,67,255,0.1); }
+  .dir-c .ai-hero .ai-input button { height:44px; padding:0 24px; border-radius:var(--radius-round); border:none; background:linear-gradient(135deg, var(--purple), var(--blue)); color:#fff; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .dir-c .quick-actions { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .dir-c .quick-action { padding:6px 14px; border-radius:var(--radius-round); border:1px solid var(--border-secondary); background:var(--bg-primary); font-size:12px; color:var(--text-secondary); cursor:pointer; transition:all .15s; }
+  .dir-c .quick-action:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-subtle); }
+
+  /* === COMPARISON VIEW === */
+  .comparison { padding:24px; max-width:1200px; margin:0 auto; }
+  .comparison h2 { text-align:center; font-size:20px; margin-bottom:24px; }
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  .compare-card { border:2px solid var(--border-secondary); border-radius:var(--radius-12); padding:20px; background:var(--bg-primary); transition:all .2s; cursor:pointer; }
+  .compare-card:hover { border-color:var(--orange); box-shadow:var(--shadow-m); }
+  .compare-card h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
+  .compare-card .subtitle { font-size:13px; color:var(--text-secondary); margin-bottom:16px; }
+  .compare-card .feature { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:13px; line-height:1.4; }
+  .compare-card .check { color:var(--green); font-weight:700; flex-shrink:0; }
+  .compare-card .highlight { color:var(--orange); font-weight:700; flex-shrink:0; }
+  .compare-card .rec { display:inline-block; margin-top:12px; padding:4px 10px; border-radius:var(--radius-round); font-size:11px; font-weight:600; }
+
+  /* === PAGE VIEWS === */
+  .page-label { text-align:center; padding:8px; background:var(--bg-tertiary); font-size:12px; font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; }
+
+  /* Animations */
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .card { animation: fadeIn .3s ease forwards; }
+
+  /* Responsive hint */
+  .responsive-note { text-align:center; padding:16px; font-size:12px; color:var(--text-tertiary); }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <span class="nav-label">iWiki 4.0 Design Directions</span>
+  <button class="nav-btn active" onclick="showDir('compare')">⚖️ So sánh</button>
+  <button class="nav-btn" onclick="showDir('a')">A: Knowledge Hub</button>
+  <button class="nav-btn" onclick="showDir('b')">B: Smart Workspace</button>
+  <button class="nav-btn" onclick="showDir('c')">C: AI-First</button>
+  <button class="nav-btn" onclick="showDir('a-article')">📖 Đọc bài</button>
+  <button class="nav-btn" onclick="showDir('c-chat')">🤖 AI Chat</button>
+</nav>
+
+<!-- === COMPARISON VIEW === -->
+<div class="direction active" id="dir-compare">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--orange-subtle);color:var(--orange)">SO SÁNH 3 HƯỚNG THIẾT KẾ</div>
+    <h1>iWiki 4.0 — Chọn Hướng Thiết kế</h1>
+    <p>Mỗi hướng tối ưu cho một trải nghiệm khác nhau. Bạn có thể chọn 1 hướng hoặc kết hợp elements từ nhiều hướng.</p>
+  </div>
+  <div class="comparison">
+    <div class="compare-grid">
+      <!-- Direction A -->
+      <div class="compare-card" onclick="showDir('a')">
+        <h3>A: Knowledge Hub</h3>
+        <div class="subtitle">Feed-centric · Như Reddit/Medium</div>
+        <div class="feature"><span class="check">✓</span> Trang chủ = Personalized Feed là trung tâm</div>
+        <div class="feature"><span class="check">✓</span> Card-based layout, dễ scan nhanh</div>
+        <div class="feature"><span class="check">✓</span> Tab navigation: Cho bạn / Mới / Hot</div>
+        <div class="feature"><span class="check">✓</span> Sidebar minimal (chỉ spaces)</div>
+        <div class="feature"><span class="check">✓</span> AI Chat ở panel phải (secondary)</div>
+        <div class="feature"><span class="highlight">★</span> Tốt nhất cho: Khám phá & Đọc nội dung</div>
+        <span class="rec" style="background:var(--blue-subtle);color:var(--blue)">Phù hợp Viewer persona</span>
+      </div>
+      <!-- Direction B -->
+      <div class="compare-card" onclick="showDir('b')">
+        <h3>B: Smart Workspace</h3>
+        <div class="subtitle">Sidebar-centric · Như Notion</div>
+        <div class="feature"><span class="check">✓</span> Sidebar tree navigation rộng, rich</div>
+        <div class="feature"><span class="check">✓</span> Workspace-style, cấu trúc rõ ràng</div>
+        <div class="feature"><span class="check">✓</span> Breadcrumb navigation luôn hiện</div>
+        <div class="feature"><span class="check">✓</span> Quick-create button nổi bật</div>
+        <div class="feature"><span class="check">✓</span> AI Chat tích hợp inline</div>
+        <div class="feature"><span class="highlight">★</span> Tốt nhất cho: Tổ chức & Viết nội dung</div>
+        <span class="rec" style="background:var(--green-subtle);color:var(--green)">Phù hợp Contributor & KM</span>
+      </div>
+      <!-- Direction C -->
+      <div class="compare-card" onclick="showDir('c')">
+        <h3>C: AI-First</h3>
+        <div class="subtitle">Chat-centric · Như ChatGPT + Wiki</div>
+        <div class="feature"><span class="check">✓</span> AI Chat hero ở trang chủ — entry point #1</div>
+        <div class="feature"><span class="check">✓</span> "Hỏi là có" là trải nghiệm đầu tiên</div>
+        <div class="feature"><span class="check">✓</span> Quick actions gợi ý câu hỏi</div>
+        <div class="feature"><span class="check">✓</span> Feed bên dưới AI (secondary)</div>
+        <div class="feature"><span class="check">✓</span> Sidebar compact khi cần navigate</div>
+        <div class="feature"><span class="highlight">★</span> Tốt nhất cho: Tìm kiếm & Hỏi đáp nhanh</div>
+        <span class="rec" style="background:var(--orange-subtle);color:var(--orange)">★ ĐỀ XUẤT — Khớp nhất với vision</span>
+      </div>
+    </div>
+  </div>
+  <div class="responsive-note">Click vào mỗi card hoặc dùng nút navigation phía trên để xem mockup chi tiết</div>
+</div>
+
+<!-- === DIRECTION A: KNOWLEDGE HUB (Feed-Centric) === -->
+<div class="direction" id="dir-a">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--blue-subtle);color:var(--blue)">DIRECTION A</div>
+    <h1>Knowledge Hub — Feed-Centric</h1>
+    <p>Trang chủ là Personalized Feed. Nội dung đến với user qua cards, tabs filter. AI Chat ở sidebar phải. Giống Reddit/Medium.</p>
+  </div>
+  <div class="page-label">TRANG CHỦ — HOME FEED</div>
+  <div class="mockup-frame dir-a">
+    <div class="topbar">
+      <div class="logo">i<span>Wiki</span></div>
+      <div class="search-bar">🔍 Tìm kiếm bài viết, hỏi AI... <span class="kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn">🔔</button>
+      <button class="icon-btn ai">✨</button>
+      <div class="avatar">TN</div>
+    </div>
+    <div class="layout">
+      <div class="sidebar" style="width:200px">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Spaces</div>
+          <div class="sidebar-item active"><div class="dot" style="background:var(--orange)"></div> Tất cả</div>
+          <div class="sidebar-item"><div class="dot" style="background:var(--blue)"></div> Engineering <span class="badge">12</span></div>
+          <div class="sidebar-item"><div class="dot" style="background:var(--green)"></div> Product <span class="badge">5</span></div>
+          <div class="sidebar-item"><div class="dot" style="background:var(--purple)"></div> Design <span class="badge">3</span></div>
+          <div class="sidebar-item"><div class="dot" style="background:var(--amber)"></div> Operations</div>
+          <div class="sidebar-item"><div class="dot" style="background:var(--red)"></div> HR & Culture</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Bookmarks</div>
+          <div class="sidebar-item">📌 Deploy checklist</div>
+          <div class="sidebar-item">📌 Code review guide</div>
+        </div>
+      </div>
+      <div class="main" style="max-width:none;padding:20px 32px">
+        <div class="feed-tabs">
+          <div class="feed-tab active">✨ Cho bạn</div>
+          <div class="feed-tab">🕐 Mới nhất</div>
+          <div class="feed-tab">🔥 Đang hot</div>
+          <div class="feed-tab">📚 Theo dõi</div>
+        </div>
+        <div class="card">
+          <div class="card-meta">
+            <div class="avatar-sm" style="background:var(--blue-subtle);color:var(--blue)">HN</div>
+            <span>Hoàng Nam · Engineering</span>
+            <span>· 2 giờ trước</span>
+            <span class="card-tag new">Mới</span>
+          </div>
+          <h3>Best Practices: Deploy Production với Zero Downtime</h3>
+          <p>Hướng dẫn chi tiết quy trình deploy production sử dụng blue-green deployment, bao gồm checklist pre-deploy, rollback strategy...</p>
+          <div class="card-footer">
+            <span>👁 234 lượt đọc</span>
+            <span>❤️ 18</span>
+            <span>💬 5 bình luận</span>
+            <span>⏱ 8 phút đọc</span>
+            <span class="card-tag ai">🤖 Vì bạn ở team Engineering</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-meta">
+            <div class="avatar-sm" style="background:var(--green-subtle);color:var(--green)">LT</div>
+            <span>Lan Thy · Product</span>
+            <span>· 5 giờ trước</span>
+          </div>
+          <h3>Quy trình Sprint Planning chuẩn iKame 2024</h3>
+          <p>Tổng hợp quy trình sprint planning đã được optimize qua 6 tháng thực hành, bao gồm template, checklist và tips từ các PM...</p>
+          <div class="card-footer">
+            <span>👁 156 lượt đọc</span>
+            <span>❤️ 12</span>
+            <span>💬 3 bình luận</span>
+            <span>⏱ 5 phút đọc</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-meta">
+            <div class="avatar-sm" style="background:var(--purple-subtle);color:var(--purple)">AI</div>
+            <span>AI Assistant</span>
+            <span>· Hôm nay</span>
+            <span class="card-tag ai">✨ AI Generated Draft</span>
+          </div>
+          <h3>Tổng hợp: Microservices Communication Patterns tại iKame</h3>
+          <p>Bài viết được AI tổng hợp từ 8 bài viết liên quan trong knowledge base. Đang chờ review từ chuyên gia...</p>
+          <div class="card-footer">
+            <span>📝 Đang chờ review</span>
+            <span>⏱ 12 phút đọc</span>
+            <span style="margin-left:auto;color:var(--orange);cursor:pointer">Review ngay →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === DIRECTION B: SMART WORKSPACE (Sidebar-Centric) === -->
+<div class="direction" id="dir-b">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--green-subtle);color:var(--green)">DIRECTION B</div>
+    <h1>Smart Workspace — Sidebar-Centric</h1>
+    <p>Sidebar tree navigation rộng, breadcrumb luôn hiện. Workspace-style giống Notion. Tập trung vào cấu trúc và tổ chức nội dung.</p>
+  </div>
+  <div class="page-label">TRANG CHỦ — WORKSPACE VIEW</div>
+  <div class="mockup-frame dir-b">
+    <div class="topbar">
+      <div class="logo">i<span>Wiki</span></div>
+      <div class="search-bar">🔍 Tìm kiếm hoặc hỏi AI... <span class="kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn">📥</button>
+      <button class="icon-btn">🔔</button>
+      <button class="icon-btn ai">✨</button>
+      <div class="avatar">TN</div>
+    </div>
+    <div class="layout">
+      <div class="sidebar" style="width:260px">
+        <button class="create-btn">＋ Tạo bài viết mới</button>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Favorites</div>
+          <div class="sidebar-item">⭐ Deploy Checklist</div>
+          <div class="sidebar-item">⭐ Sprint Planning Guide</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Spaces</div>
+          <div class="sidebar-item active">
+            <span>📁</span> Engineering
+          </div>
+          <div class="sidebar-item" style="padding-left:32px">
+            <span>📄</span> Backend
+          </div>
+          <div class="sidebar-item" style="padding-left:32px">
+            <span>📄</span> Frontend
+          </div>
+          <div class="sidebar-item" style="padding-left:32px">
+            <span>📄</span> DevOps
+          </div>
+          <div class="sidebar-item" style="padding-left:32px">
+            <span>📄</span> QA
+          </div>
+          <div class="sidebar-item">
+            <span>📁</span> Product
+          </div>
+          <div class="sidebar-item">
+            <span>📁</span> Design
+          </div>
+          <div class="sidebar-item">
+            <span>📁</span> Operations
+          </div>
+          <div class="sidebar-item">
+            <span>📁</span> HR & Culture
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Recent</div>
+          <div class="sidebar-item">📝 API Design Standards</div>
+          <div class="sidebar-item">📝 Onboarding v3</div>
+        </div>
+      </div>
+      <div class="main" style="padding:0">
+        <div class="breadcrumb-bar">
+          <a href="#">🏠 Home</a> / <a href="#">Engineering</a> / <span>Tổng quan</span>
+        </div>
+        <div style="padding:24px">
+          <div class="section-header">
+            <h2>📌 Ghim lên đầu</h2>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+            <div class="card">
+              <h3>🎯 OKR Engineering Q1 2024</h3>
+              <p>Mục tiêu và kết quả chính cho team Engineering quý 1</p>
+              <div class="card-footer"><span>Cập nhật 2 ngày trước</span></div>
+            </div>
+            <div class="card">
+              <h3>📋 Coding Standards iKame</h3>
+              <p>Chuẩn viết code cho toàn bộ team Engineering</p>
+              <div class="card-footer"><span>Cập nhật 1 tuần trước</span></div>
+            </div>
+          </div>
+          <div class="section-header">
+            <h2>🕐 Cập nhật gần đây</h2>
+            <a class="see-all" href="#">Xem tất cả →</a>
+          </div>
+          <div class="card">
+            <div class="card-meta">
+              <div class="avatar-sm" style="background:var(--blue-subtle);color:var(--blue)">HN</div>
+              <span>Hoàng Nam</span><span>· 2 giờ trước</span>
+            </div>
+            <h3>Best Practices: Deploy Production với Zero Downtime</h3>
+            <div class="card-footer"><span>👁 234</span><span>❤️ 18</span><span>⏱ 8 phút</span></div>
+          </div>
+          <div class="card">
+            <div class="card-meta">
+              <div class="avatar-sm" style="background:var(--green-subtle);color:var(--green)">MT</div>
+              <span>Minh Tuấn</span><span>· Hôm qua</span>
+            </div>
+            <h3>GraphQL vs REST: Khi nào nên dùng gì?</h3>
+            <div class="card-footer"><span>👁 189</span><span>❤️ 24</span><span>⏱ 10 phút</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === DIRECTION C: AI-FIRST === -->
+<div class="direction" id="dir-c">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--orange-subtle);color:var(--orange)">DIRECTION C — ĐỀ XUẤT</div>
+    <h1>AI-First — Chat-Centric</h1>
+    <p>AI Chat là entry point #1 ngay trên trang chủ. "Hỏi là có" — đúng với vision "chuyên gia biết hết mọi thứ". Feed cá nhân hóa ở phía dưới.</p>
+  </div>
+  <div class="page-label">TRANG CHỦ — AI-FIRST HOME</div>
+  <div class="mockup-frame dir-c">
+    <div class="topbar">
+      <div class="logo">i<span>Wiki</span></div>
+      <div class="icon-btn" style="font-size:18px;cursor:pointer">☰</div>
+      <div class="spacer"></div>
+      <div class="search-bar" style="max-width:360px">🔍 Tìm kiếm bài viết... <span class="kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn">＋</button>
+      <button class="icon-btn">🔔</button>
+      <div class="avatar">TN</div>
+    </div>
+    <div style="min-height:560px">
+      <div class="ai-hero">
+        <div style="width:48px;height:48px;border-radius:var(--radius-12);background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin:0 auto 16px">✨</div>
+        <h2>Xin chào Tom! Hôm nay bạn cần gì?</h2>
+        <p>Hỏi bất kỳ điều gì về tri thức iKame — tôi sẽ tìm câu trả lời cho bạn</p>
+        <div class="ai-input">
+          <input placeholder="Ví dụ: Quy trình deploy production là gì?" />
+          <button>Hỏi AI ✨</button>
+        </div>
+        <div class="quick-actions">
+          <div class="quick-action">📋 Quy trình onboarding</div>
+          <div class="quick-action">🚀 Deploy checklist</div>
+          <div class="quick-action">📝 Viết bài mới với AI</div>
+          <div class="quick-action">🔥 Đang trending</div>
+        </div>
+      </div>
+      <div style="max-width:900px;margin:0 auto;padding:0 24px 24px">
+        <div class="section-header">
+          <h2>✨ Cho bạn</h2>
+          <a class="see-all" href="#">Xem tất cả →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+          <div class="card">
+            <div class="card-meta">
+              <div class="avatar-sm" style="background:var(--blue-subtle);color:var(--blue)">HN</div>
+              <span>Hoàng Nam · Engineering</span><span>· 2h</span>
+              <span class="card-tag new">Mới</span>
+            </div>
+            <h3>Best Practices: Deploy Production với Zero Downtime</h3>
+            <p>Hướng dẫn chi tiết blue-green deployment...</p>
+            <div class="card-footer"><span>👁 234</span><span>❤️ 18</span><span>⏱ 8 phút</span></div>
+          </div>
+          <div class="card">
+            <div class="card-meta">
+              <div class="avatar-sm" style="background:var(--green-subtle);color:var(--green)">LT</div>
+              <span>Lan Thy · Product</span><span>· 5h</span>
+            </div>
+            <h3>Sprint Planning chuẩn iKame 2024</h3>
+            <p>Quy trình sprint planning đã optimize...</p>
+            <div class="card-footer"><span>👁 156</span><span>❤️ 12</span><span>⏱ 5 phút</span></div>
+          </div>
+        </div>
+        <div class="section-header">
+          <h2>🔥 Đang hot trong Engineering</h2>
+          <a class="see-all" href="#">Xem tất cả →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="card" style="padding:12px">
+            <h3 style="font-size:13px">GraphQL vs REST</h3>
+            <div class="card-footer" style="margin-top:6px"><span>👁 189</span><span>❤️ 24</span></div>
+          </div>
+          <div class="card" style="padding:12px">
+            <h3 style="font-size:13px">K8s Monitoring Setup</h3>
+            <div class="card-footer" style="margin-top:6px"><span>👁 145</span><span>❤️ 19</span></div>
+          </div>
+          <div class="card" style="padding:12px">
+            <h3 style="font-size:13px">Code Review Checklist</h3>
+            <div class="card-footer" style="margin-top:6px"><span>👁 312</span><span>❤️ 42</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === ARTICLE VIEW === -->
+<div class="direction" id="dir-a-article">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--bg-tertiary);color:var(--text-secondary)">TẤT CẢ DIRECTIONS</div>
+    <h1>Trải nghiệm Đọc bài viết</h1>
+    <p>Typography-first, max-width 720px, generous line-height — tối ưu cho 80% thời gian sử dụng là ĐỌC.</p>
+  </div>
+  <div class="page-label">ARTICLE VIEW — ĐỌC BÀI VIẾT</div>
+  <div class="mockup-frame">
+    <div class="topbar">
+      <div class="logo">i<span>Wiki</span></div>
+      <div class="search-bar">🔍 Tìm kiếm... <span class="kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn ai">✨</button>
+      <div class="avatar">TN</div>
+    </div>
+    <div class="layout">
+      <div class="sidebar" style="width:200px">
+        <div class="sidebar-section">
+          <div class="sidebar-item"><span>📁</span> Engineering</div>
+          <div class="sidebar-item active" style="padding-left:28px"><span>📄</span> DevOps</div>
+        </div>
+      </div>
+      <div class="main" style="padding:32px 40px">
+        <div class="article-view">
+          <div class="breadcrumb">
+            <a href="#">Engineering</a> / <a href="#">DevOps</a> / <span>Deploy Production</span>
+          </div>
+          <h1>Best Practices: Deploy Production với Zero Downtime</h1>
+          <div class="article-meta">
+            <div class="avatar-sm" style="background:var(--blue-subtle);color:var(--blue);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">HN</div>
+            <span><strong>Hoàng Nam</strong> · DevOps Engineer</span>
+            <span>2 giờ trước</span>
+            <span>⏱ 8 phút đọc</span>
+            <span>👁 234 lượt đọc</span>
+          </div>
+          <div class="article-body">
+            <p>Trong bài viết này, mình sẽ chia sẻ quy trình deploy production mà team DevOps tại iKame đã sử dụng và tối ưu trong suốt 6 tháng qua. Quy trình này giúp đảm bảo zero downtime cho tất cả services.</p>
+
+            <h2>1. Blue-Green Deployment là gì?</h2>
+            <p>Blue-green deployment là một release strategy sử dụng hai môi trường production giống hệt nhau. Tại mỗi thời điểm, chỉ một môi trường phục vụ live traffic (ví dụ "blue"), trong khi môi trường còn lại ("green") được sử dụng để deploy version mới.</p>
+
+            <h2>2. Pre-Deploy Checklist</h2>
+            <p>Trước khi bắt đầu deploy, hãy đảm bảo hoàn thành checklist sau:</p>
+            <p>• Tất cả tests đã pass trên staging<br>
+            • Database migrations đã được review<br>
+            • Rollback plan đã được document<br>
+            • Team đã được thông báo qua <code>#deploy-notifications</code></p>
+
+            <h2>3. Quy trình Deploy</h2>
+            <p>Step 1: Verify staging environment...<br>Step 2: Run database migrations...<br>Step 3: Deploy to green environment...</p>
+          </div>
+          <div class="reaction-bar">
+            <button>❤️ 18</button>
+            <button>👏 Hữu ích</button>
+            <button>🔖 Lưu</button>
+            <button>💬 5 bình luận</button>
+            <button style="margin-left:auto;border-color:var(--purple);color:var(--purple)">✨ Hỏi AI về bài này</button>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="toc">
+          <h4>Mục lục</h4>
+          <a class="toc-item active" href="#">1. Blue-Green Deployment là gì?</a>
+          <a class="toc-item" href="#">2. Pre-Deploy Checklist</a>
+          <a class="toc-item" href="#">3. Quy trình Deploy</a>
+          <a class="toc-item" href="#">4. Monitoring</a>
+          <a class="toc-item" href="#">5. Rollback Strategy</a>
+        </div>
+        <div style="margin-top:32px">
+          <h4 style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px;letter-spacing:.5px">Bài viết liên quan</h4>
+          <div class="card" style="padding:10px;margin-bottom:8px">
+            <h3 style="font-size:12px">K8s Monitoring Best Practices</h3>
+            <div style="font-size:11px;color:var(--text-tertiary)">Minh Tuấn · 145 đọc</div>
+          </div>
+          <div class="card" style="padding:10px;margin-bottom:8px">
+            <h3 style="font-size:12px">CI/CD Pipeline Setup Guide</h3>
+            <div style="font-size:11px;color:var(--text-tertiary)">Văn Huy · 98 đọc</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === AI CHAT VIEW === -->
+<div class="direction" id="dir-c-chat">
+  <div class="dir-header">
+    <div class="tag" style="background:var(--purple-subtle);color:var(--purple)">CORE EXPERIENCE</div>
+    <h1>AI Chat — "Hỏi là có"</h1>
+    <p>Trải nghiệm cốt lõi #1: Hỏi bằng tiếng Việt tự nhiên → nhận câu trả lời chính xác + nguồn trích dẫn trong vài giây.</p>
+  </div>
+  <div class="page-label">AI CHAT — FULL CONVERSATION</div>
+  <div class="mockup-frame">
+    <div class="topbar">
+      <div class="logo">i<span>Wiki</span></div>
+      <div class="search-bar">🔍 Tìm kiếm... <span class="kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <div class="avatar">TN</div>
+    </div>
+    <div class="layout">
+      <div class="sidebar" style="width:240px">
+        <div class="sidebar-section">
+          <div class="sidebar-title">💬 Lịch sử Chat</div>
+          <div class="sidebar-item active">Quy trình deploy production</div>
+          <div class="sidebar-item">Sprint planning template</div>
+          <div class="sidebar-item">Code review standards</div>
+          <div class="sidebar-item">Onboarding process</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">📚 Gợi ý hỏi</div>
+          <div class="sidebar-item" style="font-size:12px">Quy trình xin nghỉ phép?</div>
+          <div class="sidebar-item" style="font-size:12px">Setup dev environment?</div>
+          <div class="sidebar-item" style="font-size:12px">Design system guidelines?</div>
+        </div>
+      </div>
+      <div class="main" style="padding:0;display:flex;flex-direction:column">
+        <div style="flex:1;padding:24px;overflow-y:auto;max-width:720px;margin:0 auto;width:100%">
+          <div class="ai-msg user">
+            <div class="bubble">Quy trình deploy production tại iKame như thế nào?</div>
+          </div>
+          <div class="ai-msg bot">
+            <div class="bubble">
+              <strong>Quy trình Deploy Production tại iKame</strong> gồm 5 bước chính:<br><br>
+              <strong>1. Pre-Deploy Checklist</strong><br>
+              — Verify tất cả tests pass trên staging<br>
+              — Review database migrations<br>
+              — Thông báo team qua #deploy-notifications<br><br>
+              <strong>2. Blue-Green Deployment</strong><br>
+              — Deploy version mới lên green environment<br>
+              — Chạy smoke tests<br>
+              — Switch traffic từ blue sang green<br><br>
+              <strong>3. Monitoring</strong><br>
+              — Monitor error rate, latency, CPU trong 15 phút đầu<br>
+              — Sử dụng Grafana dashboard DevOps-Prod<br><br>
+              <strong>4. Rollback</strong><br>
+              — Nếu phát hiện issues: switch traffic về blue ngay lập tức<br>
+              — Rollback window: 30 phút<br><br>
+              <strong>5. Post-Deploy</strong><br>
+              — Update deploy log<br>
+              — Notify team kết quả
+              <br><br>
+              <span class="source">📄 Nguồn: Deploy Production với Zero Downtime — Hoàng Nam</span>
+              <span class="source" style="margin-left:4px">📄 Nguồn: DevOps Runbook v3 — Văn Huy</span>
+            </div>
+          </div>
+          <div class="ai-msg user">
+            <div class="bubble">Nếu rollback thất bại thì sao?</div>
+          </div>
+          <div class="ai-msg bot">
+            <div class="bubble">
+              Nếu rollback thất bại, quy trình <strong>Emergency Recovery</strong> sẽ được kích hoạt:<br><br>
+              1. <strong>Page On-Call Engineer</strong> ngay lập tức<br>
+              2. <strong>Activate War Room</strong> trên Slack channel #incident<br>
+              3. <strong>Scale down</strong> traffic qua maintenance page<br>
+              4. Debug và fix trên green environment<br><br>
+              ⚠️ <em>Lưu ý: Trường hợp này chưa xảy ra trong 6 tháng qua nhờ quy trình pre-deploy checklist nghiêm ngặt.</em>
+              <br><br>
+              <span class="source">📄 Nguồn: Incident Response Playbook — Team DevOps</span>
+            </div>
+          </div>
+        </div>
+        <div class="ai-chat-input" style="border-top:1px solid var(--border-primary);padding:16px 24px;max-width:720px;margin:0 auto;width:100%">
+          <input placeholder="Hỏi thêm về quy trình deploy..." style="height:40px;border-radius:var(--radius-round);border:2px solid var(--border-secondary);padding:0 16px;font-size:14px" />
+          <button style="height:40px;padding:0 20px;border-radius:var(--radius-round);border:none;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-size:14px;font-weight:500;cursor:pointer">Gửi ✨</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDir(id) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('dir-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
