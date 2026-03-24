@@ -4,7 +4,10 @@
       "Bash(npm install:*)",
       "Bash(ck --version)",
       "Bash(ck init:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(python %USERPROFILE%/.claude/skills/ck-help/scripts/ck-help.py \"\")",
+      "Bash(\"$USERPROFILE/.claude/skills/ck-help/scripts/ck-help.py\")",
+      "Bash(python \"$USERPROFILE/.claude/skills/ck-help/scripts/ck-help.py\" \"\")"
     ]
   }
 }

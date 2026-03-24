@@ -13,8 +13,8 @@
   "dependencies": {
     "@ariakit/react": "^0.4.24",
     "@floating-ui/react": "^0.27.19",
-    "@frontend-team/tiptap-kit": "^0.2.7",
-    "@frontend-team/ui-kit": "^1.1.1",
+    "@frontend-team/tiptap-kit": "file:./libs/tiptap-kit-0.2.7.tgz",
+    "@frontend-team/ui-kit": "file:./libs/ui-kit-1.1.1.tgz",
     "@google/genai": "^1.29.0",
     "@hocuspocus/provider": "^3.4.4",
     "@hocuspocus/transformer": "^3.4.4",
