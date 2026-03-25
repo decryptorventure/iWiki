@@ -31,14 +31,14 @@ export default function MyArticleCard({
           {article.status === 'in_review' && <Badge color="blue" size="xs">Chờ duyệt</Badge>}
           {article.status === 'approved' && <Badge color="green" size="xs">Đã duyệt</Badge>}
           {article.status === 'rejected' && <Badge color="red" size="xs">Bị từ chối</Badge>}
-          <h3 className="font-bold text-gray-900 text-sm truncate hover:text-[#f76226] transition-colors">{article.title}</h3>
+          <h3 className="font-bold text-[var(--ds-text-primary)] text-sm truncate hover:text-[var(--ds-fg-accent-primary)] transition-colors">{article.title}</h3>
         </div>
-        <div className="flex items-center gap-4 text-xs text-gray-500">
+        <div className="flex items-center gap-4 text-xs text-[var(--ds-text-secondary)]">
           <span>{article.updatedAt}</span>
           {article.status === 'published' && (
             <>
               <span className="flex items-center gap-1"><Eye size={12} /> {article.views}</span>
-              <span className="flex items-center gap-1"><Flame size={12} className="text-[#f76226]" /> {article.likes}</span>
+              <span className="flex items-center gap-1"><Flame size={12} className="text-[var(--ds-fg-accent-primary)]" /> {article.likes}</span>
               <span className="flex items-center gap-1"><MessageSquare size={12} /> {article.comments.length}</span>
             </>
           )}
@@ -61,23 +61,23 @@ export default function MyArticleCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={onView} className="gap-2.5">
-              <Eye size={16} className="text-gray-400" /> Xem bài viết
+              <Eye size={16} className="text-[var(--ds-text-tertiary)]" /> Xem bài viết
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={onEdit} className="gap-2.5">
-              <Edit2 size={16} className="text-blue-500" /> Chỉnh sửa
+              <Edit2 size={16} className="text-[var(--ds-fg-info)]" /> Chỉnh sửa
             </DropdownMenuItem>
             {(article.status === 'draft' || article.status === 'rejected') && (
               <DropdownMenuItem onSelect={onSubmitReview} className="gap-2.5">
-                <CheckCircle size={16} className="text-emerald-500" /> Gửi duyệt
+                <CheckCircle size={16} className="text-[var(--ds-fg-success)]" /> Gửi duyệt
               </DropdownMenuItem>
             )}
             {article.status === 'approved' && (
               <DropdownMenuItem onSelect={onPublish} className="gap-2.5">
-                <CheckCircle size={16} className="text-orange-500" /> Xuất bản ngay
+                <CheckCircle size={16} className="text-[var(--ds-fg-accent-primary)]" /> Xuất bản ngay
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onDeleteRequest} className="gap-2.5 text-red-600 focus:text-red-600 focus:bg-red-50">
+            <DropdownMenuItem onSelect={onDeleteRequest} className="gap-2.5 text-[var(--ds-fg-danger)] focus:text-[var(--ds-fg-danger)] focus:bg-[var(--ds-bg-danger-subtle)]">
               <Trash2 size={16} /> Xóa bài viết
             </DropdownMenuItem>
           </DropdownMenuContent>

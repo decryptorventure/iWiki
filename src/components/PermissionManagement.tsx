@@ -18,7 +18,7 @@ export default function PermissionManagement() {
   const { state } = useApp();
   const [activeTab, setActiveTab] = useState('roles');
   if (!can(state.currentUser, 'admin.access')) {
-    return <div className="h-full flex items-center justify-center text-gray-500">Bạn không có quyền truy cập cấu hình phân quyền.</div>;
+    return <div className="h-full flex items-center justify-center text-[var(--ds-text-tertiary)]">Bạn không có quyền truy cập cấu hình phân quyền.</div>;
   }
 
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -82,7 +82,7 @@ export default function PermissionManagement() {
       variant={isEditingMatrix ? 'primary' : 'border'}
       size="s"
       onClick={() => setIsEditingMatrix(!isEditingMatrix)}
-      className={isEditingMatrix ? 'bg-green-600 hover:bg-green-700 border-green-600' : ''}
+      className={isEditingMatrix ? 'bg-[var(--ds-bg-success)] hover:bg-[var(--ds-bg-success-hover)] border-[var(--ds-bg-success)]' : ''}
     >
       {isEditingMatrix ? <><Save size={16} /> Lưu thay đổi</> : <><Edit2 size={16} /> Chỉnh sửa quyền</>}
     </Button>
@@ -110,13 +110,13 @@ export default function PermissionManagement() {
     <div className="max-w-6xl mx-auto px-8 py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-slide-up">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl text-white shadow-md shadow-indigo-500/20">
+          <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] flex items-center gap-3 mb-2">
+            <div className="p-2 bg-[var(--ds-bg-info)] rounded-xl text-white shadow-md">
               <Shield size={24} />
             </div>
             Phân quyền hệ thống
           </h1>
-          <p className="text-gray-500">Quản lý vai trò (Roles), quyền tính năng và quyền dữ liệu linh hoạt.</p>
+          <p className="text-[var(--ds-text-secondary)]">Quản lý vai trò (Roles), quyền tính năng và quyền dữ liệu linh hoạt.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="border" size="s" onClick={() => setIsUserModalOpen(true)}>
@@ -150,11 +150,11 @@ export default function PermissionManagement() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Tên vai trò</label>
+            <label className="block text-sm font-bold text-[var(--ds-text-primary)] mb-1">Tên vai trò</label>
             <Input type="text" defaultValue={editingRole?.name} placeholder="VD: Content Creator" className="w-full" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Mô tả</label>
+            <label className="block text-sm font-bold text-[var(--ds-text-primary)] mb-1">Mô tả</label>
             <Textarea defaultValue={editingRole?.description} placeholder="Mô tả quyền hạn của vai trò này..." className="w-full h-24" />
           </div>
         </div>
@@ -175,11 +175,11 @@ export default function PermissionManagement() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Email người dùng</label>
+            <label className="block text-sm font-bold text-[var(--ds-text-primary)] mb-1">Email người dùng</label>
             <Input type="email" placeholder="VD: nguyen.van.a@ikame.com" className="w-full" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Gán vai trò</label>
+            <label className="block text-sm font-bold text-[var(--ds-text-primary)] mb-1">Gán vai trò</label>
             <Select options={ROLE_OPTIONS} placeholder="Chọn vai trò..." className="w-full" />
           </div>
         </div>

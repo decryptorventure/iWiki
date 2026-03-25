@@ -17,7 +17,7 @@ interface DocItem {
 export default function DocumentManagement() {
   const { state } = useApp();
   if (!can(state.currentUser, 'admin.access')) {
-    return <div className="h-full flex items-center justify-center text-gray-500">Bạn không có quyền truy cập quản lý tài liệu hệ thống.</div>;
+    return <div className="h-full flex items-center justify-center text-[var(--ds-text-secondary)]">Bạn không có quyền truy cập quản lý tài liệu hệ thống.</div>;
   }
 
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['1', '1-1']);
@@ -59,14 +59,14 @@ export default function DocumentManagement() {
   };
 
   const folderItemClass = (id: string) =>
-    `flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all duration-200 group ${selectedFolder === id ? 'bg-gradient-to-r from-[#f76226]/10 to-orange-50 text-gray-900 font-semibold shadow-sm border border-[#f76226]/10' : 'hover:bg-white text-gray-700 border border-transparent hover:border-gray-200 hover:shadow-sm'} ${dropTarget === id ? 'border-2 border-dashed border-[#f76226] bg-orange-50/50' : ''}`;
+    `flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all duration-200 group ${selectedFolder === id ? 'bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-text-primary)] font-semibold shadow-sm border border-[var(--ds-border-accent-primary-subtle)]' : 'hover:bg-[var(--ds-bg-primary)] text-[var(--ds-text-secondary)] border border-transparent hover:border-[var(--ds-border-secondary)] hover:shadow-sm'} ${dropTarget === id ? 'border-2 border-dashed border-[var(--ds-border-accent-primary)] bg-[var(--ds-bg-accent-primary-subtle)]' : ''}`;
 
   return (
-    <div className="flex h-full bg-white">
+    <div className="flex h-full bg-[var(--ds-bg-primary)]">
       {/* Folder Tree Sidebar */}
-      <div className="w-72 border-r border-gray-200/80 flex flex-col bg-[#f9fafb]">
-        <div className="p-4 border-b border-gray-200/80 flex items-center justify-between bg-white">
-          <h2 className="font-bold text-gray-900">Cấu trúc thư mục</h2>
+      <div className="w-72 border-r border-[var(--ds-border-secondary)] flex flex-col bg-[var(--ds-bg-secondary)]">
+        <div className="p-4 border-b border-[var(--ds-border-secondary)] flex items-center justify-between bg-[var(--ds-bg-primary)]">
+          <h2 className="font-bold text-[var(--ds-text-primary)]">Cấu trúc thư mục</h2>
           <Button variant="subtle" size="icon-s"><FolderPlus size={18} /></Button>
         </div>
         <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
@@ -77,9 +77,9 @@ export default function DocumentManagement() {
                 className={folderItemClass(folder.id)}
                 onClick={() => { toggleFolder(folder.id); setSelectedFolder(folder.id); }}>
                 <div className="flex items-center gap-2">
-                  <GripVertical size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab" />
-                  {expandedFolders.includes(folder.id) ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
-                  <Folder size={18} className={selectedFolder === folder.id ? 'text-[#f76226]' : 'text-gray-400'} />
+                  <GripVertical size={14} className="text-[var(--ds-text-secondary)] opacity-0 group-hover:opacity-100 cursor-grab" />
+                  {expandedFolders.includes(folder.id) ? <ChevronDown size={16} className="text-[var(--ds-text-secondary)]" /> : <ChevronRight size={16} className="text-[var(--ds-text-secondary)]" />}
+                  <Folder size={18} className={selectedFolder === folder.id ? 'text-[var(--ds-fg-accent-primary)]' : 'text-[var(--ds-text-secondary)]'} />
                   <span className="text-sm font-medium">{folder.name}</span>
                 </div>
                 <Button variant="subtle" size="icon-xs" className="opacity-0 group-hover:opacity-100"
@@ -92,11 +92,11 @@ export default function DocumentManagement() {
                   {folder.children.map(child => (
                     <div key={child.id} draggable onDragStart={(e) => { e.stopPropagation(); setDraggedFolder(child.id); }}
                       onDragOver={(e) => handleDragOver(e, child.id)} onDrop={(e) => handleDrop(e, child.id)}
-                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 group ${selectedFolder === child.id ? 'bg-gradient-to-r from-[#f76226]/10 to-orange-50 text-gray-900 font-semibold shadow-sm border border-[#f76226]/10' : 'hover:bg-white text-gray-600 border border-transparent hover:border-gray-200'} ${dropTarget === child.id ? 'border-2 border-dashed border-[#f76226] bg-orange-50/50' : ''}`}
+                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 group ${selectedFolder === child.id ? 'bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-text-primary)] font-semibold shadow-sm border border-[var(--ds-border-accent-primary-subtle)]' : 'hover:bg-[var(--ds-bg-primary)] text-[var(--ds-text-secondary)] border border-transparent hover:border-[var(--ds-border-secondary)]'} ${dropTarget === child.id ? 'border-2 border-dashed border-[var(--ds-border-accent-primary)] bg-[var(--ds-bg-accent-primary-subtle)]' : ''}`}
                       onClick={() => setSelectedFolder(child.id)}>
                       <div className="flex items-center gap-2">
-                        <GripVertical size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab" />
-                        <Folder size={16} className={selectedFolder === child.id ? 'text-[#f76226]' : 'text-gray-400'} />
+                        <GripVertical size={14} className="text-[var(--ds-text-secondary)] opacity-0 group-hover:opacity-100 cursor-grab" />
+                        <Folder size={16} className={selectedFolder === child.id ? 'text-[var(--ds-fg-accent-primary)]' : 'text-[var(--ds-text-secondary)]'} />
                         <span className="text-sm">{child.name}</span>
                       </div>
                       <Button variant="subtle" size="icon-xs" className="opacity-0 group-hover:opacity-100"
@@ -113,15 +113,15 @@ export default function DocumentManagement() {
       </div>
 
       {/* Document List */}
-      <div className="flex-1 flex flex-col bg-white">
-        <div className="p-6 border-b border-gray-200/80 flex items-center justify-between bg-white">
+      <div className="flex-1 flex flex-col bg-[var(--ds-bg-primary)]">
+        <div className="p-6 border-b border-[var(--ds-border-secondary)] flex items-center justify-between bg-[var(--ds-bg-primary)]">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Chính sách nhân sự</h1>
-            <p className="text-sm text-gray-500">Quản lý các tài liệu, quy định và chính sách của công ty.</p>
+            <h1 className="text-2xl font-bold text-[var(--ds-text-primary)] mb-1">Chính sách nhân sự</h1>
+            <p className="text-sm text-[var(--ds-text-secondary)]">Quản lý các tài liệu, quy định và chính sách của công ty.</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ds-text-secondary)]" size={18} />
               <Input type="text" placeholder="Tìm tài liệu..." className="pl-10 pr-4" />
             </div>
             <Button variant="primary"><FilePlus size={18} /> Tải lên</Button>
@@ -139,10 +139,10 @@ export default function DocumentManagement() {
                 accessorKey: 'name',
                 cell: (doc) => (
                   <div className="flex items-center gap-3">
-                    <GripVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 rounded-lg"><FileText size={18} /></div>
-                    <span className="font-medium text-gray-900 group-hover:text-[#f76226] transition-colors">{doc.name}</span>
-                    {doc.access === 'restricted' && <Lock size={14} className="text-gray-400" title="Hạn chế truy cập" />}
+                    <GripVertical size={16} className="text-[var(--ds-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="p-2 bg-[var(--ds-bg-info-subtle)] text-[var(--ds-fg-info)] rounded-lg"><FileText size={18} /></div>
+                    <span className="font-medium text-[var(--ds-text-primary)] group-hover:text-[var(--ds-fg-accent-primary)] transition-colors">{doc.name}</span>
+                    {doc.access === 'restricted' && <Lock size={14} className="text-[var(--ds-text-secondary)]" title="Hạn chế truy cập" />}
                   </div>
                 )
               },
@@ -163,7 +163,7 @@ export default function DocumentManagement() {
                 )
               }
             ]}
-            className="border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+            className="border border-[var(--ds-border-secondary)] rounded-2xl overflow-hidden shadow-sm"
           />
 
         </div>

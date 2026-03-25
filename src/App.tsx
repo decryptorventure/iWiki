@@ -48,11 +48,11 @@ function AppInner() {
           onNavigate={(screen) => dispatch({ type: 'SET_SCREEN', screen })}
         />
       )}
-      <div className="flex h-screen bg-[#f9fafb] text-gray-900 font-sans overflow-hidden">
+      <div className="flex h-screen bg-[var(--ds-bg-secondary)] text-[var(--ds-text-primary)] font-sans overflow-hidden">
         <Sidebar />
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          <header className="h-14 shrink-0 border-b border-gray-200/80 bg-white px-6 flex items-center justify-between z-20 relative">
-            <p className="text-sm font-semibold text-gray-900">iWiki</p>
+          <header className="h-14 shrink-0 border-b border-[var(--ds-border-tertiary)] bg-[var(--ds-bg-primary)] px-6 flex items-center justify-between z-20 relative">
+            <p className="text-sm font-semibold text-[var(--ds-text-primary)]">iWiki</p>
             <NotificationBell />
           </header>
           <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative">

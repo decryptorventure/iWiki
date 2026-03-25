@@ -34,12 +34,12 @@ function DashboardAllArticles({ articles, onOpenArticle }: DashboardAllArticlesP
     <div className="lg:col-span-2">
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold text-gray-900">Tất cả bài viết</h2>
+          <h2 className="text-xl font-bold text-[var(--ds-text-primary)]">Tất cả bài viết</h2>
           <Button
             variant="subtle"
             size="s"
             onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'folder-f-company' })}
-            className="text-sm text-gray-500 hover:text-[#f76226] font-medium transition-colors border-none shadow-none h-auto p-0"
+            className="text-sm text-[var(--ds-text-secondary)] hover:text-[var(--ds-fg-accent-primary)] font-medium transition-colors border-none shadow-none h-auto p-0"
           >
             Xem thêm →
           </Button>
@@ -57,18 +57,18 @@ function DashboardAllArticles({ articles, onOpenArticle }: DashboardAllArticlesP
           <div key={article.id} onClick={() => onOpenArticle(article.id)} className="card-premium p-6 cursor-pointer flex gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <img src={article.author.avatar} alt="Avatar" className="w-8 h-8 rounded-full ring-1 ring-gray-100" referrerPolicy="no-referrer" />
+                <img src={article.author.avatar} alt="Avatar" className="w-8 h-8 rounded-full ring-1 ring-[var(--ds-border-secondary)]" referrerPolicy="no-referrer" />
                 <div>
-                  <div className="text-sm font-bold text-gray-900">{article.author.name}</div>
-                  <div className="text-xs text-gray-500">{article.author.role}</div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)]">{article.author.name}</div>
+                  <div className="text-xs text-[var(--ds-text-secondary)]">{article.author.role}</div>
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2 hover:text-[#f76226] transition-colors">{article.title}</h3>
-              <p className="text-sm text-gray-600 line-clamp-2 mb-4">{article.excerpt || article.content.slice(0, 120) + '...'}</p>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
+              <h3 className="text-lg font-bold text-[var(--ds-text-primary)] mb-2 hover:text-[var(--ds-fg-accent-primary)] transition-colors">{article.title}</h3>
+              <p className="text-sm text-[var(--ds-text-secondary)] line-clamp-2 mb-4">{article.excerpt || article.content.slice(0, 120) + '...'}</p>
+              <div className="flex items-center gap-4 text-xs text-[var(--ds-text-secondary)]">
                 <span>{article.createdAt}</span>
                 <span className="flex items-center gap-1"><Eye size={14} /> {article.views}</span>
-                <span className="flex items-center gap-1"><Flame size={14} className="text-[#f76226]" /> {article.likes}</span>
+                <span className="flex items-center gap-1"><Flame size={14} className="text-[var(--ds-fg-accent-primary)]" /> {article.likes}</span>
                 <span className="flex items-center gap-1"><MessageSquare size={14} /> {article.comments.length}</span>
               </div>
             </div>

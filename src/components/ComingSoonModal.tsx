@@ -22,10 +22,10 @@ export default function ComingSoonModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      maxWidthClassName="max-w-lg"
+      size="sm"
       title={
-        <div className="flex items-center gap-2">
-          <Rocket size={18} className="text-[#f76226]" />
+        <div className="flex items-center gap-2 text-[var(--ds-text-primary)]">
+          <Rocket size={18} className="text-[var(--ds-fg-accent-primary)]" />
           <span>{featureName}</span>
         </div>
       }
@@ -48,8 +48,8 @@ export default function ComingSoonModal({
         </div>
       }
     >
-      <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 to-amber-50 p-4">
-        <p className="text-sm leading-relaxed text-gray-700">{description}</p>
+      <div className="rounded-2xl border border-[var(--ds-border-tertiary)] bg-[var(--ds-bg-tertiary)] p-4">
+        <p className="text-sm leading-relaxed text-[var(--ds-text-secondary)]">{description}</p>
       </div>
     </Modal>
   );

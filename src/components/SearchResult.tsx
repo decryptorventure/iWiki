@@ -79,9 +79,9 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
       <div className="flex items-center gap-4 mb-8 animate-slide-up">
         <Button variant="subtle" size="icon-m" onClick={onBack}><ArrowLeft size={20} /></Button>
         <div className="flex-1 relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f76226]/10 to-orange-300/10 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute -inset-0.5 bg-[var(--ds-bg-accent-primary-subtle)] rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#f76226] transition-colors" /></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Search className="h-4 w-4 text-[var(--ds-icon-secondary)] group-focus-within:text-[var(--ds-fg-accent-primary)] transition-colors" /></div>
             <Input
               type="text"
               className="block w-full pl-10 pr-28"
@@ -98,9 +98,9 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
 
       {/* AI Answer Block */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden mb-8 animate-slide-up stagger-1">
-        <div className="bg-gradient-to-r from-orange-50 via-amber-50/50 to-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[#f76226] font-semibold">
-            <div className="p-1 bg-gradient-to-br from-[#f76226] to-orange-400 rounded-lg text-white"><Sparkles size={14} /></div>
+        <div className="bg-[var(--ds-bg-tertiary)] px-6 py-4 border-b border-[var(--ds-border-secondary)] flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[var(--ds-fg-accent-primary)] font-semibold">
+            <div className="p-1 bg-[var(--ds-bg-accent-primary)] rounded-lg text-white"><Sparkles size={14} /></div>
             <span>iWiki AI trả lời</span>
           </div>
           <Button variant="subtle" size="icon-s" onClick={handleCopy}>
@@ -112,8 +112,8 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
           {isGenerating ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#f76226] to-orange-400 animate-pulse" />
-                <span className="text-sm text-gray-500 animate-pulse">iWiki AI đang tổng hợp câu trả lời...</span>
+                <div className="w-5 h-5 rounded-full bg-[var(--ds-bg-accent-primary)] animate-pulse" />
+                <span className="text-sm text-[var(--ds-text-secondary)] animate-pulse">iWiki AI đang tổng hợp câu trả lời...</span>
               </div>
               <div className="space-y-3">
                 <div className="h-4 bg-gray-100 rounded-full w-3/4 animate-shimmer"></div>
@@ -145,7 +145,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
           <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2"><FileText size={16} className="text-gray-400" /> Nguồn tham khảo ({matchedArticles.length})</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {matchedArticles.slice(0, 3).map((source, i) => {
-              const colors = ['from-green-500 to-emerald-500', 'from-blue-500 to-indigo-500', 'from-purple-500 to-pink-500'];
+              const bgColors = ['bg-[var(--ds-bg-success)]', 'bg-[var(--ds-bg-info)]', 'bg-[var(--ds-bg-accent-secondary)]'];
               return (
                 <div key={source.id} onClick={() => {
                   dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: source.id });
@@ -153,7 +153,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
                   dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: state.currentUser.id, articleId: source.id } });
                 }} className="card-premium p-4 cursor-pointer group flex flex-col h-full">
                   <div className="flex items-start justify-between gap-2 mb-3">
-                    <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gradient-to-r ${colors[i] || colors[0]} rounded-full shadow-sm`}>{i + 1}</span>
+                    <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white ${bgColors[i] || bgColors[0]} rounded-full shadow-sm`}>{i + 1}</span>
                     <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-md">{source.matchScore}% phù hợp</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-2">
@@ -161,7 +161,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
                     {source.matchScore >= 60 && <span className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">Semantic</span>}
                     <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">Citation</span>
                   </div>
-                  <h4 className="font-medium text-sm text-gray-900 group-hover:text-[#f76226] transition-colors line-clamp-2 mb-auto">{source.title}</h4>
+                  <h4 className="font-medium text-sm text-[var(--ds-text-primary)] group-hover:text-[var(--ds-fg-accent-primary)] transition-colors line-clamp-2 mb-auto">{source.title}</h4>
                   <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">Tác giả: <span className="font-medium text-gray-700">{source.author.name}</span></p>
                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">{source.snippet}</p>
                 </div>

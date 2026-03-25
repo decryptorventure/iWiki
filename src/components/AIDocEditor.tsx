@@ -106,25 +106,25 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
   );
 
   return (
-    <div className="flex flex-col h-full bg-white text-gray-900 animate-fade-in">
+    <div className="flex flex-col h-full bg-[var(--ds-bg-primary)] text-[var(--ds-text-primary)] animate-fade-in">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-white">
+      <div className="shrink-0 flex items-center justify-between px-5 py-3 border-b border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)]">
         <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-orange-50 rounded-lg border border-orange-100">
-            <FileText size={16} className="text-[#f76226]" />
+          <div className="p-1.5 bg-[var(--ds-bg-accent-primary-subtle)] rounded-lg border border-[var(--ds-border-accent-primary-subtle)]">
+            <FileText size={16} className="text-[var(--ds-fg-accent-primary)]" />
           </div>
           <Input
             variant="borderless"
             size="s"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400 min-w-[200px] border-none shadow-none h-auto p-0"
+            className="bg-transparent text-sm font-bold text-[var(--ds-text-primary)] outline-none placeholder:text-[var(--ds-text-secondary)] min-w-[200px] border-none shadow-none h-auto p-0"
             placeholder="Tên tài liệu..."
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-gray-500 mr-2 tabular-nums">{wordCount} Words, {charCount} characters</span>
-          <Button size="s" variant={isSaved ? 'border' : 'primary'} onClick={handleSave} className={isSaved ? 'text-green-600 border-green-200' : ''}>
+          <span className="text-[11px] text-[var(--ds-text-secondary)] mr-2 tabular-nums">{wordCount} Words, {charCount} characters</span>
+          <Button size="s" variant={isSaved ? 'border' : 'primary'} onClick={handleSave} className={isSaved ? 'text-[var(--ds-fg-success)] border-[var(--ds-border-success-subtle)]' : ''}>
             <Save size={13} /> {isSaved ? 'Saved!' : 'Save'}
           </Button>
           <Button size="s" variant="border" onClick={handleExport}>
@@ -140,7 +140,7 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
       </div>
 
       {/* Toolbar */}
-      <div className="shrink-0 flex items-center gap-1 px-5 py-2 border-b border-gray-200 bg-gray-50">
+      <div className="shrink-0 flex items-center gap-1 px-5 py-2 border-b border-[var(--ds-border-secondary)] bg-[var(--ds-bg-secondary)]">
         <ToolbarButton icon={Undo2} onClick={() => exec('undo')} title="Undo" />
         <ToolbarButton icon={Redo2} onClick={() => exec('redo')} title="Redo" />
         <div className="w-px h-5 bg-gray-200 mx-1" />
@@ -151,7 +151,7 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
             <Button
               variant="subtle"
               size="s"
-              className="flex items-center gap-1.5 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all border-none shadow-none"
+              className="flex items-center gap-1.5 rounded-lg text-xs font-medium text-[var(--ds-text-secondary)] hover:bg-[var(--ds-bg-tertiary)] hover:text-[var(--ds-text-primary)] transition-all border-none shadow-none"
             >
               <Type size={14} />
               {blockLabels[blockStyle]}
@@ -163,7 +163,7 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
               <DropdownMenuItem
                 key={style}
                 onSelect={() => handleBlockStyle(style)}
-                className={`text-xs ${blockStyle === style ? 'text-[#f76226] font-bold' : 'text-gray-600'}`}
+                className={`text-xs ${blockStyle === style ? 'text-[var(--ds-fg-accent-primary)] font-bold' : 'text-[var(--ds-text-secondary)]'}`}
               >
                 {blockLabels[style]}
               </DropdownMenuItem>
@@ -183,7 +183,7 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
         <div className="w-px h-5 bg-gray-200 mx-1" />
         <ToolbarButton icon={List} onClick={() => exec('insertUnorderedList')} title="Bullet List" />
         <ToolbarButton icon={ListOrdered} onClick={() => exec('insertOrderedList')} title="Numbered List" />
-        <ToolbarButton icon={Table} onClick={() => exec('insertHTML', '<table class="w-full border border-gray-200 my-2"><tr><td class="border border-gray-200 p-2">Cell</td><td class="border border-gray-200 p-2">Cell</td></tr></table>')} title="Table" />
+        <ToolbarButton icon={Table} onClick={() => exec('insertHTML', '<table class="w-full border border-[var(--ds-border-secondary)] my-2"><tr><td class="border border-[var(--ds-border-secondary)] p-2">Cell</td><td class="border border-[var(--ds-border-secondary)] p-2">Cell</td></tr></table>')} title="Table" />
       </div>
 
       {/* Editor Body */}
@@ -193,7 +193,7 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            className="ai-doc-editor min-h-[500px] outline-none text-[15px] leading-relaxed text-gray-800"
+            className="ai-doc-editor min-h-[500px] outline-none text-[15px] leading-relaxed text-[var(--ds-text-secondary)]"
             dangerouslySetInnerHTML={{ __html: html }}
             onInput={() => {
               const text = editorRef.current?.innerText || '';

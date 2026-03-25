@@ -16,10 +16,10 @@ interface PermissionRolesGridProps {
 }
 
 const roleColors: Record<string, { icon: string; bg: string }> = {
-  admin: { icon: 'text-indigo-600', bg: 'from-indigo-50 to-purple-50' },
-  manager: { icon: 'text-blue-600', bg: 'from-blue-50 to-cyan-50' },
-  editor: { icon: 'text-green-600', bg: 'from-green-50 to-emerald-50' },
-  viewer: { icon: 'text-gray-600', bg: 'from-gray-50 to-slate-50' },
+  admin: { icon: 'text-[var(--ds-fg-info)]', bg: 'bg-[var(--ds-bg-info-subtle)]' },
+  manager: { icon: 'text-[var(--ds-fg-info)]', bg: 'bg-[var(--ds-bg-info-subtle)]' },
+  editor: { icon: 'text-[var(--ds-fg-success)]', bg: 'bg-[var(--ds-bg-success-subtle)]' },
+  viewer: { icon: 'text-[var(--ds-text-tertiary)]', bg: 'bg-[var(--ds-bg-secondary)]' },
 };
 
 export function PermissionRolesGrid({ roles, onEditRole }: PermissionRolesGridProps) {
@@ -34,23 +34,23 @@ export function PermissionRolesGrid({ roles, onEditRole }: PermissionRolesGridPr
                 <Edit2 size={16} />
               </Button>
               {role.id !== 'admin' && (
-                <Button variant="subtle" size="icon-s" className="hover:text-red-600 hover:bg-red-50">
+                <Button variant="subtle" size="icon-s" className="hover:text-[var(--ds-fg-danger)] hover:bg-[var(--ds-bg-danger-subtle)]">
                   <Trash2 size={16} />
                 </Button>
               )}
             </div>
             <div className="flex items-center gap-4 mb-4">
-              <div className={`p-3 bg-gradient-to-br ${colors.bg} ${colors.icon} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+              <div className={`p-3 ${colors.bg} ${colors.icon} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                 <Shield size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">{role.name}</h3>
-                <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                <h3 className="text-lg font-bold text-[var(--ds-text-primary)]">{role.name}</h3>
+                <div className="text-sm text-[var(--ds-text-tertiary)] flex items-center gap-1 mt-0.5">
                   <Users size={14} /> {role.users} người dùng
                 </div>
               </div>
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">{role.description}</p>
+            <p className="text-sm text-[var(--ds-text-secondary)] leading-relaxed">{role.description}</p>
           </div>
         );
       })}

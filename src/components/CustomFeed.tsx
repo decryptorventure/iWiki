@@ -103,18 +103,18 @@ export default function CustomFeed() {
     <div className="max-w-7xl mx-auto px-8 py-10 space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-            <Compass className="text-[#f76226]" size={26} />
+          <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] flex items-center gap-3">
+            <Compass className="text-[var(--ds-fg-accent-primary)]" size={26} />
             Custom Feed
           </h1>
-          <p className="text-gray-500 mt-2">Tạo feed theo danh mục và tags bạn quan tâm để đọc nhanh hơn.</p>
+          <p className="text-[var(--ds-text-secondary)] mt-2">Tạo feed theo danh mục và tags bạn quan tâm để đọc nhanh hơn.</p>
         </div>
       </div>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <FolderOpen size={16} className="text-[#f76226]" />
+        <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-secondary)] rounded-2xl p-5">
+          <h2 className="text-sm font-bold text-[var(--ds-text-primary)] mb-3 flex items-center gap-2">
+            <FolderOpen size={16} className="text-[var(--ds-fg-accent-primary)]" />
             Chọn danh mục theo dõi
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -126,8 +126,8 @@ export default function CustomFeed() {
                   onClick={() => toggleFolder(folder.id)}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                     active
-                      ? 'bg-[#f76226] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-[var(--ds-bg-accent-primary)] text-white'
+                      : 'bg-[var(--ds-bg-secondary)] text-[var(--ds-text-secondary)] hover:bg-[var(--ds-bg-tertiary)]'
                   }`}
                 >
                   {folder.name}
@@ -137,9 +137,9 @@ export default function CustomFeed() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Tags size={16} className="text-indigo-500" />
+        <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-secondary)] rounded-2xl p-5">
+          <h2 className="text-sm font-bold text-[var(--ds-text-primary)] mb-3 flex items-center gap-2">
+            <Tags size={16} className="text-[var(--ds-fg-info)]" />
             Chọn chủ đề (tags)
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -151,8 +151,8 @@ export default function CustomFeed() {
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                     active
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-[var(--ds-bg-info)] text-white'
+                      : 'bg-[var(--ds-bg-secondary)] text-[var(--ds-text-secondary)] hover:bg-[var(--ds-bg-tertiary)]'
                   }`}
                 >
                   #{tag}
@@ -164,9 +164,9 @@ export default function CustomFeed() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-bold text-gray-900">Feed của bạn</h2>
+        <h2 className="text-lg font-bold text-[var(--ds-text-primary)]">Feed của bạn</h2>
         {feedArticles.length === 0 ? (
-          <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-10 text-center text-gray-500">
+          <div className="bg-[var(--ds-bg-primary)] border border-dashed border-[var(--ds-border-secondary)] rounded-2xl p-10 text-center text-[var(--ds-text-secondary)]">
             Không có bài viết phù hợp với bộ lọc hiện tại.
           </div>
         ) : (
@@ -174,11 +174,11 @@ export default function CustomFeed() {
             <button
               key={article.id}
               onClick={() => openArticle(article.id)}
-              className="w-full text-left bg-white border border-gray-200 hover:border-orange-200 rounded-2xl p-5 transition-all hover:shadow-sm"
+              className="w-full text-left bg-[var(--ds-bg-primary)] border border-[var(--ds-border-secondary)] hover:border-[var(--ds-border-accent-primary)] rounded-2xl p-5 transition-all hover:shadow-sm"
             >
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-bold text-gray-900">{article.title}</h3>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-orange-50 text-[#f76226]">
+                <h3 className="text-base font-bold text-[var(--ds-text-primary)]">{article.title}</h3>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-fg-accent-primary)]">
                   Score {Math.round(score)}
                 </span>
               </div>
@@ -187,18 +187,18 @@ export default function CustomFeed() {
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {reasons.slice(0, 2).map((reason) => (
-                  <span key={reason} className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
+                  <span key={reason} className="text-[10px] px-2 py-0.5 rounded bg-[var(--ds-bg-info-subtle)] text-[var(--ds-fg-info)]">
                     {reason}
                   </span>
                 ))}
               </div>
-              <div className="mt-3 flex items-center gap-3 text-xs text-gray-500">
+              <div className="mt-3 flex items-center gap-3 text-xs text-[var(--ds-text-secondary)]">
                 <span className="flex items-center gap-1">
                   <Eye size={12} />
                   {article.views}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Flame size={12} className="text-[#f76226]" />
+                  <Flame size={12} className="text-[var(--ds-fg-accent-primary)]" />
                   {article.likes}
                 </span>
                 <span>{article.folderName || article.folderId}</span>

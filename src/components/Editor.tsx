@@ -196,11 +196,11 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
     <div className={`w-full relative h-full flex flex-col animate-fade-in ${aiMode ? '' : 'max-w-4xl mx-auto pl-6 pr-8 py-8'}`}>
       {/* Top Bar */}
       <div className={`flex items-center justify-between mb-6 ${aiMode ? 'px-6 pt-6' : ''}`}>
-        <Button variant="subtle" size="icon-m" onClick={onBack} className="text-gray-500">
+        <Button variant="subtle" size="icon-m" onClick={onBack} className="text-[var(--ds-text-secondary)]">
           <ArrowLeft size={20} />
         </Button>
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          {isSaved && <span className="flex items-center gap-1 text-green-600"><Check size={12} /> Đã lưu tự động</span>}
+        <div className="flex items-center gap-2 text-xs text-[var(--ds-text-secondary)]">
+          {isSaved && <span className="flex items-center gap-1 text-[var(--ds-fg-success)]"><Check size={12} /> Đã lưu tự động</span>}
         </div>
         <div className="flex items-center gap-3">
           <Button variant="border" size="m" onClick={handleSaveDraft}>
@@ -213,8 +213,8 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       </div>
 
       {aiCitations.length > 0 && (
-        <div className="mb-4 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl p-3">
-          <div className="font-semibold text-gray-700 mb-1">AI Trace</div>
+        <div className="mb-4 text-xs text-[var(--ds-text-secondary)] bg-[var(--ds-bg-secondary)] border border-[var(--ds-border-secondary)] rounded-xl p-3">
+          <div className="font-semibold text-[var(--ds-text-primary)] mb-1">AI Trace</div>
           {aiCitations.map(item => <div key={item}>- {item}</div>)}
         </div>
       )}
@@ -222,23 +222,23 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       {/* Toolbar */}
       <div className={`flex flex-wrap items-center justify-between gap-3 mb-4 ${aiMode ? 'px-6' : ''}`}>
         {/* Left: hint */}
-        <span className="text-xs text-gray-400 hidden sm:inline">Markdown • <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px] font-mono">/ai</kbd></span>
+        <span className="text-xs text-[var(--ds-text-secondary)] hidden sm:inline">Markdown • <kbd className="px-1 py-0.5 bg-[var(--ds-bg-secondary)] rounded text-[10px] font-mono">/ai</kbd></span>
         {/* Right group: Template + AI tools */}
         <div className="flex items-center gap-2">
           <Button variant="border" size="s" onClick={() => { if (!activeTemplateId && EDITOR_TEMPLATES.length > 0) setActiveTemplateId(EDITOR_TEMPLATES[0].id); setShowTemplates(true); }}>
-            <FileText size={16} className="text-gray-500" /> Mẫu <ChevronDown size={14} className="text-gray-400" />
+            <FileText size={16} className="text-[var(--ds-text-secondary)]" /> Mẫu <ChevronDown size={14} className="text-[var(--ds-text-secondary)]" />
           </Button>
           <Button type="button" variant="dim" size="s" onClick={handleDraftFromBullets}>
-            <Sparkles size={14} className="text-orange-300" /> AI dựng draft
+            <Sparkles size={14} className="text-[var(--ds-fg-accent-primary)]" /> AI dựng draft
           </Button>
           <Button
             type="button"
             variant={aiMode ? 'primary' : 'border'}
             size="m"
             onClick={() => { setAiMode(!aiMode); if (!aiMode) setTimeout(() => aiTextareaRef.current?.focus(), 150); }}
-            className={`gap-2 active:scale-95 ${aiMode ? 'bg-orange-500 border-orange-500' : 'border-orange-300 text-orange-600 hover:bg-orange-50'}`}
+            className={`gap-2 active:scale-95 ${aiMode ? 'bg-[var(--ds-bg-accent-primary)] border-[var(--ds-border-accent-primary)]' : 'border-[var(--ds-border-accent-primary-subtle)] text-[var(--ds-fg-accent-primary)] hover:bg-[var(--ds-bg-accent-primary-subtle)]'}`}
           >
-            <Sparkles size={14} className={aiMode ? 'text-white' : 'text-orange-500'} />
+            <Sparkles size={14} className={aiMode ? 'text-white' : 'text-[var(--ds-fg-accent-primary)]'} />
             {aiMode ? 'AI bật' : 'AI mode'}
           </Button>
         </div>
@@ -267,20 +267,20 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
             placeholder="Tiêu đề bài viết..."
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="text-4xl font-bold text-gray-900 placeholder:text-gray-300 border-none focus:ring-0 bg-transparent mb-4 outline-none w-full"
+            className="text-4xl font-bold text-[var(--ds-text-primary)] placeholder:text-[var(--ds-text-secondary)] border-none focus:ring-0 bg-transparent mb-4 outline-none w-full"
           />
           <div className="relative flex-1 editor-tiptap-container w-full" style={{ minHeight: '400px' }}>
             <NotionEditor room={initialData?.id || 'new-article-room'} placeholder="Bắt đầu viết nội dung bài viết..." onChange={html => setContent(html)} />
             {isStreaming && (
-              <div className="absolute top-0 left-0 pointer-events-none text-gray-400 text-lg leading-relaxed whitespace-pre-wrap">
+              <div className="absolute top-0 left-0 pointer-events-none text-[var(--ds-text-secondary)] text-lg leading-relaxed whitespace-pre-wrap">
                 <span className="opacity-0">{content}</span>
-                <span className="bg-gradient-to-r from-orange-50 to-amber-50 text-orange-400 border-l-2 border-[#f76226] pl-1 animate-pulse">{ghostText}</span>
+                <span className="bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-fg-accent-primary)] border-l-2 border-[var(--ds-border-accent-primary)] pl-1 animate-pulse">{ghostText}</span>
               </div>
             )}
             {showAiMenu && (
-              <div className="absolute z-10 bg-white rounded-xl shadow-2xl border border-gray-200/80 w-60 overflow-hidden animate-scale-in" style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}>
-                <div className="px-3 py-2.5 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100/50 text-xs font-semibold text-[#f76226] flex items-center gap-1.5">
-                  <div className="p-0.5 bg-gradient-to-br from-[#f76226] to-orange-400 rounded text-white"><Sparkles size={10} /></div> iWiki AI Assistant
+              <div className="absolute z-10 bg-[var(--ds-bg-primary)] rounded-xl shadow-2xl border border-[var(--ds-border-secondary)] w-60 overflow-hidden animate-scale-in" style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}>
+                <div className="px-3 py-2.5 bg-[var(--ds-bg-accent-primary-subtle)] border-b border-[var(--ds-border-accent-primary-subtle)] text-xs font-semibold text-[var(--ds-fg-accent-primary)] flex items-center gap-1.5">
+                  <div className="p-0.5 bg-[var(--ds-bg-accent-primary)] rounded text-white"><Sparkles size={10} /></div> iWiki AI Assistant
                 </div>
                 <div className="p-1">
                   {[{ id: 'outline', label: 'Tạo dàn ý', icon: AlignLeft }, { id: 'rewrite', label: 'Viết lại rõ ràng hơn', icon: Type }, { id: 'summarize', label: 'Tóm tắt nội dung', icon: AlignLeft }, { id: 'table', label: 'Chuyển thành bảng', icon: Table }, { id: 'translate', label: 'Dịch sang tiếng Anh', icon: Languages }].map(item => {
@@ -291,7 +291,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
                         variant="subtle"
                         size="m"
                         onClick={() => handleAiAction(item.id)}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-transparent hover:text-[#f76226] rounded-lg transition-all text-left justify-start border-none shadow-none"
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[var(--ds-text-secondary)] hover:bg-[var(--ds-bg-accent-primary-subtle)] hover:text-[var(--ds-fg-accent-primary)] rounded-lg transition-all text-left justify-start border-none shadow-none"
                       >
                         <Icon size={16} />
                         {item.label}
@@ -307,14 +307,14 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         {/* Outline Panel — hidden in AI mode */}
         {!aiMode && (
           <div className="hidden lg:flex w-[220px] shrink-0">
-            <div className="h-full w-full rounded-2xl border border-gray-200 bg-white/60 px-3 py-3 flex flex-col">
-              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Mục lục</p>
+            <div className="h-full w-full rounded-2xl border border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)] px-3 py-3 flex flex-col">
+              <p className="text-xs font-semibold text-[var(--ds-text-primary)] uppercase tracking-wide mb-2">Mục lục</p>
               <div className="flex-1 overflow-y-auto custom-scrollbar text-[12px] leading-relaxed">
                 {headings.length === 0 ? (
-                  <p className="text-gray-400">Dùng các thẻ <code className="px-1 py-0.5 bg-gray-100 rounded">#</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">##</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">###</code> để tạo mục lục tự động.</p>
+                  <p className="text-[var(--ds-text-secondary)]">Dùng các thẻ <code className="px-1 py-0.5 bg-[var(--ds-bg-secondary)] rounded">#</code>, <code className="px-1 py-0.5 bg-[var(--ds-bg-secondary)] rounded">##</code>, <code className="px-1 py-0.5 bg-[var(--ds-bg-secondary)] rounded">###</code> để tạo mục lục tự động.</p>
                 ) : (
                   <ul className="space-y-1">
-                    {headings.map(h => <li key={h.id} className={`text-gray-700 cursor-default ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'pl-3' : 'pl-5 text-gray-500'}`}>{h.text}</li>)}
+                    {headings.map(h => <li key={h.id} className={`text-[var(--ds-text-secondary)] cursor-default ${h.level === 1 ? 'font-semibold text-[var(--ds-text-primary)]' : h.level === 2 ? 'pl-3' : 'pl-5 text-[var(--ds-text-secondary)]'}`}>{h.text}</li>)}
                   </ul>
                 )}
               </div>

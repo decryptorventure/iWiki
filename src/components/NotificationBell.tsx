@@ -45,15 +45,15 @@ export default function NotificationBell() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'comment':
-        return <MessageSquare size={14} className="text-blue-500" />;
+        return <MessageSquare size={14} className="text-[var(--ds-fg-info)]" />;
       case 'like':
-        return <Flame size={14} className="text-orange-500" />;
+        return <Flame size={14} className="text-[var(--ds-fg-accent-primary)]" />;
       case 'reward':
-        return <Coins size={14} className="text-yellow-500" />;
+        return <Coins size={14} className="text-[var(--ds-fg-accent-secondary)]" />;
       case 'bounty':
-        return <Target size={14} className="text-[#f76226]" />;
+        return <Target size={14} className="text-[var(--ds-fg-accent-primary)]" />;
       default:
-        return <Info size={14} className="text-gray-400" />;
+        return <Info size={14} className="text-[var(--ds-text-secondary)]" />;
     }
   };
 
@@ -63,10 +63,10 @@ export default function NotificationBell() {
         variant="subtle"
         size="icon-m"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative border border-gray-200 bg-white hover:bg-gray-50 transition-colors h-10 w-10 p-0 rounded-xl"
+        className="relative border border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)] hover:bg-[var(--ds-bg-secondary)] transition-colors h-10 w-10 p-0 rounded-xl"
         aria-label="Mở thông báo"
       >
-        <Bell size={18} className="text-gray-700" />
+        <Bell size={18} className="text-[var(--ds-text-primary)]" />
         {unreadCount > 0 && (
           <Badge
             size="xs"
@@ -79,14 +79,14 @@ export default function NotificationBell() {
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[360px] max-w-[90vw] rounded-2xl border border-gray-200 bg-white shadow-xl z-30 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <p className="text-sm font-bold text-gray-900">Thông báo</p>
+        <div className="absolute right-0 mt-2 w-[360px] max-w-[90vw] rounded-2xl border border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)] shadow-xl z-30 overflow-hidden">
+          <div className="px-4 py-3 border-b border-[var(--ds-border-secondary)] flex items-center justify-between">
+            <p className="text-sm font-bold text-[var(--ds-text-primary)]">Thông báo</p>
             <Button
               variant="subtle"
               size="s"
               onClick={markAllRead}
-              className="text-xs font-semibold text-gray-500 hover:text-[#f76226] transition-colors border-none shadow-none h-auto p-0"
+              className="text-xs font-semibold text-[var(--ds-text-secondary)] hover:text-[var(--ds-fg-accent-primary)] transition-colors border-none shadow-none h-auto p-0"
             >
               Đánh dấu đã đọc
             </Button>
@@ -94,23 +94,23 @@ export default function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto custom-scrollbar">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-sm text-center text-gray-500">Chưa có thông báo</div>
+              <div className="px-4 py-8 text-sm text-center text-[var(--ds-text-secondary)]">Chưa có thông báo</div>
             ) : (
               notifications.slice(0, MAX_PREVIEW).map((item) => (
                 <Button
                   key={item.id}
                   variant="subtle"
                   onClick={() => openNotification(item.id, item.link)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 transition-colors rounded-none h-auto border-none shadow-none block ${
-                    item.isRead ? 'bg-white hover:bg-gray-50' : 'bg-orange-50/40 hover:bg-orange-50'
+                  className={`w-full text-left px-4 py-3 border-b border-[var(--ds-border-secondary)] transition-colors rounded-none h-auto border-none shadow-none block ${
+                    item.isRead ? 'bg-[var(--ds-bg-primary)] hover:bg-[var(--ds-bg-secondary)]' : 'bg-[var(--ds-bg-accent-primary-subtle)] hover:bg-[var(--ds-bg-accent-primary-subtle)]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5">{getIcon(item.type)}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 line-clamp-1">{item.title}</p>
-                      <p className="text-xs text-gray-600 line-clamp-2 mt-0.5">{item.content}</p>
-                      <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                      <p className="text-sm font-semibold text-[var(--ds-text-primary)] line-clamp-1">{item.title}</p>
+                      <p className="text-xs text-[var(--ds-text-secondary)] line-clamp-2 mt-0.5">{item.content}</p>
+                      <p className="text-[11px] text-[var(--ds-text-tertiary)] mt-1 flex items-center gap-1">
                         <Clock size={11} />
                         {item.time}
                       </p>
@@ -122,7 +122,7 @@ export default function NotificationBell() {
 
           </div>
 
-          <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
+          <div className="px-4 py-2.5 bg-[var(--ds-bg-secondary)] border-t border-[var(--ds-border-secondary)]">
             <Button
               variant="subtle"
               size="s"
@@ -130,7 +130,7 @@ export default function NotificationBell() {
                 setOpen(false);
                 dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.NOTIFICATIONS });
               }}
-              className="w-full text-sm font-semibold text-[#f76226] hover:text-[#e55a2b] transition-colors border-none shadow-none"
+              className="w-full text-sm font-semibold text-[var(--ds-fg-accent-primary)] hover:text-[var(--ds-fg-accent-primary-hover)] transition-colors border-none shadow-none"
             >
               Xem tất cả thông báo
             </Button>

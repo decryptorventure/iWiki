@@ -32,13 +32,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#fef7f4] via-[#fefbf9] to-orange-50/30 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--ds-bg-secondary)] p-6">
       <div className="w-full max-w-2xl text-center mb-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#f76226] to-[#FF8A6A] text-white shadow-lg shadow-[#f76226]/25 mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--ds-bg-accent-primary)] text-white shadow-lg mb-6">
           <Flame size={32} strokeWidth={2.5} />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">iWiki · iKame</h1>
-        <p className="text-gray-500 text-sm">Chọn vai trò để đăng nhập vào hệ thống</p>
+        <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] mb-2">iWiki · iKame</h1>
+        <p className="text-[var(--ds-text-secondary)] text-sm">Chọn vai trò để đăng nhập vào hệ thống</p>
       </div>
 
       <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -49,9 +49,9 @@ export default function Login() {
               key={key}
               type="button"
               onClick={() => handleLogin(key)}
-              className="group flex flex-col items-center text-left p-6 rounded-2xl border-2 border-gray-200/80 bg-white hover:border-[#f76226]/40 hover:shadow-xl hover:shadow-[#f76226]/10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#f76226]/50 focus:ring-offset-2"
+              className="group flex flex-col items-center text-left p-6 rounded-2xl border-2 border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)] hover:border-[var(--ds-border-accent-primary-subtle)] hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--ds-border-accent-primary)] focus:ring-offset-2"
             >
-              <div className="w-14 h-14 rounded-xl bg-gray-100 group-hover:bg-orange-50 flex items-center justify-center mb-4 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-[var(--ds-bg-secondary)] group-hover:bg-[var(--ds-bg-accent-primary-subtle)] flex items-center justify-center mb-4 transition-colors">
                 <img
                   src={user.avatar}
                   alt=""
@@ -60,11 +60,11 @@ export default function Login() {
                 />
               </div>
               <div className="flex items-center gap-2 mb-2">
-                <Icon size={18} className="text-[#f76226] shrink-0" />
-                <span className="font-bold text-gray-900">{label}</span>
+                <Icon size={18} className="text-[var(--ds-fg-accent-primary)] shrink-0" />
+                <span className="font-bold text-[var(--ds-text-primary)]">{label}</span>
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
-              <span className="mt-4 text-xs font-medium text-[#f76226] opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-sm text-[var(--ds-text-secondary)] leading-relaxed">{description}</p>
+              <span className="mt-4 text-xs font-medium text-[var(--ds-fg-accent-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
                 Đăng nhập →
               </span>
             </button>
@@ -72,7 +72,7 @@ export default function Login() {
         })}
       </div>
 
-      <p className="mt-10 text-xs text-gray-400">Demo: không cần mật khẩu. Chọn vai trò để trải nghiệm quyền tương ứng.</p>
+      <p className="mt-10 text-xs text-[var(--ds-text-secondary)]">Demo: không cần mật khẩu. Chọn vai trò để trải nghiệm quyền tương ứng.</p>
     </div>
   );
 }

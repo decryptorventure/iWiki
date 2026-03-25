@@ -66,11 +66,11 @@ export default function MyArticles() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-slide-up">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-[#f76226] to-orange-400 rounded-xl text-white shadow-md shadow-[#f76226]/20"><FileText size={24} /></div>
+          <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] flex items-center gap-3 mb-2">
+            <div className="p-2 bg-[var(--ds-bg-accent-primary)] rounded-xl text-white shadow-md"><FileText size={24} /></div>
             Bài viết của tôi
           </h1>
-          <p className="text-gray-500">Quản lý tất cả bài viết và bản nháp của bạn.</p>
+          <p className="text-[var(--ds-text-secondary)]">Quản lý tất cả bài viết và bản nháp của bạn.</p>
         </div>
         <Button variant="primary" onClick={handleNewArticle}>
           <Plus size={18} /> Viết bài mới
@@ -80,21 +80,21 @@ export default function MyArticles() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-slide-up stagger-1">
         {[
-          { label: 'Bài viết', value: published.length, icon: BookOpen, iconColor: 'text-blue-500', bg: 'from-blue-50 to-indigo-50' },
-          { label: 'Lượt xem', value: totalViews.toLocaleString(), icon: Eye, iconColor: 'text-green-500', bg: 'from-green-50 to-emerald-50' },
-          { label: 'Được thắp lửa', value: totalLikes, icon: Flame, iconColor: 'text-orange-500', bg: 'from-orange-50 to-red-50' },
-          { label: 'Bình luận', value: totalComments, icon: MessageSquare, iconColor: 'text-purple-500', bg: 'from-purple-50 to-pink-50' },
+          { label: 'Bài viết', value: published.length, icon: BookOpen, iconColor: 'text-[var(--ds-fg-info)]', bg: 'bg-[var(--ds-bg-info-subtle)]' },
+          { label: 'Lượt xem', value: totalViews.toLocaleString(), icon: Eye, iconColor: 'text-[var(--ds-fg-success)]', bg: 'bg-[var(--ds-bg-success-subtle)]' },
+          { label: 'Được thắp lửa', value: totalLikes, icon: Flame, iconColor: 'text-[var(--ds-fg-accent-primary)]', bg: 'bg-[var(--ds-bg-accent-primary-subtle)]' },
+          { label: 'Bình luận', value: totalComments, icon: MessageSquare, iconColor: 'text-[var(--ds-fg-accent-secondary)]', bg: 'bg-[var(--ds-bg-accent-secondary-subtle)]' },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <div key={stat.label} className="card-premium p-5 group">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2.5 bg-gradient-to-br ${stat.bg} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`p-2.5 ${stat.bg} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                   <Icon size={20} className={stat.iconColor} />
                 </div>
               </div>
-              <div className="text-2xl font-extrabold text-gray-900">{stat.value}</div>
-              <div className="text-sm text-gray-500">{stat.label}</div>
+              <div className="text-2xl font-extrabold text-[var(--ds-text-primary)]">{stat.value}</div>
+              <div className="text-sm text-[var(--ds-text-secondary)]">{stat.label}</div>
             </div>
           );
         })}
@@ -121,7 +121,7 @@ export default function MyArticles() {
           className="flex-1"
         />
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ds-text-secondary)]" size={18} />
           <Input type="text" placeholder="Tìm kiếm bài viết..." className="w-full pl-9 pr-4" value={searchQuery} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)} />
         </div>
       </div>
@@ -129,11 +129,11 @@ export default function MyArticles() {
       {/* Article List */}
       {filtered.length === 0 ? (
         <div className="text-center py-20 animate-fade-in">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-            <FileText size={28} className="text-gray-400" />
+          <div className="w-16 h-16 bg-[var(--ds-bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
+            <FileText size={28} className="text-[var(--ds-text-secondary)]" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">{searchQuery ? 'Không tìm thấy bài viết' : activeTab === 'published' ? 'Chưa có bài viết nào' : 'Không có bản nháp'}</h3>
-          <p className="text-gray-500 mb-6">{searchQuery ? 'Thử tìm kiếm với từ khóa khác' : 'Hãy bắt đầu viết bài đầu tiên của bạn!'}</p>
+          <h3 className="text-lg font-bold text-[var(--ds-text-primary)] mb-2">{searchQuery ? 'Không tìm thấy bài viết' : activeTab === 'published' ? 'Chưa có bài viết nào' : 'Không có bản nháp'}</h3>
+          <p className="text-[var(--ds-text-secondary)] mb-6">{searchQuery ? 'Thử tìm kiếm với từ khóa khác' : 'Hãy bắt đầu viết bài đầu tiên của bạn!'}</p>
           {!searchQuery && (
             <Button variant="primary" onClick={handleNewArticle}>
               <Plus size={16} /> Viết bài mới
@@ -180,8 +180,8 @@ export default function MyArticles() {
         }
       >
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-red-100 rounded-xl"><Trash2 size={20} className="text-red-600" /></div>
-          <p className="text-sm text-gray-500">Hành động này không thể hoàn tác. Bài viết sẽ bị xóa vĩnh viễn.</p>
+          <div className="p-2 bg-[var(--ds-bg-danger-subtle)] rounded-xl"><Trash2 size={20} className="text-[var(--ds-fg-danger)]" /></div>
+          <p className="text-sm text-[var(--ds-text-secondary)]">Hành động này không thể hoàn tác. Bài viết sẽ bị xóa vĩnh viễn.</p>
         </div>
       </Modal>
     </div>

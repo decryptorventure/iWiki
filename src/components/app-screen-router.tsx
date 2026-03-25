@@ -25,7 +25,7 @@ const ArticleFullView = lazy(() => import('./ArticleFullView'));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center h-full">
-    <div className="w-8 h-8 border-2 border-[#f76226]/30 border-t-[#f76226] rounded-full animate-spin" />
+    <div className="w-8 h-8 border-2 border-[var(--ds-border-accent-primary-subtle)] border-t-[var(--ds-fg-accent-primary)] rounded-full animate-spin" />
   </div>
 );
 
@@ -39,7 +39,7 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
 
   const renderProtected = (screen: string, node: React.ReactNode) => {
     if (screen === APP_SCREENS.ADMIN_DASHBOARD && !can(state.currentUser, 'admin.access')) {
-      return <div className="p-10 text-center text-gray-500">Bạn không có quyền truy cập trang Admin.</div>;
+      return <div className="p-10 text-center text-[var(--ds-text-secondary)]">Bạn không có quyền truy cập trang Admin.</div>;
     }
     if (screen === APP_SCREENS.MANAGER_DASHBOARD && !can(state.currentUser, 'manager.access') && state.currentUser.role !== 'admin') {
       return <div className="p-10 text-center text-gray-500">Bạn không có quyền truy cập Manager View.</div>;
@@ -121,7 +121,7 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
           state.folders.flatMap(f => f.children || []).find(f => f.id === folderId);
         screen = <FolderView folderId={folderId} title={folder?.name || 'Thư mục'} description={folder?.description} breadcrumbs={[folder?.name || 'Thư mục']} />;
       } else {
-        screen = <div className="flex items-center justify-center h-full text-gray-500">Tính năng đang được phát triển...</div>;
+        screen = <div className="flex items-center justify-center h-full text-[var(--ds-text-secondary)]">Tính năng đang được phát triển...</div>;
       }
     }
   }

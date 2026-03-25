@@ -36,47 +36,47 @@ export function DocumentPermissionModal({ open, onOpenChange, selectedItem }: Do
         </div>
       }
     >
-      <p className="text-sm text-gray-500 flex items-center gap-2 mb-6">
+      <p className="text-sm text-[var(--ds-text-tertiary)] flex items-center gap-2 mb-6">
         {selectedItem.type === 'folder' ? <Folder size={14} /> : <FileText size={14} />}
         {selectedItem.name}
       </p>
       <div className="space-y-6">
         <div>
-          <h4 className="text-sm font-bold text-gray-900 mb-3">Quyền truy cập chung</h4>
-          <div className="flex items-center justify-between p-3 border border-gray-200 rounded-xl bg-gray-50 hover:bg-white transition-colors">
+          <h4 className="text-sm font-bold text-[var(--ds-text-primary)] mb-3">Quyền truy cập chung</h4>
+          <div className="flex items-center justify-between p-3 border border-[var(--ds-border-tertiary)] rounded-xl bg-[var(--ds-bg-secondary)] hover:bg-[var(--ds-bg-primary)] transition-colors">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-lg shadow-sm"><Globe size={20} className="text-blue-500" /></div>
+              <div className="p-2 bg-[var(--ds-bg-primary)] rounded-lg shadow-sm"><Globe size={20} className="text-[var(--ds-fg-info)]" /></div>
               <div>
-                <div className="text-sm font-bold text-gray-900">Bất kỳ ai trong iKame</div>
-                <div className="text-xs text-gray-500">Có thể tìm và xem nội dung này</div>
+                <div className="text-sm font-bold text-[var(--ds-text-primary)]">Bất kỳ ai trong iKame</div>
+                <div className="text-xs text-[var(--ds-text-tertiary)]">Có thể tìm và xem nội dung này</div>
               </div>
             </div>
             <Select options={ACCESS_OPTIONS} defaultValue="viewer" size="s" />
           </div>
         </div>
         <div>
-          <h4 className="text-sm font-bold text-gray-900 mb-3">Người có quyền truy cập</h4>
+          <h4 className="text-sm font-bold text-[var(--ds-text-primary)] mb-3">Người có quyền truy cập</h4>
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ds-text-tertiary)]" size={16} />
             <Input type="text" placeholder="Thêm người hoặc nhóm..." className="w-full pl-9" />
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="https://picsum.photos/seed/ikame/100/100" alt="Avatar" className="w-8 h-8 rounded-full ring-2 ring-gray-100" referrerPolicy="no-referrer" />
+                <img src="https://picsum.photos/seed/ikame/100/100" alt="Avatar" className="w-8 h-8 rounded-full ring-2 ring-[var(--ds-bg-secondary)]" referrerPolicy="no-referrer" />
                 <div>
-                  <div className="text-sm font-bold text-gray-900">Nguyễn Văn A (Bạn)</div>
-                  <div className="text-xs text-gray-500">nguyen.van.a@ikame.com</div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)]">Nguyễn Văn A (Bạn)</div>
+                  <div className="text-xs text-[var(--ds-text-tertiary)]">nguyen.van.a@ikame.com</div>
                 </div>
               </div>
-              <span className="text-sm text-gray-500">Chủ sở hữu</span>
+              <span className="text-sm text-[var(--ds-text-tertiary)]">Chủ sở hữu</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-600 flex items-center justify-center font-bold text-xs">HR</div>
+                <div className="w-8 h-8 rounded-full bg-[var(--ds-bg-info-subtle)] text-[var(--ds-fg-info)] flex items-center justify-center font-bold text-xs">HR</div>
                 <div>
-                  <div className="text-sm font-bold text-gray-900">Phòng Nhân sự</div>
-                  <div className="text-xs text-gray-500">hr@ikame.com</div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)]">Phòng Nhân sự</div>
+                  <div className="text-xs text-[var(--ds-text-tertiary)]">hr@ikame.com</div>
                 </div>
               </div>
               <Select options={MEMBER_OPTIONS} defaultValue="editor" size="xs" />
