@@ -97,9 +97,10 @@
 | TypeScript | 5.8.2 | Type safety |
 | Vite | 6.2.0 | Build tool & dev server |
 
-#### UI Libraries
+#### UI Libraries & Components
 | Technology | Version | Purpose |
 |------------|---------|---------|
+| @frontend-team/ui-kit | 1.1.1 (vendored) | **Interactive components: Button (6 variants, 11 sizes), Input, Textarea, Modal, Select** |
 | Tailwind CSS | 4.1.14 | Styling (utility-first) |
 | @tailwindcss/vite | 4.1.14 | Tailwind Vite plugin |
 | Motion | 12.23.24 | Animations (Framer Motion) |
@@ -138,7 +139,7 @@ To avoid network timeouts during Vercel deployment, two private packages are ven
 | Package | Version | Location | Purpose |
 |---------|---------|----------|---------|
 | @frontend-team/tiptap-kit | 0.2.7 | libs/tiptap-kit-0.2.7.tgz | Custom Tiptap extensions |
-| @frontend-team/ui-kit | 1.1.1 | libs/ui-kit-1.1.1.tgz | UI components (toast, etc.) |
+| @frontend-team/ui-kit | 1.1.1 | libs/ui-kit-1.1.1.tgz | **Interactive components: Button (variants: primary, secondary, dim, border, subtle, danger; sizes: xs, s, m, l, xl, icon-xs, icon-s, icon-m, icon-l, icon-xl), Input, Textarea, Modal, Select - Replaces all raw Tailwind buttons/inputs/modals across 20+ components** |
 
 ### 2.4 Future Backend (Planned)
 

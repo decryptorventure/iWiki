@@ -2,6 +2,7 @@
 import React from 'react';
 import { Eye, Flame, MessageSquare, Edit2, Trash2, MoreVertical, CheckCircle } from 'lucide-react';
 import { Article } from '../store/useAppStore';
+import { Button } from '@frontend-team/ui-kit';
 
 interface MyArticleCardProps {
   article: Article;
@@ -52,9 +53,9 @@ export default function MyArticleCard({
       </div>
 
       <div className="relative shrink-0">
-        <button onClick={onToggleMenu} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 active:scale-90">
+        <Button variant="subtle" size="icon-s" onClick={onToggleMenu}>
           <MoreVertical size={18} />
-        </button>
+        </Button>
         {isMenuOpen && (
           <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden animate-scale-in">
             <button onClick={onView} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><Eye size={16} className="text-gray-400" /> Xem bài viết</button>

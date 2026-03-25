@@ -249,7 +249,6 @@ body {
   box-shadow: 0 8px 30px rgba(247, 98, 38, 0.1);
   transform: translateY(-2px);
 }
-
 /* ===== SCROLLBAR ===== */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

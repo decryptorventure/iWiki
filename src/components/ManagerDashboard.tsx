@@ -1,9 +1,10 @@
-import { ComponentType, useEffect, useMemo, useState } from 'react';
+import React, { ComponentType, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Clock3, AlertTriangle, FolderOpen, Eye, Users, ShieldCheck, Download, Target } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { can, getScopeLevel } from '../lib/permissions';
 import { AccessLevel } from '../store/useAppStore';
 import { useToast } from '../App';
+import { Button, Input, Select } from '@frontend-team/ui-kit';
 
 type ContributorStat = { name: string; score: number; published: number; inReview: number };
 type ReportPeriod = 'week' | 'month';
@@ -182,10 +183,9 @@ export default function ManagerDashboard() {
             ]}
           />
           <div className="flex items-end">
-            <button onClick={handleExportReport} className="w-full px-3 py-2 text-sm font-semibold bg-gray-900 text-white rounded-lg flex items-center justify-center gap-2">
-              <Download size={16} />
-              Xuất báo cáo CSV
-            </button>
+            <Button variant="primary" size="s" onClick={handleExportReport} className="w-full justify-center">
+              <Download size={16} /> Xuất báo cáo CSV
+            </Button>
           </div>
         </div>
       </section>
@@ -233,14 +233,13 @@ export default function ManagerDashboard() {
               </div>
               <div className="p-4 border-t border-gray-100">
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     value={lineComment}
-                    onChange={(e) => setLineComment(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLineComment(e.target.value)}
                     placeholder={selectedLine ? `Feedback dòng ${selectedLine}` : 'Chọn dòng cần feedback'}
-                    className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                    className="flex-1"
                   />
-                  <button
-                    onClick={() => {
+                  <Button size="s" variant="primary" onClick={() => {
                       if (!selectedLine || !lineComment.trim()) return;
                       dispatch({
                         type: 'ADD_APPROVAL_COMMENT',
@@ -257,11 +256,9 @@ export default function ManagerDashboard() {
                       });
                       setLineComment('');
                       addToast('Đã lưu feedback theo dòng', 'success');
-                    }}
-                    className="px-3 py-2 text-xs font-bold bg-gray-900 text-white rounded-lg"
-                  >
+                    }}>
                     Lưu feedback
-                  </button>
+                  </Button>
                 </div>
                 {reviewComments.length > 0 && (
                   <div className="mt-3 max-h-36 overflow-y-auto space-y-2">
@@ -274,35 +271,31 @@ export default function ManagerDashboard() {
                 )}
               </div>
               <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col md:flex-row gap-2">
-                <input
+                <Input
                   value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRejectReason(e.target.value)}
                   placeholder="Lý do từ chối (nếu có)"
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                  className="flex-1"
                 />
                 <div className="flex gap-2">
-                  <button
+                  <Button size="s" className="bg-green-500 hover:bg-green-600 text-white border-0"
                     onClick={() => {
                       dispatch({ type: 'APPROVE_ARTICLE', articleId: selectedReview.id, approverId: state.currentUser.id });
                       dispatch({ type: 'TRACK_EVENT', event: { type: 'approve', userId: state.currentUser.id, articleId: selectedReview.id } });
                       addToast('Đã duyệt bài viết', 'success');
-                    }}
-                    className="px-3 py-2 text-xs font-bold bg-green-500 text-white rounded-lg"
-                  >
+                    }}>
                     Duyệt bài
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="border" size="s"
                     onClick={() => {
                       const reason = rejectReason.trim() || 'Cần cập nhật theo feedback chi tiết.';
                       dispatch({ type: 'REJECT_ARTICLE', articleId: selectedReview.id, approverId: state.currentUser.id, reason });
                       dispatch({ type: 'TRACK_EVENT', event: { type: 'reject', userId: state.currentUser.id, articleId: selectedReview.id } });
                       setRejectReason('');
                       addToast('Đã từ chối và gửi lại cho tác giả', 'warning');
-                    }}
-                    className="px-3 py-1.5 text-xs font-bold bg-gray-100 text-gray-700 rounded-lg"
-                  >
+                    }}>
                     Từ chối
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -347,18 +340,15 @@ export default function ManagerDashboard() {
               {allFolders.map((folder) => (
                 <div key={folder.id} className="flex items-center justify-between gap-3 border border-gray-100 rounded-lg p-2">
                   <div className="text-sm text-gray-700">{folder.name}</div>
-                  <select
+                  <Select
+                    options={LEVEL_OPTIONS}
                     value={getScopeLevel(state.currentUser, folder.id)}
-                    onChange={(e) => {
-                      dispatch({ type: 'SET_SCOPE_ACCESS', folderId: folder.id, level: e.target.value as AccessLevel });
+                    onValueChange={(v) => {
+                      dispatch({ type: 'SET_SCOPE_ACCESS', folderId: folder.id, level: v as AccessLevel });
                       addToast(`Đã cập nhật quyền cho ${folder.name}`, 'info');
                     }}
-                    className="text-xs px-2 py-1 border border-gray-200 rounded-md bg-white"
-                  >
-                    {LEVEL_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                    size="xs"
+                  />
                 </div>
               ))}
             </div>
@@ -372,17 +362,15 @@ export default function ManagerDashboard() {
                     <div className="text-sm text-gray-800 truncate">{article.title}</div>
                     <div className="text-xs text-gray-500 mt-0.5">{article.folderName || article.folderId}</div>
                   </div>
-                  <select
+                  <Select
+                    options={[{ value: 'public', label: 'Công khai' }, { value: 'restricted', label: 'Hạn chế' }]}
                     value={article.viewPermission}
-                    onChange={(e) => {
-                      dispatch({ type: 'SET_ARTICLE_VIEW_PERMISSION', articleId: article.id, viewPermission: e.target.value as 'public' | 'restricted' });
+                    onValueChange={(v) => {
+                      dispatch({ type: 'SET_ARTICLE_VIEW_PERMISSION', articleId: article.id, viewPermission: v as 'public' | 'restricted' });
                       addToast(`Đã cập nhật quyền xem bài: ${article.title}`, 'info');
                     }}
-                    className="text-xs px-2 py-1 border border-gray-200 rounded-md bg-white"
-                  >
-                    <option value="public">Công khai</option>
-                    <option value="restricted">Hạn chế</option>
-                  </select>
+                    size="xs"
+                  />
                 </div>
               ))}
             </div>
@@ -402,13 +390,9 @@ export default function ManagerDashboard() {
                   <p className="text-sm font-semibold text-gray-900">{article.title}</p>
                   <p className="text-xs text-gray-500 mt-0.5">Cập nhật lần cuối: {article.updatedAt}</p>
                 </div>
-                <button
-                  onClick={() => createLifecycleBounty(article.id, article.title)}
-                  className="px-3 py-2 text-xs font-bold bg-indigo-600 text-white rounded-lg inline-flex items-center gap-1.5"
-                >
-                  <Target size={14} />
-                  Tạo bounty
-                </button>
+                <Button size="s" variant="primary" onClick={() => createLifecycleBounty(article.id, article.title)}>
+                  <Target size={14} /> Tạo bounty
+                </Button>
               </div>
             ))}
           </div>
@@ -468,11 +452,7 @@ function SelectControl({
   return (
     <div>
       <label className="text-xs font-semibold text-gray-500 block mb-1">{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg bg-white">
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
+      <Select options={options} value={value} onValueChange={onChange} size="s" className="w-full" />
     </div>
   );
 }

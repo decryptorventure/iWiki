@@ -1,6 +1,7 @@
 // Template picker modal with preview and AI-apply action for Editor
 import React from 'react';
 import { X, FileText, Sparkles } from 'lucide-react';
+import { Button } from '@frontend-team/ui-kit';
 
 interface EditorTemplate {
   id: string;
@@ -33,7 +34,7 @@ export default function EditorTemplateModal({
             </h3>
             <p className="text-xs text-gray-500 mt-1">Chọn template phù hợp, xem preview trước khi áp dụng. Có thể kết hợp cùng iWiki AI.</p>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all active:scale-90"><X size={18} /></button>
+          <Button variant="subtle" size="icon-s" onClick={onClose}><X size={18} /></Button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -63,14 +64,12 @@ export default function EditorTemplateModal({
               </div>
               {activeTemplate && (
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => onApplyTemplate(activeTemplate.content)}
-                    className="px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95">
+                  <Button variant="border" size="s" onClick={() => onApplyTemplate(activeTemplate.content)}>
                     Dùng template
-                  </button>
-                  <button type="button" onClick={() => onApplyWithAI(activeTemplate.content)}
-                    className="px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white shadow-md hover:shadow-lg hover:shadow-[#f76226]/25 transition-all active:scale-95 inline-flex items-center gap-1.5">
+                  </Button>
+                  <Button variant="primary" size="s" onClick={() => onApplyWithAI(activeTemplate.content)}>
                     <Sparkles size={14} /> Dùng template + AI dàn ý
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

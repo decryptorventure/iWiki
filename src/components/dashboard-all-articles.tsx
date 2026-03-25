@@ -3,6 +3,7 @@ import React, { memo, useState, useMemo } from 'react';
 import { Flame, Eye, MessageSquare, Clock, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Article } from '../store/useAppStore';
+import { Button } from '@frontend-team/ui-kit';
 
 interface DashboardAllArticlesProps {
   articles: Article[];
@@ -38,10 +39,9 @@ function DashboardAllArticles({ articles, onOpenArticle }: DashboardAllArticlesP
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {filterButtons.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setFilter(id)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${filter === id ? 'bg-[#f76226] text-white shadow-md shadow-[#f76226]/20' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}>
-              <Icon size={14} className="inline mr-1.5 -mt-0.5" />{label}
-            </button>
+            <Button key={id} size="s" variant={filter === id ? 'primary' : 'border'} onClick={() => setFilter(id)}>
+              <Icon size={14} />{label}
+            </Button>
           ))}
         </div>
       </div>

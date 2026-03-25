@@ -235,18 +235,48 @@ Utility modules for business logic, AI, and data:
 
 ---
 
-### 3.6 UI Primitives (`src/ui/`)
+### 3.6 UI Kit (@frontend-team/ui-kit)
 
-5 reusable, unstyled UI components:
+All interactive UI components use @frontend-team/ui-kit (v1.1.1, vendored in `libs/ui-kit-1.1.1.tgz`).
 
-| Component | Purpose |
-|-----------|---------|
-| **Button.tsx** | Styled button with variants |
-| **Input.tsx** | Text input field |
-| **Modal.tsx** | Modal dialog wrapper |
-| **Card.tsx** | Card container |
-| **IconButton.tsx** | Icon-only button |
-| **cn.ts** | Class name merger (Tailwind utility) |
+#### Components
+| Component | Variants | Sizes | Purpose |
+|-----------|----------|-------|---------|
+| **Button** | primary, secondary, dim, border, subtle, danger | xs, s, m, l, xl, icon-xs, icon-s, icon-m, icon-l, icon-xl | Interactive buttons with responsive variants |
+| **Input** | Default with disabled, error states | n/a | Text input fields (search, forms) |
+| **Textarea** | Default with disabled, error states | n/a | Multi-line text input (comments, article content preview) |
+| **Modal** | Configurable | s, m, l | Dialog wrapper with title, footer, size control |
+| **Select** | Default with disabled, error states | n/a | Dropdown selection (folder selection, categories) |
+
+#### Usage Pattern
+```typescript
+import { Button, Input, Modal, Textarea, Select } from '@frontend-team/ui-kit';
+
+// Button variants
+<Button variant="primary" size="m">Save</Button>
+<Button variant="border" size="icon-s"><Trash2 size={16} /></Button>
+<Button variant="subtle" size="icon-m">Close</Button>
+
+// Modal
+<Modal open={isOpen} onOpenChange={setIsOpen} title="Create Bounty" size="m">
+  <Input placeholder="Title" />
+  <Textarea placeholder="Description" />
+  <Modal.Footer>
+    <Button onClick={handleCreate}>Create</Button>
+  </Modal.Footer>
+</Modal>
+```
+
+#### Raw HTML Elements (Deprecated)
+Raw Tailwind buttons, inputs, modals, and selects have been fully replaced by ui-kit components. Raw HTML elements are only kept for:
+- **Navigation items**: `<a>` tags with custom styling (NavItem patterns)
+- **Toolbar formatting buttons**: Tiptap editor toolbar buttons use inline styles
+- **Textarea send pattern**: AI chat textarea with send button inline
+
+#### Legacy Local UI Components (`src/ui/`)
+Kept for backward compatibility (not actively used):
+- `Button.tsx`, `Input.tsx`, `Modal.tsx`, `Card.tsx` - Replaced by ui-kit imports
+- `cn.ts` - Class name utility (still used in legacy components)
 
 ---
 
@@ -422,6 +452,7 @@ interface Bounty {
 | Package | Version | Purpose |
 |---------|---------|---------|
 | tailwindcss | 4.1.14 | Utility-first CSS |
+| @frontend-team/ui-kit | 1.1.1 (vendored) | Styled interactive components (Button, Input, Modal, Select, Textarea) |
 | @ariakit/react | 0.4.24 | Accessible UI primitives |
 | lucide-react | 0.546.0 | Icon library |
 | motion | 12.23.24 | Animations (Framer Motion) |
@@ -442,13 +473,19 @@ interface Bounty {
 
 ### 6.5 Vendored Packages
 
-```
-libs/
-├── tiptap-kit-0.2.7.tgz     # @frontend-team/tiptap-kit
-└── ui-kit-1.1.1.tgz         # @frontend-team/ui-kit
-```
+Two private packages are vendored as local `.tgz` files to avoid network timeouts during Vercel deployment:
 
-Installed locally to avoid network timeouts during Vercel deployment.
+| Package | Version | Location | Purpose |
+|---------|---------|----------|---------|
+| @frontend-team/tiptap-kit | 0.2.7 | libs/tiptap-kit-0.2.7.tgz | Custom Tiptap extensions |
+| @frontend-team/ui-kit | 1.1.1 | libs/ui-kit-1.1.1.tgz | **Interactive UI components (Button, Input, Modal, Select, Textarea) - Used across all 20+ components** |
+
+**ui-kit v1.1.1 exports:**
+- `Button` - 6 variants (primary, secondary, dim, border, subtle, danger), 11 sizes
+- `Input` - Text input with error/disabled states
+- `Textarea` - Multi-line text input
+- `Modal` - Dialog with title, footer, configurable size
+- `Select` - Dropdown selection component
 
 ---
 

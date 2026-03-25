@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, Heart } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 
@@ -55,7 +55,6 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, indent = false, rightAc
 export default function Sidebar() {
   const { state, dispatch } = useApp();
   const { currentScreen, currentUser, folders } = state;
-
   const navigate = (screen: string) => dispatch({ type: 'SET_SCREEN', screen });
 
   return (

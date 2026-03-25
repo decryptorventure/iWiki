@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
-import { Coins, Eye, Flame, MessageSquare, Edit3, X, Check, Heart } from 'lucide-react';
+import { Coins, Eye, Flame, MessageSquare, Edit3, Check, Heart } from 'lucide-react';
+import { Button, Input, Modal } from '@frontend-team/ui-kit';
 import ProfileBadgeGrid from './profile-badge-grid';
 
 export default function Profile() {
@@ -64,9 +65,9 @@ export default function Profile() {
               <p className="text-xs text-gray-400 mt-1">{(currentUser.xpToNext - currentUser.xp).toLocaleString()} XP cần để lên Level {currentUser.level + 1}</p>
             </div>
 
-            <button onClick={() => setShowEditModal(true)} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm mx-auto sm:mx-0 active:scale-95">
+            <Button variant="border" size="s" onClick={() => setShowEditModal(true)} className="mx-auto sm:mx-0">
               <Edit3 size={15} /> Chỉnh sửa hồ sơ
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-2xl border border-yellow-200 shadow-sm">
@@ -100,16 +101,10 @@ export default function Profile() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-slide-up stagger-2">
-        {/* Badges + Leaderboard */}
         <div>
-          <ProfileBadgeGrid
-            badges={currentUser.badges}
-            currentUserName={currentUser.name}
-            currentUserXp={currentUser.xp}
-          />
+          <ProfileBadgeGrid badges={currentUser.badges} currentUserName={currentUser.name} currentUserXp={currentUser.xp} />
         </div>
 
-        {/* Recent Articles */}
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><Flame size={20} className="text-[#f76226]" /> Bài viết gần đây</h2>
           <div className="space-y-3">
@@ -135,8 +130,7 @@ export default function Profile() {
           </div>
 
           <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4 flex items-center gap-2">
-            <Heart size={20} className="text-rose-500" />
-            Bài viết đã lưu
+            <Heart size={20} className="text-rose-500" /> Bài viết đã lưu
           </h2>
           <div className="space-y-3">
             {favoriteArticles.length === 0 ? (
@@ -146,14 +140,7 @@ export default function Profile() {
               </div>
             ) : (
               favoriteArticles.slice(0, 4).map((article) => (
-                <div
-                  key={article.id}
-                  onClick={() => {
-                    dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id });
-                    dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id });
-                  }}
-                  className="card-premium p-4 cursor-pointer flex items-start gap-3"
-                >
+                <div key={article.id} onClick={() => { dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id }); dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id }); }} className="card-premium p-4 cursor-pointer flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-gray-900 line-clamp-1 hover:text-[#f76226] transition-colors">{article.title}</p>
                     <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
@@ -171,37 +158,36 @@ export default function Profile() {
       </div>
 
       {/* Edit Profile Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-modal-backdrop">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-modal-enter">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">Chỉnh sửa hồ sơ</h3>
-              <button onClick={() => setShowEditModal(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all active:scale-90"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
-                <input type="text" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none transition-all" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Chức danh</label>
-                <input type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none transition-all" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">URL Avatar</label>
-                <input type="text" value={editForm.avatar} onChange={e => setEditForm(f => ({ ...f, avatar: e.target.value }))} placeholder="https://..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none transition-all" />
-                {editForm.avatar && <img src={editForm.avatar} alt="Preview" className="w-16 h-16 rounded-full mt-2 object-cover ring-2 ring-[#f76226]/20" referrerPolicy="no-referrer" />}
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50/80 flex justify-end gap-3">
-              <button onClick={() => setShowEditModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-xl transition-all active:scale-95">Hủy</button>
-              <button onClick={handleSaveProfile} className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#f76226] to-[#FF8A6A] rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
-                <Check size={16} /> Lưu thay đổi
-              </button>
-            </div>
+      <Modal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        title="Chỉnh sửa hồ sơ"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="subtle" size="s" onClick={() => setShowEditModal(false)}>Hủy</Button>
+            <Button variant="primary" size="s" onClick={handleSaveProfile}>
+              <Check size={16} /> Lưu thay đổi
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+            <Input type="text" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} className="w-full" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Chức danh</label>
+            <Input type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} className="w-full" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">URL Avatar</label>
+            <Input type="text" value={editForm.avatar} onChange={e => setEditForm(f => ({ ...f, avatar: e.target.value }))} placeholder="https://..." className="w-full" />
+            {editForm.avatar && <img src={editForm.avatar} alt="Preview" className="w-16 h-16 rounded-full mt-2 object-cover ring-2 ring-[#f76226]/20" referrerPolicy="no-referrer" />}
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

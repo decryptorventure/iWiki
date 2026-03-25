@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Search, Filter, Plus, Target, Coins, Sparkles, ArrowRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Button } from '@frontend-team/ui-kit';
 
 interface EmptyFolderBountyProps {
   folderId: string;
@@ -42,10 +43,10 @@ export default function EmptyFolderBounty({ folderId, folderName, breadcrumbs }:
         {/* Section Header */}
         <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-16 animate-slide-up stagger-1">
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bài viết</h2>
-          <div className="flex items-center gap-3 text-gray-400">
-            <button className="hover:text-gray-600 transition-colors hover:bg-gray-100 p-1.5 rounded-lg"><Search size={16} /></button>
-            <button className="hover:text-gray-600 transition-colors hover:bg-gray-100 p-1.5 rounded-lg"><Filter size={16} /></button>
-            <button onClick={handleWriteArticle} className="hover:text-gray-600 transition-colors hover:bg-gray-100 p-1.5 rounded-lg"><Plus size={16} /></button>
+          <div className="flex items-center gap-1 text-gray-400">
+            <Button variant="subtle" size="icon-s"><Search size={16} /></Button>
+            <Button variant="subtle" size="icon-s"><Filter size={16} /></Button>
+            <Button variant="subtle" size="icon-s" onClick={handleWriteArticle}><Plus size={16} /></Button>
           </div>
         </div>
 
@@ -83,10 +84,9 @@ export default function EmptyFolderBounty({ folderId, folderName, breadcrumbs }:
                     <Coins size={18} />
                     +500 iCoin
                   </div>
-                  <button onClick={handleWriteArticle} className="flex items-center gap-2 text-sm font-semibold text-white bg-gradient-to-r from-[#f76226] to-[#FF8A6A] hover:from-[#e55a2b] hover:to-[#f76226] px-6 py-2.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#f76226]/20 active:scale-95">
-                    Viết bài ngay
-                    <ArrowRight size={16} />
-                  </button>
+                  <Button variant="primary" onClick={handleWriteArticle}>
+                    Viết bài ngay <ArrowRight size={16} />
+                  </Button>
                 </div>
               </div>
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Coins, Target, Clock, Search, Filter, Flame, Trophy, Plus, Users, X } from 'lucide-react';
+import { Coins, Target, Clock, Search, Filter, Flame, Trophy, Plus, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Bounty } from '../store/useAppStore';
+import { Button, Input, Textarea, Modal } from '@frontend-team/ui-kit';
 
 const CATEGORIES = ['all', 'Engineering', 'Product', 'HR', 'Data', 'DevOps', 'Backend'];
 
@@ -96,13 +97,13 @@ export default function Bounties() {
               <div className="text-2xl font-bold text-gray-900 flex items-center gap-1">{totalCoins.toLocaleString()} <Coins className="text-yellow-500" size={20} /></div>
             </div>
           </div>
-          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-[#f76226]/20 transition-all duration-200 shadow-md active:scale-95">
+          <Button variant="primary" onClick={() => setShowCreateModal(true)}>
             <Plus size={20} /> Tạo nhiệm vụ
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Controls */}
+      {/* Quest Banner */}
       <div className="mb-6 bg-white border border-gray-200 rounded-2xl p-4">
         <h3 className="font-bold text-gray-900 mb-2">Quest tuần này</h3>
         <p className="text-sm text-gray-600">Hoàn thành 2 bounty hoặc cập nhật 1 bài outdated để nhận thêm 200 XP + badge "Knowledge Ranger".</p>
@@ -112,13 +113,13 @@ export default function Bounties() {
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 animate-slide-up stagger-1">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input type="text" placeholder="Tìm kiếm nhiệm vụ..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226]/50 outline-none transition-all hover:border-gray-300" />
+          <Input type="text" placeholder="Tìm kiếm nhiệm vụ..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4" />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
           {CATEGORIES.map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${activeTab === tab ? 'bg-gray-900 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}>
+            <Button key={tab} size="s" variant={activeTab === tab ? 'primary' : 'border'} onClick={() => setActiveTab(tab)} className="whitespace-nowrap">
               {tab === 'all' ? 'Tất cả' : tab}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -150,12 +151,14 @@ export default function Bounties() {
                     <div className="text-xs text-gray-500 font-medium mb-1">Phần thưởng</div>
                     <div className="text-xl font-extrabold text-yellow-500 flex items-center gap-1.5">+{bounty.reward} <Coins size={20} /></div>
                   </div>
-                  <button
+                  <Button
+                    size="s"
+                    variant={isAccepted ? 'border' : 'primary'}
                     onClick={() => handleAccept(bounty.id)}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 active:scale-95 ${isAccepted ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white shadow-md hover:shadow-lg hover:shadow-[#f76226]/20'}`}
+                    className={isAccepted ? 'text-green-700 border-green-200 bg-green-50 hover:bg-green-100' : ''}
                   >
                     {isAccepted ? '✓ Đã nhận task' : 'Nhận task'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             );
@@ -163,48 +166,45 @@ export default function Bounties() {
         </div>
       )}
 
-      {/* Create Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-modal-backdrop" onClick={e => e.target === e.currentTarget && setShowCreateModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-modal-enter">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">Tạo nhiệm vụ săn thưởng</h3>
-                <p className="text-sm text-gray-500 mt-1">Mô tả rõ yêu cầu để mọi người nhận task nhanh hơn.</p>
-              </div>
-              <button onClick={() => setShowCreateModal(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all active:scale-90"><X size={20} /></button>
+      {/* Create Bounty Modal */}
+      <Modal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        title="Tạo nhiệm vụ săn thưởng"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="subtle" size="s" onClick={() => setShowCreateModal(false)}>Hủy</Button>
+            <Button variant="primary" size="s" onClick={handleCreate}>Đăng nhiệm vụ</Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-500 mb-4">Mô tả rõ yêu cầu để mọi người nhận task nhanh hơn.</p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề nhiệm vụ *</label>
+            <Input type="text" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder="VD: Hướng dẫn setup môi trường Dev..." className="w-full" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết</label>
+            <Textarea value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} className="w-full h-24" placeholder="Mô tả những gì bạn cần người viết đề cập đến..." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (phân cách bởi dấu phẩy)</label>
+            <Input type="text" value={createForm.tags} onChange={e => setCreateForm(f => ({ ...f, tags: e.target.value }))} placeholder="Engineering, Tutorial, SOP..." className="w-full" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phần thưởng (Coins) *</label>
+              <Input type="number" value={createForm.reward} onChange={e => setCreateForm(f => ({ ...f, reward: e.target.value }))} placeholder="500" min="50" className="w-full" />
             </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề nhiệm vụ *</label>
-                <input type="text" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder="VD: Hướng dẫn setup môi trường Dev..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none hover:border-gray-300 transition-all" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết</label>
-                <textarea value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none resize-none h-24 hover:border-gray-300 transition-all" placeholder="Mô tả những gì bạn cần người viết đề cập đến..." />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (phân cách bởi dấu phẩy)</label>
-                <input type="text" value={createForm.tags} onChange={e => setCreateForm(f => ({ ...f, tags: e.target.value }))} placeholder="Engineering, Tutorial, SOP..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none hover:border-gray-300 transition-all" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phần thưởng (Coins) *</label>
-                  <input type="number" value={createForm.reward} onChange={e => setCreateForm(f => ({ ...f, reward: e.target.value }))} placeholder="500" min="50" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none hover:border-gray-300 transition-all" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hạn chót</label>
-                  <input type="date" value={createForm.deadline} onChange={e => setCreateForm(f => ({ ...f, deadline: e.target.value }))} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226] outline-none hover:border-gray-300 transition-all" />
-                </div>
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50/80 flex justify-end gap-3">
-              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-xl transition-all active:scale-95">Hủy</button>
-              <button onClick={handleCreate} className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#f76226] to-[#FF8A6A] rounded-xl shadow-md hover:shadow-lg hover:shadow-[#f76226]/20 transition-all active:scale-95">Đăng nhiệm vụ</button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hạn chót</label>
+              <Input type="date" value={createForm.deadline} onChange={e => setCreateForm(f => ({ ...f, deadline: e.target.value }))} className="w-full" />
             </div>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

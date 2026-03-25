@@ -4,6 +4,7 @@ import {
   Heading1, Heading2, Heading3, List, ListOrdered, Table,
   Undo2, Redo2, Type, ChevronDown, FileText,
 } from 'lucide-react';
+import { Button } from '@frontend-team/ui-kit';
 
 interface AIDocEditorProps {
   title: string;
@@ -121,21 +122,18 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-gray-500 mr-2 tabular-nums">{wordCount} Words, {charCount} characters</span>
-          <button
-            onClick={handleSave}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isSaved ? 'bg-green-500/20 text-green-400' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
-          >
+          <Button size="s" variant={isSaved ? 'border' : 'primary'} onClick={handleSave} className={isSaved ? 'text-green-600 border-green-200' : ''}>
             <Save size={13} /> {isSaved ? 'Saved!' : 'Save'}
-          </button>
-          <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all">
+          </Button>
+          <Button size="s" variant="border" onClick={handleExport}>
             <Download size={13} /> Export
-          </button>
-          <button onClick={() => {}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all">
+          </Button>
+          <Button size="s" variant="border" onClick={() => {}}>
             <Sparkles size={13} /> Improve
-          </button>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all ml-1">
+          </Button>
+          <Button size="icon-s" variant="subtle" onClick={onClose} className="ml-1">
             <X size={16} />
-          </button>
+          </Button>
         </div>
       </div>
 

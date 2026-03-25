@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Search, Plus, Eye, Flame, MessageSquare, FolderOpen, BookOpen, ArrowRight, Layers } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { can } from '../lib/permissions';
+import { Button, Input } from '@frontend-team/ui-kit';
 
 interface FolderViewProps {
   folderId: string;
@@ -66,7 +67,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
     <div className="max-w-7xl mx-auto px-8 py-10 animate-fade-in">
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-sm font-medium mb-8 backdrop-blur-sm animate-slide-up">
-        <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} className="text-gray-500 hover:text-[#f76226] transition-colors active:scale-95">Trang chủ</button>
+        <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} className="text-gray-500 hover:text-[#f76226] transition-colors">Trang chủ</button>
         {breadcrumbs.map((crumb, i) => (
           <React.Fragment key={i}>
             <span className="text-gray-300">/</span>
@@ -90,17 +91,11 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input
-              type="text"
-              placeholder="Tìm trong thư mục..."
-              className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226]/50 outline-none transition-all hover:border-gray-300 w-52"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <Input type="text" placeholder="Tìm trong thư mục..." className="pl-9 pr-4 w-52" value={searchQuery} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)} />
           </div>
-          <button onClick={handleNewArticle} className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-[#f76226]/20 transition-all duration-200 shadow-md active:scale-95">
+          <Button variant="primary" onClick={handleNewArticle}>
             <Plus size={18} /> Viết bài mới
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -149,9 +144,9 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
           <h3 className="text-xl font-bold text-gray-900 mb-2">{searchQuery ? 'Không tìm thấy bài viết' : 'Thư mục chưa có bài viết'}</h3>
           <p className="text-gray-500 mb-6">{searchQuery ? 'Thử tìm từ khóa khác' : 'Hãy là người đầu tiên đóng góp kiến thức!'}</p>
           {!searchQuery && (
-            <button onClick={handleNewArticle} className="px-5 py-2.5 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-[#f76226]/20 transition-all duration-200 active:scale-95">
-              <Plus size={16} className="inline mr-2" />Viết bài đầu tiên
-            </button>
+            <Button variant="primary" onClick={handleNewArticle}>
+              <Plus size={16} /> Viết bài đầu tiên
+            </Button>
           )}
         </div>
       ) : (

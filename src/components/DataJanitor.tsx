@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Trash2, RefreshCw, CheckCircle, ShieldAlert, Sparkles, FileText, Database, FileWarning, Copy, Target } from 'lucide-react';
-import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
+import { Button, Modal } from '@frontend-team/ui-kit';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 
@@ -188,7 +187,7 @@ export default function DataJanitor() {
         {filteredTasks.length > 0 && (
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm text-gray-500">Đã chọn {selectedIds.length} mục</span>
-            <button onClick={bulkMarkAccurate} className="px-3 py-1.5 text-xs font-bold bg-gray-900 text-white rounded-lg">Bulk xử lý</button>
+            <Button size="s" variant="dim" onClick={bulkMarkAccurate}>Bulk xử lý</Button>
           </div>
         )}
         {filteredTasks.map((task, i) => (
@@ -230,30 +229,18 @@ export default function DataJanitor() {
               </div>
 
               <div className="flex flex-row lg:flex-col items-center lg:items-end justify-start lg:justify-center gap-2 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 shrink-0">
-                <button
-                  onClick={() => handleUpdate(task.id, task.title)}
-                  className="w-full lg:w-auto px-4 py-2 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-medium rounded-lg hover:shadow-md hover:shadow-[#f76226]/20 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                >
+                <Button size="s" variant="primary" onClick={() => handleUpdate(task.id, task.title)}>
                   <RefreshCw size={16} /> Cập nhật
-                </button>
-                <button
-                  onClick={() => handleDismiss(task.id)}
-                  className="w-full lg:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                >
+                </Button>
+                <Button size="s" variant="border" onClick={() => handleDismiss(task.id)}>
                   <CheckCircle size={16} className="text-green-500" /> Vẫn chính xác
-                </button>
-                <button
-                  onClick={() => createBountyFromTask(task)}
-                  className="w-full lg:w-auto px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                >
+                </Button>
+                <Button size="s" variant="border" onClick={() => createBountyFromTask(task)} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
                   <Target size={16} /> Tạo bounty
-                </button>
-                <button
-                  onClick={() => handleArchive(task.id)}
-                  className="w-full lg:w-auto px-4 py-2 bg-white border border-gray-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 hover:border-red-200 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                >
+                </Button>
+                <Button size="s" variant="danger" onClick={() => handleArchive(task.id)}>
                   <Trash2 size={16} /> Lưu trữ
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -272,7 +259,7 @@ export default function DataJanitor() {
       <Modal
         open={showReport}
         onOpenChange={setShowReport}
-        maxWidthClassName="max-w-2xl"
+        size="md"
         title={
           <div className="flex items-center gap-2">
             <Sparkles size={18} className="text-indigo-500" />

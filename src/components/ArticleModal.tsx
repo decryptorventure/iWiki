@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Flame, MessageSquare, Share2, Eye, Bookmark, Send, Sparkles, Clock, ChevronRight, Maximize2 } from 'lucide-react';
+import { X, Flame, MessageSquare, Share2, Eye, Bookmark, Send, Sparkles, Clock, Maximize2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { useArticleActions } from '../hooks/use-article-actions';
 import { Article } from '../store/useAppStore';
+import { Button } from '@frontend-team/ui-kit';
 
 import ArticleMarkdownRenderer from './article-markdown-renderer';
 
@@ -16,16 +17,11 @@ interface ArticleModalProps {
 export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps) {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
-  const { articles, currentUser } = state;
+  const { currentUser } = state;
   const actions = useArticleActions(article?.id ?? '');
   const { isLiked, isFavorited: bookmarked } = actions;
   const [comment, setComment] = useState('');
   const commentRef = useRef<HTMLTextAreaElement>(null);
-
-  // Lấy các bài viết liên quan (Mock: cùng thư mục hoặc cùng tác giả, loại trừ bài hiện tại)
-  const relatedArticles = article
-    ? articles.filter(a => a.id !== article.id && (a.folderId === article.folderId || a.author.id === article.author.id)).slice(0, 3)
-    : [];
 
   // Prevent body scroll
   useEffect(() => {
@@ -77,9 +73,9 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
           )}
 
         {/* Close Button */}
-        <button onClick={() => onOpenChange(false)} className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white rounded-full transition-all duration-200 shadow-md active:scale-90 z-10">
+        <Button variant="subtle" size="icon-m" onClick={() => onOpenChange(false)} className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm shadow-md z-10">
           <X size={20} />
-        </button>
+        </Button>
 
             <div className="p-8 md:p-12">
             {/* Meta Header */}
@@ -99,18 +95,17 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'article-detail' })} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Xem toàn trang"><Maximize2 size={20} /></button>
-                <button onClick={handleShare} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Chia sẻ"><Share2 size={20} /></button>
-                <button
-                  onClick={() => {
-                    actions.toggleFavorite();
-                    addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
-                  }}
-                  className={`p-2.5 rounded-xl transition-all active:scale-90 ${bookmarked ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100 text-gray-500'}`}
+                <Button variant="subtle" size="icon-m" onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'article-detail' })} title="Xem toàn trang"><Maximize2 size={20} /></Button>
+                <Button variant="subtle" size="icon-m" onClick={handleShare} title="Chia sẻ"><Share2 size={20} /></Button>
+                <Button
+                  variant="subtle"
+                  size="icon-m"
+                  onClick={() => { actions.toggleFavorite(); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }}
+                  className={bookmarked ? 'bg-orange-50 text-orange-600' : ''}
                   title="Lưu bài viết"
                 >
                   <Bookmark size={20} className={bookmarked ? 'fill-current' : ''} />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -143,20 +138,21 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
           {/* Action Footer Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between py-6 border-t border-gray-100 mb-10 gap-4">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={handleLike} 
-                className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 shadow-sm hover:shadow-md ${isLiked ? 'bg-orange-500 text-white shadow-orange-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-orange-200 hover:text-orange-600'}`}
+              <Button
+                variant={isLiked ? 'primary' : 'border'}
+                onClick={handleLike}
+                className={isLiked ? '' : 'hover:border-orange-200 hover:text-orange-600'}
               >
                 <Flame size={20} className={isLiked ? 'fill-current animate-bounce' : 'text-orange-500'} />
                 {isLiked ? 'Đã Thắp Lửa' : 'Thắp Lửa'}
                 <span className={`ml-1 ${isLiked ? 'text-white/90' : 'text-gray-400'}`}>{article.likes}</span>
-              </button>
-              
-              <button onClick={() => commentRef.current?.focus()} className="flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold bg-white border border-gray-200 text-gray-700 hover:border-blue-200 hover:text-blue-600 transition-all duration-300 active:scale-95 shadow-sm">
+              </Button>
+
+              <Button variant="border" onClick={() => commentRef.current?.focus()} className="hover:border-blue-200 hover:text-blue-600">
                 <MessageSquare size={20} className="text-blue-500" />
                 Bình thảo luận
                 <span className="ml-1 text-gray-400 font-medium">{article.comments.length}</span>
-              </button>
+              </Button>
             </div>
             
             <div className="flex items-center gap-6">
@@ -214,61 +210,7 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
             </div>
           </div>
         </div>
-        
-        {/* Right Sidebar: Knowledge Context (Related Articles) */}
-        <div className="w-full md:w-80 bg-gray-50 border-l border-gray-100 flex flex-col overflow-y-auto custom-scrollbar">
-          <div className="p-6 sticky top-0 bg-gray-50/90 backdrop-blur-md z-10 border-b border-gray-100">
-            <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 uppercase tracking-wide">
-              <Sparkles size={16} className="text-orange-500" />
-              Liên kết Tri thức
-            </h3>
-          </div>
-          
-          <div className="p-6 space-y-6 flex-1">
-            {/* Outline / Mục lục (Giả lập) */}
-            <div className="space-y-3">
-               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mục lục</h4>
-               <ul className="space-y-2 text-sm">
-                 <li className="text-orange-600 font-bold border-l-2 border-orange-500 pl-3">Performance Checkpoint tại iKame</li>
-                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Quy trình triển khai</li>
-                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Tiêu chí đánh giá</li>
-                 <li className="text-gray-500 hover:text-gray-900 pl-3 cursor-pointer transition-colors border-l-2 border-transparent">Lưu ý quan trọng</li>
-               </ul>
-            </div>
-
-            <hr className="border-gray-200/60" />
-
-            {/* Thống kê đóng góp (Mock) */}
-             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Đóng góp & Cập nhật</h4>
-               <p className="text-sm text-gray-900 mb-1">Cập nhật lần cuối: <span className="font-bold">{article.updatedAt}</span></p>
-               <p className="text-xs text-gray-500">Bởi: {article.author.name}</p>
-             </div>
-
-            {/* Related Articles */}
-            {relatedArticles.length > 0 && (
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mở rộng tri thức</h4>
-                <div className="space-y-4">
-                  {relatedArticles.map(ral => (
-                    <div key={ral.id} className="group cursor-pointer bg-white p-3 rounded-xl border border-transparent hover:border-orange-100 hover:shadow-sm transition-all duration-300">
-                       <h5 className="text-sm font-bold text-gray-800 leading-snug group-hover:text-orange-600 transition-colors line-clamp-2 mb-2">{ral.title}</h5>
-                       <div className="flex items-center justify-between text-[10px] text-gray-400">
-                          <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-1"><Eye size={12}/> {ral.views}</span>
-                            <span>•</span>
-                            <span className="font-medium">{ral.author.name}</span>
-                          </div>
-                          <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            </div>
-          </div>
-        </div>
       </div>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
 import { can } from '../lib/permissions';
+import { Button } from '@frontend-team/ui-kit';
 import { NotionEditor } from '../tiptap/notion-like-editor';
 import { EDITOR_TEMPLATES } from '../lib/editor-templates-data';
 import { buildEditorAiReply } from '../lib/editor-ai-helpers';
@@ -143,7 +144,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
     addToast('Đã lưu bản nháp thành công', 'success');
   };
 
-  const handlePublish = () => {
+  const handlePublish = (_sharedWith: string[] = []) => {
     if (!title.trim()) { addToast('Vui lòng nhập tiêu đề bài viết', 'warning'); return; }
     if (!selectedFolderId) { addToast('Vui lòng chọn thư mục lưu trữ', 'warning'); return; }
     setIsPublishing(true);
@@ -193,7 +194,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 relative h-full flex flex-col animate-fade-in">
+    <div className="max-w-6xl w-full pl-6 pr-8 py-8 relative h-full flex flex-col animate-fade-in">
       {/* Top Bar */}
       <div className="flex items-center justify-between mb-6">
         <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-500 shrink-0 active:scale-90"><ArrowLeft size={20} /></button>
@@ -202,21 +203,16 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         </div>
         <div className="flex items-center gap-3">
           {!collabMode && (
-            <button type="button" onClick={() => setCollabMode(true)} className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border bg-white text-blue-700 border-blue-200 hover:bg-blue-50">
+            <Button type="button" variant="border" size="s" onClick={() => setCollabMode(true)} className="hidden sm:inline-flex text-blue-700 border-blue-200 hover:bg-blue-50">
               <Users size={14} /> Bật Collab mode
-            </button>
+            </Button>
           )}
-          <button type="button" onClick={() => { setAiMode(!aiMode); if (!aiMode) setTimeout(() => aiTextareaRef.current?.focus(), 150); }}
-            className={`hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${aiMode ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}>
-            <Sparkles size={14} className={aiMode ? 'text-orange-300' : 'text-orange-500'} />
-            {aiMode ? 'AI mode đang bật' : 'Bật AI mode'}
-          </button>
-          <button onClick={handleSaveDraft} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+          <Button variant="border" size="m" onClick={handleSaveDraft}>
             <Save size={16} /> Lưu nháp
-          </button>
-          <button onClick={() => setIsPublishModalOpen(true)} className="px-4 py-2 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-[#f76226]/20 transition-all flex items-center gap-2 shadow-md active:scale-95">
+          </Button>
+          <Button variant="primary" size="m" onClick={() => setIsPublishModalOpen(true)}>
             <Send size={16} /> {currentUser.role === 'manager' || currentUser.role === 'admin' ? 'Xuất bản' : 'Gửi duyệt'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -241,17 +237,27 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       )}
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex items-center gap-1 p-1.5 bg-gray-50 border border-gray-200 rounded-xl">
-          <span className="text-xs text-gray-400 px-2 hidden sm:inline">Hỗ trợ Markdown • Gõ <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd> để gọi AI</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        {/* Left group: Format + Template */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-1.5 bg-gray-50 border border-gray-200 rounded-xl">
+            <span className="text-xs text-gray-400 px-2 hidden sm:inline">Markdown • <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd></span>
+          </div>
+          <Button variant="border" size="s" onClick={() => { if (!activeTemplateId && EDITOR_TEMPLATES.length > 0) setActiveTemplateId(EDITOR_TEMPLATES[0].id); setShowTemplates(true); }}>
+            <FileText size={16} className="text-gray-500" /> Mẫu <ChevronDown size={14} className="text-gray-400" />
+          </Button>
         </div>
-        <button onClick={() => { if (!activeTemplateId && EDITOR_TEMPLATES.length > 0) setActiveTemplateId(EDITOR_TEMPLATES[0].id); setShowTemplates(true); }}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all shadow-sm active:scale-95">
-          <FileText size={16} className="text-gray-500" /> Chọn biểu mẫu <ChevronDown size={14} className="text-gray-400" />
-        </button>
-        <button onClick={handleDraftFromBullets} className="flex items-center gap-2 px-3 py-2 text-sm text-white bg-gray-900 hover:bg-black rounded-xl transition-all shadow-sm active:scale-95" type="button">
-          <Sparkles size={14} className="text-orange-300" /> AI dựng draft từ bullets
-        </button>
+        {/* Right group: AI tools */}
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="dim" size="s" onClick={handleDraftFromBullets}>
+            <Sparkles size={14} className="text-orange-300" /> AI dựng draft
+          </Button>
+          <button type="button" onClick={() => { setAiMode(!aiMode); if (!aiMode) setTimeout(() => aiTextareaRef.current?.focus(), 150); }}
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${aiMode ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'border-orange-300 text-orange-600 hover:bg-orange-50'}`}>
+            <Sparkles size={14} className={aiMode ? 'text-white' : 'text-orange-500'} />
+            {aiMode ? 'AI bật' : 'AI mode'}
+          </button>
+        </div>
       </div>
 
       {/* Main Editor Area */}

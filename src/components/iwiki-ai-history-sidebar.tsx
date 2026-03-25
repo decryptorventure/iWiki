@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Database, ChevronDown, Search, MessageSquare, Trash2, Plus } from 'lucide-react';
 import { AIChatSession } from '../store/useAppStore';
+import { Button, Input } from '@frontend-team/ui-kit';
 
 interface IWikiAIHistorySidebarProps {
   sessions: AIChatSession[];
@@ -28,16 +29,15 @@ export default function IWikiAIHistorySidebar({
         <span className="font-bold text-sm flex items-center gap-2">
           <Database size={14} className="text-gray-400" /> Lịch sử trò chuyện
         </span>
-        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
+        <Button variant="subtle" size="icon-s" onClick={onClose}>
           <ChevronDown size={18} className="rotate-90" />
-        </button>
+        </Button>
       </div>
 
       <div className="p-3">
         <div className="relative group">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-          <input type="text" placeholder="Tìm kiếm hội thoại..." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-orange-100 focus:border-orange-200 transition-all outline-none" />
+          <Input type="text" placeholder="Tìm kiếm hội thoại..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="w-full pl-9" />
         </div>
       </div>
 
@@ -71,9 +71,9 @@ export default function IWikiAIHistorySidebar({
       </div>
 
       <div className="p-3 border-t border-gray-100 bg-white/50 backdrop-blur-md">
-        <button onClick={onNewChat} className="w-full py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-200 active:scale-[0.98]">
+        <Button variant="dim" onClick={onNewChat} className="w-full">
           <Plus size={16} /> Trò chuyện mới
-        </button>
+        </Button>
       </div>
     </div>
   );

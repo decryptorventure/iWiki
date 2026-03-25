@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { useArticleActions } from '../hooks/use-article-actions';
 import ArticleMarkdownRenderer from './article-markdown-renderer';
+import { Button } from '@frontend-team/ui-kit';
 
 export default function ArticleFullView() {
   const { state, dispatch } = useApp();
@@ -74,15 +75,9 @@ export default function ArticleFullView() {
       {/* Premium Header */}
       <header className="h-14 border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 bg-white/95 backdrop-blur-xl z-30 shadow-sm">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => {
-                dispatch({ type: 'SET_SCREEN', screen: 'dashboard' });
-                dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: null });
-            }}
-            className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-all hover:text-orange-600"
-          >
+          <Button variant="subtle" size="icon-m" onClick={() => { dispatch({ type: 'SET_SCREEN', screen: 'dashboard' }); dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: null }); }}>
             <ArrowLeft size={20} />
-          </button>
+          </Button>
           <div className="h-6 w-[1px] bg-gray-200" />
           <div className="flex items-center gap-2 text-xs font-semibold">
             <span className="text-gray-400 hover:text-gray-600 cursor-pointer" onClick={() => {
@@ -110,16 +105,8 @@ export default function ArticleFullView() {
             <div className="h-6 w-[1px] bg-gray-200 mx-2 hidden md:block" />
 
             <div className="flex items-center gap-1.5">
-                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-all" title="Chia sẻ">
-                    <Share2 size={18} />
-                </button>
-                <button 
-                    onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })}
-                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-all hover:text-orange-600"
-                    title="Thu nhỏ"
-                >
-                    <Minimize2 size={20} />
-                </button>
+                <Button variant="subtle" size="icon-m" title="Chia sẻ"><Share2 size={18} /></Button>
+                <Button variant="subtle" size="icon-m" onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'dashboard' })} title="Thu nhỏ"><Minimize2 size={20} /></Button>
             </div>
         </div>
       </header>
@@ -197,7 +184,7 @@ export default function ArticleFullView() {
         </aside>
 
         {/* Center: Main Reading Area */}
-        <main className="col-span-12 lg:col-span-6 overflow-y-auto custom-scrollbar bg-white px-6 md:px-12 py-12 scroll-smooth">
+        <main className="col-span-12 lg:col-span-9 xl:col-span-6 overflow-y-auto custom-scrollbar bg-white px-6 md:px-12 py-12 scroll-smooth">
             <div className="max-w-2xl mx-auto">
                <div className="mb-14">
                   <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -240,39 +227,23 @@ export default function ArticleFullView() {
                     <div className="flex flex-col gap-6">
                       <div className="flex flex-wrap items-center justify-between gap-4">
                          <div className="flex items-center gap-3">
-                            <button 
-                                onClick={handleLike} 
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${isLiked ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-50 text-gray-700 hover:bg-orange-50 hover:text-orange-600 border border-gray-100'}`}
-                            >
+                            <Button variant={isLiked ? 'primary' : 'border'} onClick={handleLike} className={isLiked ? '' : 'hover:border-orange-200 hover:text-orange-600'}>
                                 <Flame size={20} className={isLiked ? 'fill-current animate-bounce' : 'text-orange-500'} />
                                 {isLiked ? 'Đã Thắp Lửa' : 'Thắp Lửa Ngay'}
                                 <span className="ml-1 opacity-60 font-medium">{article.likes}</span>
-                            </button>
-                            
-                            <button
-                                onClick={() => {
-                                    actions.toggleFavorite();
-                                    addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
-                                }}
-                                className={`p-3 rounded-xl transition-all border ${bookmarked ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 hover:shadow-sm'}`}
-                            >
+                            </Button>
+                            <Button variant="border" size="icon-m" onClick={() => { actions.toggleFavorite(); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }} className={bookmarked ? 'bg-orange-50 text-orange-600 border-orange-200' : 'hover:text-orange-600 hover:border-orange-200'}>
                                 <Bookmark size={20} className={bookmarked ? 'fill-current' : ''} />
-                            </button>
+                            </Button>
                          </div>
 
                          <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => addToast('Đã gửi yêu cầu cộng tác!', 'success')}
-                                className="px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all flex items-center gap-2"
-                            >
+                            <Button variant="border" size="s" onClick={() => addToast('Đã gửi yêu cầu cộng tác!', 'success')} className="hover:border-blue-300">
                                 <UserPlus size={16} className="text-blue-500" /> Yêu cầu cộng tác
-                            </button>
-                            <button 
-                                onClick={() => dispatch({ type: 'OPEN_EDITOR', article })}
-                                className="px-4 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition-all shadow-md flex items-center gap-2"
-                            >
+                            </Button>
+                            <Button variant="primary" size="s" onClick={() => dispatch({ type: 'OPEN_EDITOR', article })}>
                                 <Edit3 size={16} /> Chỉnh sửa
-                            </button>
+                            </Button>
                          </div>
                       </div>
 

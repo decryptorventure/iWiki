@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, ArrowUp, ChevronDown, Plus, Database, Zap, Check, ExternalLink, PanelRightOpen } from 'lucide-react';
+import { Button } from '@frontend-team/ui-kit';
 import { useToast } from '../App';
 import { useIWikiAI } from '../hooks/use-iwiki-ai';
 import { AIChatMessage, AIChatSession } from '../store/useAppStore';
@@ -116,9 +117,9 @@ export default function IWikiAI() {
             </div>
           </div>
           {isConversationStarted && (
-            <button onClick={() => { startNewChat(); addToast('Bắt đầu cuộc trò chuyện mới', 'info'); }} className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-all text-xs font-bold border border-gray-100 flex items-center gap-1.5">
+            <Button size="s" variant="border" onClick={() => { startNewChat(); addToast('Bắt đầu cuộc trò chuyện mới', 'info'); }}>
               <Plus size={14} /> New
-            </button>
+            </Button>
           )}
         </div>
 
@@ -231,10 +232,9 @@ export default function IWikiAI() {
                     )}
                   </div>
                 </div>
-                <button onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping}
-                  className={`p-2 rounded-xl transition-all duration-200 ${input.trim() && !isTyping ? 'bg-gray-900 text-white shadow-lg hover:bg-black active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                <Button size="icon-m" variant={input.trim() && !isTyping ? 'dim' : 'subtle'} onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping}>
                   <ArrowUp size={18} strokeWidth={2.5} />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -252,10 +252,9 @@ export default function IWikiAI() {
       )}
 
       {!docPanel && isConversationStarted && messages.some(m => m.role === 'assistant' && m.content.includes('editor bên phải')) && (
-        <button onClick={() => { const lastUser = messages.filter(m => m.role === 'user').pop(); if (lastUser) setDocPanel({ title: extractDocTitle(lastUser.content), content: generateDocContent(lastUser.content) }); }}
-          className="fixed bottom-20 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl shadow-xl hover:bg-black transition-all text-sm font-bold active:scale-95">
+        <Button variant="dim" className="fixed bottom-20 right-6 z-30" onClick={() => { const lastUser = messages.filter(m => m.role === 'user').pop(); if (lastUser) setDocPanel({ title: extractDocTitle(lastUser.content), content: generateDocContent(lastUser.content) }); }}>
           <PanelRightOpen size={18} /> Mở Editor
-        </button>
+        </Button>
       )}
     </div>
   );

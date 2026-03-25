@@ -92,8 +92,8 @@ export default function NotificationBell() {
                 <button
                   key={item.id}
                   onClick={() => openNotification(item.id, item.link)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                    item.isRead ? 'bg-white' : 'bg-orange-50/40'
+                  className={`w-full text-left px-4 py-3 border-b border-gray-50 transition-colors ${
+                    item.isRead ? 'bg-white hover:bg-gray-50' : 'bg-orange-50/40 hover:bg-orange-50'
                   }`}
                 >
                   <div className="flex items-start gap-3">

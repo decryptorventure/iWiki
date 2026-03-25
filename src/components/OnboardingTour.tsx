@@ -14,6 +14,7 @@ import {
   UserCheck,
   UserPlus,
 } from 'lucide-react';
+import { Button } from '@frontend-team/ui-kit';
 import { User } from '../store/useAppStore';
 import { APP_SCREENS } from '../constants/screens';
 
@@ -233,22 +234,13 @@ export default function OnboardingTour({ user, onComplete, onSkip, onNavigate }:
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {current.tryScreen && !isLast && onNavigate && (
-              <button
-                type="button"
-                onClick={handleTryNow}
-                className="order-2 sm:order-1 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#f76226] to-orange-500 shadow-lg shadow-[#f76226]/25 hover:shadow-xl transition-all flex items-center justify-center gap-2"
-              >
-                Thử ngay
-                <ChevronRight size={18} />
-              </button>
+              <Button type="button" variant="primary" onClick={handleTryNow} className="order-2 sm:order-1">
+                Thử ngay <ChevronRight size={18} />
+              </Button>
             )}
-            <button
-              type="button"
-              onClick={handleNext}
-              className="order-1 sm:order-2 px-5 py-2.5 rounded-xl text-sm font-bold text-gray-900 bg-gray-100 hover:bg-gray-200 transition-all"
-            >
+            <Button type="button" variant="border" onClick={handleNext} className="order-1 sm:order-2">
               {isLast ? 'Bắt đầu khám phá' : 'Tiếp theo'}
-            </button>
+            </Button>
           </div>
           <p className="text-center mt-4">
             <button
@@ -262,14 +254,9 @@ export default function OnboardingTour({ user, onComplete, onSkip, onNavigate }:
         </div>
 
         {/* Skip */}
-        <button
-          type="button"
-          onClick={onSkip}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
-          aria-label="Bỏ qua"
-        >
+        <Button type="button" variant="subtle" size="icon-m" onClick={onSkip} aria-label="Bỏ qua" className="absolute top-4 right-4">
           <X size={20} />
-        </button>
+        </Button>
       </div>
     </div>
   );

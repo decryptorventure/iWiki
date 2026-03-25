@@ -3,6 +3,7 @@ import { Bell, Check, Trash2, Clock, Info, MessageSquare, Flame, Coins, Target }
 import { useNotifications } from '../hooks/use-notifications';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
+import { Button } from '@frontend-team/ui-kit';
 
 export default function Notifications() {
     const { dispatch } = useApp();
@@ -56,9 +57,9 @@ export default function Notifications() {
                     Thông báo
                 </h1>
                 {notifications.some(n => !n.isRead) && (
-                    <button onClick={handleMarkAllRead} className="text-sm font-medium text-gray-500 hover:text-[#f76226] transition-colors flex items-center gap-1.5">
+                    <Button variant="subtle" size="s" onClick={handleMarkAllRead}>
                         <Check size={16} /> Đánh dấu tất cả đã đọc
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -92,12 +93,9 @@ export default function Notifications() {
                                     </div>
                                     <p className="text-sm text-gray-600 line-clamp-2">{n.content}</p>
                                 </div>
-                                <button
-                                    onClick={(e) => handleDelete(n.id, e)}
-                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all active:scale-90"
-                                >
+                                <Button variant="subtle" size="icon-s" onClick={(e: React.MouseEvent) => handleDelete(n.id, e)} className="opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50">
                                     <Trash2 size={16} />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     ))

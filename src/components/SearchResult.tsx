@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, ArrowLeft, FileText, Search, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { generateRagAnswer } from '../lib/rag';
+import { Button, Input } from '@frontend-team/ui-kit';
 
 function buildDraftFromQuery(query: string) {
   return {
@@ -41,14 +42,9 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
   const rag = generateRagAnswer(state.currentUser, articles, currentQuery);
   const matchedArticles = rag.citations.map(citation => {
     const source = articles.find(a => a.id === citation.articleId)!;
-    return {
-      ...source,
-      matchScore: citation.score,
-      snippet: citation.snippet,
-    };
+    return { ...source, matchScore: citation.score, snippet: citation.snippet };
   });
 
-  // Simulate AI generation loading
   useEffect(() => {
     setIsGenerating(true);
     const timer = setTimeout(() => setIsGenerating(false), 1500);
@@ -58,12 +54,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
   useEffect(() => {
     dispatch({
       type: 'TRACK_EVENT',
-      event: {
-        type: 'search',
-        userId: state.currentUser.id,
-        query: currentQuery,
-        meta: { resultsCount: matchedArticles.length },
-      },
+      event: { type: 'search', userId: state.currentUser.id, query: currentQuery, meta: { resultsCount: matchedArticles.length } },
     });
   }, [currentQuery]);
 
@@ -86,19 +77,21 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
     <div className="max-w-4xl mx-auto px-8 py-8 animate-fade-in">
       {/* Top Bar */}
       <div className="flex items-center gap-4 mb-8 animate-slide-up">
-        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 text-gray-500 shrink-0 active:scale-90"><ArrowLeft size={20} /></button>
+        <Button variant="subtle" size="icon-m" onClick={onBack}><ArrowLeft size={20} /></Button>
         <div className="flex-1 relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f76226]/10 to-orange-300/10 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex">
+          <div className="relative flex items-center">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#f76226] transition-colors" /></div>
-            <input
+            <Input
               type="text"
-              className="block w-full pl-10 pr-24 py-2.5 text-sm text-gray-900 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#f76226]/20 focus:border-[#f76226]/50 transition-all duration-200 hover:border-gray-300 outline-none"
+              className="block w-full pl-10 pr-28"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
             />
-            <button onClick={handleSearch} className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-xs font-bold rounded-lg hover:shadow-md transition-all duration-200 active:scale-95">Tìm kiếm</button>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <Button variant="primary" size="s" onClick={handleSearch}>Tìm kiếm</Button>
+            </div>
           </div>
         </div>
       </div>
@@ -110,9 +103,9 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
             <div className="p-1 bg-gradient-to-br from-[#f76226] to-orange-400 rounded-lg text-white"><Sparkles size={14} /></div>
             <span>iWiki AI trả lời</span>
           </div>
-          <button onClick={handleCopy} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200 active:scale-90">
+          <Button variant="subtle" size="icon-s" onClick={handleCopy}>
             {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-          </button>
+          </Button>
         </div>
 
         <div className="p-6">
@@ -130,9 +123,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
             </div>
           ) : (
             <div className="prose prose-sm max-w-none text-gray-700 animate-fade-in">
-              <p dangerouslySetInnerHTML={{
-                __html: aiAnswer.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-              }} />
+              <p dangerouslySetInnerHTML={{ __html: aiAnswer.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
             </div>
           )}
         </div>
@@ -141,8 +132,8 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
           <div className="bg-gray-50/80 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
             <span className="text-xs text-gray-500">Câu trả lời này có hữu ích không?</span>
             <div className="flex items-center gap-2">
-              <button onClick={() => setFeedback('up')} className={`p-1.5 rounded-md transition-all duration-200 active:scale-90 ${feedback === 'up' ? 'text-green-600 bg-green-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}><ThumbsUp size={16} /></button>
-              <button onClick={() => setFeedback('down')} className={`p-1.5 rounded-md transition-all duration-200 active:scale-90 ${feedback === 'down' ? 'text-red-600 bg-red-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}><ThumbsDown size={16} /></button>
+              <Button variant="subtle" size="icon-s" onClick={() => setFeedback('up')} className={feedback === 'up' ? 'text-green-600 bg-green-100' : ''}><ThumbsUp size={16} /></Button>
+              <Button variant="subtle" size="icon-s" onClick={() => setFeedback('down')} className={feedback === 'down' ? 'text-red-600 bg-red-100' : ''}><ThumbsDown size={16} /></Button>
             </div>
           </div>
         )}
@@ -159,10 +150,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
                 <div key={source.id} onClick={() => {
                   dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: source.id });
                   dispatch({ type: 'INCREMENT_VIEWS', articleId: source.id });
-                  dispatch({
-                    type: 'TRACK_EVENT',
-                    event: { type: 'open_article', userId: state.currentUser.id, articleId: source.id },
-                  });
+                  dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: state.currentUser.id, articleId: source.id } });
                 }} className="card-premium p-4 cursor-pointer group flex flex-col h-full">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gradient-to-r ${colors[i] || colors[0]} rounded-full shadow-sm`}>{i + 1}</span>
@@ -187,12 +175,9 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
       {!isGenerating && matchedArticles.length === 0 && (
         <div className="text-center py-12 animate-fade-in">
           <p className="text-gray-400 mb-4">Không tìm thấy bài viết phù hợp</p>
-          <button
-            onClick={() => dispatch({ type: 'OPEN_EDITOR', article: buildDraftFromQuery(currentQuery) })}
-            className="px-4 py-2 bg-gradient-to-r from-[#f76226] to-[#FF8A6A] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
-          >
+          <Button variant="primary" onClick={() => dispatch({ type: 'OPEN_EDITOR', article: buildDraftFromQuery(currentQuery) })}>
             Tạo draft AI cho "{currentQuery}"
-          </button>
+          </Button>
         </div>
       )}
     </div>

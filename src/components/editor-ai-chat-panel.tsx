@@ -1,6 +1,7 @@
 // AI writing assistant chat panel for Editor (side panel)
 import React from 'react';
 import { Sparkles, ArrowUp, MessageSquare, X } from 'lucide-react';
+import { Button } from '@frontend-team/ui-kit';
 
 export type EditorAIMessage = {
   id: string;
@@ -40,9 +41,9 @@ export default function EditorAIChatPanel({
             <p className="text-[11px] text-gray-500">Tra cứu & nháp nội dung song song khi viết.</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors active:scale-95">
+        <Button variant="subtle" size="icon-s" onClick={onClose}>
           <X size={14} />
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
