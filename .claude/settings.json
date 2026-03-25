@@ -15,7 +15,8 @@
       "Bash(repomix --output repomix-output.xml)",
       "Bash(/tmp/documentation-summary.txt:*)",
       "Read(//tmp/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
