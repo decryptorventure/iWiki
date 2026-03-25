@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+.agent/
+.claude/
+.cursor/
+_bmad-output/
