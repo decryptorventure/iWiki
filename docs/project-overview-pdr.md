@@ -38,11 +38,18 @@
 
 ### 1.4 Current State
 
-- **Status**: Frontend prototype with mock data (v1.0)
+- **Status**: Frontend refactored (v0.2.0, production-ready code structure)
 - **Tech Stack**: React 19 + TypeScript + Vite 6 + Tiptap 3.x
-- **Deployment**: Vercel (frontend only)
+- **Deployment**: Vercel (frontend only, 611 kB bundle with code-splitting)
 - **Backend**: Not implemented yet (localStorage only)
 - **Users**: Demo users only, no real authentication
+- **Last Update**: Frontend refactoring completed 2026-03-25
+  - Types extracted to modular files
+  - Store optimized (1033 → ~500 lines)
+  - Large components split into focused sub-components
+  - Code-splitting: 2,710 kB → 611 kB (77% reduction)
+  - 6 custom hooks for reusable business logic
+  - 200ms search debouncing
 
 ---
 
@@ -888,19 +895,31 @@ onboardingCompletedForUsers: Record<string, boolean>
 
 ### 8.1 Related Documents
 
-- `system-architecture.md` - Technical architecture details
+- `system-architecture.md` - Technical architecture details (updated v0.2.0)
 - `code-standards.md` - Coding conventions
-- `codebase-summary.md` - Key files and modules
-- `development-roadmap.md` - Implementation timeline
+- `codebase-summary.md` - Key files and modules (detailed catalog)
+- `development-roadmap.md` - Implementation timeline (planned)
+- `project-changelog.md` - Change history (planned)
 
-### 8.2 Key Source Files
+### 8.2 Key Source Modules
 
-- `src/store/useAppStore.ts` - State management, data models
+**State & Types**:
+- `src/store/useAppStore.ts` - Reducer logic (~500 lines, post-refactor)
+- `src/store/persist.ts` - localStorage persistence
+- `src/types/` - 9 domain-specific type modules (user, article, bounty, etc.)
+
+**Business Logic**:
+- `src/hooks/` - 6 custom React hooks (search, article-actions, approval, editor, ai, notifications)
 - `src/lib/permissions.ts` - RBAC implementation
-- `src/App.tsx` - Main app routing
+- `src/lib/rag.ts` - RAG implementation
+
+**Pages & Components**:
+- `src/components/app-screen-router.tsx` - Routes with lazy loading & code-splitting
 - `src/components/Dashboard.tsx` - Main dashboard
+- `src/components/dashboard-*.tsx` - Dashboard sub-components (memoized)
 - `src/components/IWikiAI.tsx` - AI assistant
 - `src/components/Editor.tsx` - Article editor
+- `src/components/editor-*.tsx` - Editor sub-components
 - `src/components/Bounties.tsx` - Bounty system
 
 ### 8.3 Glossary

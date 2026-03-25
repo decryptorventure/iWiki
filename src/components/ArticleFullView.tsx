@@ -2,64 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Flame, MessageSquare, Share2, Eye, Bookmark, Send, Sparkles, Clock, ChevronRight, Maximize2, Minimize2, ArrowLeft, Bot, Zap, Info, List, Search, Users, Edit3, UserPlus, Heart } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
-
-// Reuse Markdown renderer from ArticleModal
-function MarkdownContent({ content }: { content: string }) {
-  const lines = content.split('\n');
-  return (
-    <div className="prose prose-orange max-w-none text-gray-800 leading-relaxed font-sans selection:bg-orange-100">
-      {lines.map((line, i) => {
-        if (line.startsWith('# ')) return <h1 key={i} className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-10 mb-6 tracking-tight">{line.slice(2)}</h1>;
-        if (line.startsWith('## ')) return <h2 key={i} className="text-xl md:text-2xl font-bold text-gray-900 mt-10 mb-4 border-b border-gray-100 pb-2">{line.slice(3)}</h2>;
-        if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-bold text-gray-900 mt-6 mb-3">{line.slice(4)}</h3>;
-        if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 text-gray-700 mb-2 list-disc marker:text-orange-500">{renderInline(line.slice(2))}</li>;
-        if (line.match(/^\d+\. /)) return <li key={i} className="ml-4 list-decimal text-gray-700 mb-2 marker:text-orange-500 marker:font-bold">{renderInline(line.replace(/^\d+\. /, ''))}</li>;
-        if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-orange-500 bg-orange-50/30 px-5 py-3 rounded-r-xl italic text-gray-700 my-6">{line.slice(2)}</blockquote>;
-        if (line.startsWith('```') || line === '') return <br key={i} />;
-        const imgMatch = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
-        if (imgMatch) return <figure key={i} className="my-6"><img src={imgMatch[2]} alt={imgMatch[1] || ''} className="rounded-xl w-full object-cover max-h-[420px] shadow-md border border-gray-100" loading="lazy" /><figcaption className="text-sm text-gray-500 mt-2 text-center">{imgMatch[1] || ''}</figcaption></figure>;
-        if (line.startsWith('| ')) {
-          const cells = line.split('|').filter(c => c.trim());
-          if (line.includes('---')) return null;
-          return (
-            <div key={i} className="overflow-x-auto my-6 rounded-xl border border-gray-100">
-              <table className="w-full text-sm text-left">
-                <tbody>
-                  <tr className="bg-gray-50/50">
-                    {cells.map((c, j) => <td key={j} className="px-5 py-3 font-medium text-gray-900 border-r border-gray-100 last:border-r-0">{c.trim()}</td>)}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          );
-        }
-        return <p key={i} className="mb-4 text-gray-700 text-base leading-relaxed">{renderInline(line)}</p>;
-      })}
-    </div>
-  );
-}
-
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
-    if (part.startsWith('*') && part.endsWith('*')) return <em key={i} className="italic text-gray-800">{part.slice(1, -1)}</em>;
-    if (part.startsWith('`') && part.endsWith('`')) return <code key={i} className="px-2 py-0.5 bg-gray-100 text-orange-600 rounded-md text-sm font-mono border border-gray-200">{part.slice(1, -1)}</code>;
-    return part;
-  });
-}
+import { useArticleActions } from '../hooks/use-article-actions';
+import ArticleMarkdownRenderer from './article-markdown-renderer';
 
 export default function ArticleFullView() {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const { articles, currentUser, selectedArticleId } = state;
   const article = articles.find(a => a.id === selectedArticleId);
-  
+  const actions = useArticleActions(selectedArticleId ?? '');
+  const { isLiked, isFavorited: bookmarked } = actions;
+
   const [qaInput, setQaInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiChat, setAiChat] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
-  const favoriteIds = state.favoritesByUser[currentUser.id] || [];
-  const bookmarked = favoriteIds.includes(article?.id || '');
   const [comment, setComment] = useState('');
   const commentRef = useRef<HTMLTextAreaElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -86,13 +42,9 @@ export default function ArticleFullView() {
     );
   }
 
-  const isLiked = article.likedBy.includes(currentUser.id);
-
   const handleLike = () => {
-    dispatch({ type: 'TOGGLE_LIKE', articleId: article.id, userId: currentUser.id });
-    if (!isLiked) {
-      addToast('Đã thắp lửa cho bài viết! 🔥', 'success');
-    }
+    actions.toggleLike();
+    if (!isLiked) addToast('Đã thắp lửa cho bài viết! 🔥', 'success');
   };
 
   const handleAskAi = () => {
@@ -280,7 +232,7 @@ export default function ArticleFullView() {
                      </div>
                   </div>
 
-                  <MarkdownContent content={article.content} />
+                  <ArticleMarkdownRenderer content={article.content} />
                </article>
 
                {/* Compact & Orderly Action Hub */}
@@ -299,8 +251,7 @@ export default function ArticleFullView() {
                             
                             <button
                                 onClick={() => {
-                                    dispatch({ type: 'TOGGLE_FAVORITE', articleId: article.id, userId: currentUser.id });
-                                    dispatch({ type: 'TRACK_EVENT', event: { type: 'favorite', userId: currentUser.id, articleId: article.id } });
+                                    actions.toggleFavorite();
                                     addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
                                 }}
                                 className={`p-3 rounded-xl transition-all border ${bookmarked ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 hover:shadow-sm'}`}
@@ -341,18 +292,7 @@ export default function ArticleFullView() {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
                                             if (comment.trim()) {
-                                              dispatch({
-                                                  type: 'ADD_COMMENT',
-                                                  articleId: article.id,
-                                                  comment: {
-                                                      id: `c-${Date.now()}`,
-                                                      authorId: currentUser.id,
-                                                      authorName: currentUser.name,
-                                                      authorAvatar: currentUser.avatar,
-                                                      content: comment.trim(),
-                                                      createdAt: new Date().toISOString().split('T')[0],
-                                                  }
-                                              });
+                                              actions.addComment(comment.trim());
                                               setComment('');
                                               addToast('Đã đăng bình luận', 'success');
                                             }
@@ -362,18 +302,7 @@ export default function ArticleFullView() {
                                 <button 
                                     onClick={() => {
                                         if (!comment.trim()) return;
-                                        dispatch({
-                                            type: 'ADD_COMMENT',
-                                            articleId: article.id,
-                                            comment: {
-                                                id: `c-${Date.now()}`,
-                                                authorId: currentUser.id,
-                                                authorName: currentUser.name,
-                                                authorAvatar: currentUser.avatar,
-                                                content: comment.trim(),
-                                                createdAt: new Date().toISOString().split('T')[0],
-                                            }
-                                        });
+                                        actions.addComment(comment.trim());
                                         setComment('');
                                         addToast('Đã đăng bình luận', 'success');
                                     }} 

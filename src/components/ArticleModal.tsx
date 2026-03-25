@@ -2,42 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Flame, MessageSquare, Share2, Eye, Bookmark, Send, Sparkles, Clock, ChevronRight, Maximize2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
+import { useArticleActions } from '../hooks/use-article-actions';
 import { Article } from '../store/useAppStore';
 
-// Simple Markdown renderer
-function MarkdownContent({ content }: { content: string }) {
-  const lines = content.split('\n');
-  return (
-    <div className="prose prose-orange max-w-none text-gray-800 leading-relaxed font-sans selection:bg-orange-100 italic-quotes">
-      {lines.map((line, i) => {
-        if (line.startsWith('# ')) return <h1 key={i} className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-10 mb-6 tracking-tight leading-tight">{line.slice(2)}</h1>;
-        if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-bold text-gray-900 mt-8 mb-4 border-b border-gray-100 pb-2">{line.slice(3)}</h2>;
-        if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-semibold text-gray-900 mt-4 mb-2">{line.slice(4)}</h3>;
-        if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 text-gray-700 mb-1">{renderInline(line.slice(2))}</li>;
-        if (line.match(/^\d+\. /)) return <li key={i} className="ml-4 list-decimal text-gray-700 mb-1">{renderInline(line.replace(/^\d+\. /, ''))}</li>;
-        if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-[#f76226] pl-4 italic text-gray-600 my-3">{line.slice(2)}</blockquote>;
-        if (line.startsWith('```') || line === '') return <br key={i} />;
-        const imgMatch = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
-        if (imgMatch) return <figure key={i} className="my-4"><img src={imgMatch[2]} alt={imgMatch[1] || ''} className="rounded-xl w-full object-cover max-h-[320px] shadow border border-gray-100" loading="lazy" /><figcaption className="text-xs text-gray-500 mt-1 text-center">{imgMatch[1] || ''}</figcaption></figure>;
-        if (line.startsWith('| ')) {
-          const cells = line.split('|').filter(c => c.trim());
-          return <div key={i} className="flex gap-0 border-b border-gray-100">{cells.map((c, j) => <span key={j} className="flex-1 px-3 py-2 text-sm text-gray-700 border-r border-gray-100 last:border-r-0">{c.trim()}</span>)}</div>;
-        }
-        return <p key={i} className="mb-3 text-gray-700">{renderInline(line)}</p>;
-      })}
-    </div>
-  );
-}
-
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
-    if (part.startsWith('*') && part.endsWith('*')) return <em key={i} className="italic">{part.slice(1, -1)}</em>;
-    if (part.startsWith('`') && part.endsWith('`')) return <code key={i} className="px-1.5 py-0.5 bg-gray-100 text-orange-600 rounded text-sm font-mono">{part.slice(1, -1)}</code>;
-    return part;
-  });
-}
+import ArticleMarkdownRenderer from './article-markdown-renderer';
 
 interface ArticleModalProps {
   open: boolean;
@@ -49,15 +17,13 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const { articles, currentUser } = state;
+  const actions = useArticleActions(article?.id ?? '');
+  const { isLiked, isFavorited: bookmarked } = actions;
   const [comment, setComment] = useState('');
-  const favoriteIds = state.favoritesByUser[currentUser.id] || [];
-  const bookmarked = article ? favoriteIds.includes(article.id) : false;
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
-  const isLiked = article ? article.likedBy.includes(currentUser.id) : false;
-  
   // Lấy các bài viết liên quan (Mock: cùng thư mục hoặc cùng tác giả, loại trừ bài hiện tại)
-  const relatedArticles = article 
+  const relatedArticles = article
     ? articles.filter(a => a.id !== article.id && (a.folderId === article.folderId || a.author.id === article.author.id)).slice(0, 3)
     : [];
 
@@ -77,10 +43,8 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
   if (!open || !article) return null;
 
   const handleLike = () => {
-    dispatch({ type: 'TOGGLE_LIKE', articleId: article.id, userId: currentUser.id });
-    if (!isLiked) {
-      addToast('Đã thắp lửa cho bài viết! 🔥', 'success');
-    }
+    actions.toggleLike();
+    if (!isLiked) addToast('Đã thắp lửa cho bài viết! 🔥', 'success');
   };
 
   const handleShare = () => {
@@ -94,18 +58,7 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
 
   const handleSubmitComment = () => {
     if (!comment.trim()) return;
-    dispatch({
-      type: 'ADD_COMMENT',
-      articleId: article.id,
-      comment: {
-        id: `c-${Date.now()}`,
-        authorId: currentUser.id,
-        authorName: currentUser.name,
-        authorAvatar: currentUser.avatar,
-        content: comment.trim(),
-        createdAt: new Date().toISOString().split('T')[0],
-      }
-    });
+    actions.addComment(comment.trim());
     setComment('');
     addToast('Đã đăng bình luận', 'success');
   };
@@ -150,8 +103,7 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
                 <button onClick={handleShare} className="p-2.5 hover:bg-gray-100 text-gray-500 rounded-xl transition-all active:scale-90" title="Chia sẻ"><Share2 size={20} /></button>
                 <button
                   onClick={() => {
-                    dispatch({ type: 'TOGGLE_FAVORITE', articleId: article.id, userId: currentUser.id });
-                    dispatch({ type: 'TRACK_EVENT', event: { type: 'favorite', userId: currentUser.id, articleId: article.id } });
+                    actions.toggleFavorite();
                     addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info');
                   }}
                   className={`p-2.5 rounded-xl transition-all active:scale-90 ${bookmarked ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100 text-gray-500'}`}
@@ -182,7 +134,7 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
           {/* Content */}
           <div className="mb-8">
             {article.content ? (
-              <MarkdownContent content={article.content} />
+              <ArticleMarkdownRenderer content={article.content} />
             ) : (
               <p className="text-gray-500 italic">Nội dung bài viết đang được cập nhật...</p>
             )}

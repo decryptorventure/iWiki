@@ -7,7 +7,15 @@
       "Bash(gh auth:*)",
       "Bash(python %USERPROFILE%/.claude/skills/ck-help/scripts/ck-help.py \"\")",
       "Bash(\"$USERPROFILE/.claude/skills/ck-help/scripts/ck-help.py\")",
-      "Bash(python \"$USERPROFILE/.claude/skills/ck-help/scripts/ck-help.py\" \"\")"
+      "Bash(python \"$USERPROFILE/.claude/skills/ck-help/scripts/ck-help.py\" \"\")",
+      "Bash(node \"$USERPROFILE/.claude/scripts/set-active-plan.cjs\" \"d:/iWiki-main/plans/260325-1111-frontend-refactor\")",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(wc -l /d/iWiki-main/docs/*.md)",
+      "Bash(repomix --output repomix-output.xml)",
+      "Bash(/tmp/documentation-summary.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(git add:*)"
     ]
   }
 }

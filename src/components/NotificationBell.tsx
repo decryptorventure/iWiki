@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell, Clock, MessageSquare, Flame, Coins, Target, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useNotifications } from '../hooks/use-notifications';
 import { APP_SCREENS } from '../constants/screens';
 
 const MAX_PREVIEW = 5;
 
 export default function NotificationBell() {
-  const { state, dispatch } = useApp();
-  const { notifications } = state;
+  const { dispatch } = useApp();
+  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const unreadCount = notifications.filter((item) => !item.isRead).length;
 
   useEffect(() => {
     const onClickOutside = (event: MouseEvent) => {
@@ -20,10 +20,6 @@ export default function NotificationBell() {
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
-
-  const markRead = (notificationId: string) => {
-    dispatch({ type: 'MARK_NOTIFICATION_READ', notificationId });
-  };
 
   const openNotification = (notificationId: string, link?: string) => {
     markRead(notificationId);
@@ -81,11 +77,7 @@ export default function NotificationBell() {
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <p className="text-sm font-bold text-gray-900">Thông báo</p>
             <button
-              onClick={() => {
-                notifications.forEach((item) => {
-                  if (!item.isRead) markRead(item.id);
-                });
-              }}
+              onClick={markAllRead}
               className="text-xs font-semibold text-gray-500 hover:text-[#f76226] transition-colors"
             >
               Đánh dấu đã đọc

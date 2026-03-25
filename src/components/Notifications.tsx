@@ -1,27 +1,24 @@
 import React from 'react';
 import { Bell, Check, Trash2, Clock, Info, MessageSquare, Flame, Coins, Target } from 'lucide-react';
+import { useNotifications } from '../hooks/use-notifications';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 
 export default function Notifications() {
-    const { state, dispatch } = useApp();
+    const { dispatch } = useApp();
     const { addToast } = useToast();
-    const { notifications } = state;
+    const { notifications, markRead, markAllRead, deleteNotification } = useNotifications();
 
-    const handleMarkAsRead = (id: string) => {
-        dispatch({ type: 'MARK_NOTIFICATION_READ', notificationId: id });
-    };
+    const handleMarkAsRead = (id: string) => markRead(id);
 
     const handleMarkAllRead = () => {
-        notifications.forEach(n => {
-            if (!n.isRead) dispatch({ type: 'MARK_NOTIFICATION_READ', notificationId: n.id });
-        });
+        markAllRead();
         addToast('Đã đánh dấu tất cả là đã đọc', 'success');
     };
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        dispatch({ type: 'DELETE_NOTIFICATION', notificationId: id });
+        deleteNotification(id);
         addToast('Đã xóa thông báo', 'info');
     };
 
