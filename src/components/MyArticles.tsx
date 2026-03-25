@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
 import { can } from '../lib/permissions';
-import { Button, Input, Modal } from '@frontend-team/ui-kit';
+import { Button, Input, Modal, Tabs, Card, CardContent, Badge } from '@frontend-team/ui-kit';
 import MyArticleCard from './my-article-card';
 
 export default function MyArticles() {
@@ -103,19 +103,24 @@ export default function MyArticles() {
 
       {/* Tabs & Search */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 animate-slide-up stagger-2">
-        <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                <Icon size={16} />
-                {tab.label}
-                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${activeTab === tab.id ? 'bg-[#f76226]/10 text-[#f76226]' : 'bg-gray-200 text-gray-500'}`}>{tab.count}</span>
-              </button>
-            );
-          })}
-        </div>
+        <Tabs
+          value={activeTab}
+          onValueChange={v => setActiveTab(v as any)}
+          items={tabs.map(t => ({
+            value: t.id,
+            label: (
+              <div className="flex items-center gap-2">
+                <t.icon size={16} />
+                {t.label}
+                <Badge variant={activeTab === t.id ? 'primary' : 'default'} size="xs" className="ml-1">
+                  {t.count}
+                </Badge>
+              </div>
+            )
+          }))}
+          variant="default"
+          className="flex-1"
+        />
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <Input type="text" placeholder="Tìm kiếm bài viết..." className="w-full pl-9 pr-4" value={searchQuery} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)} />

@@ -2,8 +2,17 @@ import React, { useState } from 'react';
 import { Folder, FileText, ChevronRight, ChevronDown, Plus, MoreVertical, Search, FolderPlus, FilePlus, Shield, GripVertical, Lock, Globe } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { can } from '../lib/permissions';
-import { Button, Input } from '@frontend-team/ui-kit';
+import { Button, Input, DataTable } from '@frontend-team/ui-kit';
 import { DocumentPermissionModal } from './document-permission-modal';
+
+interface DocItem {
+  id: string;
+  name: string;
+  author: string;
+  date: string;
+  size: string;
+  access: 'public' | 'restricted';
+}
 
 export default function DocumentManagement() {
   const { state } = useApp();
@@ -32,11 +41,12 @@ export default function DocumentManagement() {
     ]},
   ]);
 
-  const [documents] = useState([
+  const [documents] = useState<DocItem[]>([
     { id: 'doc-1', name: 'Sổ tay nhân viên 2024', author: 'HR Dept', date: '10/01/2024', size: '2.4 MB', access: 'public' },
     { id: 'doc-2', name: 'Quy định WFH', author: 'HR Dept', date: '15/02/2024', size: '1.1 MB', access: 'public' },
     { id: 'doc-3', name: 'Quy trình Onboarding', author: 'Nguyễn Văn A', date: '20/03/2024', size: '3.5 MB', access: 'restricted' },
   ]);
+
 
   const handleDragOver = (e: React.DragEvent, id: string) => { e.preventDefault(); e.stopPropagation(); setDropTarget(id); };
   const handleDrop = (e: React.DragEvent, targetId: string) => {
@@ -118,46 +128,44 @@ export default function DocumentManagement() {
           </div>
         </div>
         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-          <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 font-medium">Tên tài liệu</th>
-                  <th className="p-4 font-medium">Tác giả</th>
-                  <th className="p-4 font-medium">Ngày cập nhật</th>
-                  <th className="p-4 font-medium">Kích thước</th>
-                  <th className="p-4 font-medium text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {documents.map(doc => (
-                  <tr key={doc.id} draggable onDragStart={(e) => { e.stopPropagation(); setDraggedDoc(doc.id); }}
-                    className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-white transition-all duration-200 group cursor-grab">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <GripVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 rounded-lg"><FileText size={18} /></div>
-                        <span className="font-medium text-gray-900 group-hover:text-[#f76226] transition-colors">{doc.name}</span>
-                        {doc.access === 'restricted' && <Lock size={14} className="text-gray-400" title="Hạn chế truy cập" />}
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm text-gray-600">{doc.author}</td>
-                    <td className="p-4 text-sm text-gray-600">{doc.date}</td>
-                    <td className="p-4 text-sm text-gray-600">{doc.size}</td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                        <Button variant="subtle" size="icon-s" title="Phân quyền"
-                          onClick={() => openPermissionModal({ id: doc.id, name: doc.name, type: 'doc' })}>
-                          <Shield size={18} />
-                        </Button>
-                        <Button variant="subtle" size="icon-s"><MoreVertical size={18} /></Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<DocItem>
+            data={documents}
+            getRowKey={(row) => row.id}
+
+            columns={[
+              {
+                id: 'name',
+                header: 'Tên tài liệu',
+                accessorKey: 'name',
+                cell: (doc) => (
+                  <div className="flex items-center gap-3">
+                    <GripVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 rounded-lg"><FileText size={18} /></div>
+                    <span className="font-medium text-gray-900 group-hover:text-[#f76226] transition-colors">{doc.name}</span>
+                    {doc.access === 'restricted' && <Lock size={14} className="text-gray-400" title="Hạn chế truy cập" />}
+                  </div>
+                )
+              },
+              { id: 'author', header: 'Tác giả', accessorKey: 'author' },
+              { id: 'date', header: 'Ngày cập nhật', accessorKey: 'date' },
+              { id: 'size', header: 'Kích thước', accessorKey: 'size' },
+              {
+                id: 'actions',
+                header: () => <div className="text-right">Thao tác</div>,
+                cell: (doc) => (
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                    <Button variant="subtle" size="icon-s" title="Phân quyền"
+                      onClick={() => openPermissionModal({ id: doc.id, name: doc.name, type: 'doc' })}>
+                      <Shield size={18} />
+                    </Button>
+                    <Button variant="subtle" size="icon-s"><MoreVertical size={18} /></Button>
+                  </div>
+                )
+              }
+            ]}
+            className="border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+          />
+
         </div>
       </div>
 

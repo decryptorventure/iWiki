@@ -61,10 +61,14 @@ export default function IWikiAIHistorySidebar({
                 <span className="text-[10px] text-gray-400 font-medium">{new Date(session.updatedAt).toLocaleDateString()}</span>
                 <span className="text-[10px] text-gray-300 tabular-nums">{session.messages.length} messages</span>
               </div>
-              <button onClick={(e) => onDeleteSession(e, session.id)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+              <Button
+                variant="subtle"
+                size="icon-xs"
+                onClick={(e) => onDeleteSession(e, session.id)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all border-none shadow-none"
+              >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             </div>
           ))
         )}

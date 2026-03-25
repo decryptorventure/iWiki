@@ -3,6 +3,7 @@ import { Bell, Clock, MessageSquare, Flame, Coins, Target, Info } from 'lucide-r
 import { useApp } from '../context/AppContext';
 import { useNotifications } from '../hooks/use-notifications';
 import { APP_SCREENS } from '../constants/screens';
+import { Button, Badge } from '@frontend-team/ui-kit';
 
 const MAX_PREVIEW = 5;
 
@@ -59,29 +60,37 @@ export default function NotificationBell() {
 
   return (
     <div className="relative" ref={rootRef}>
-      <button
+      <Button
+        variant="subtle"
+        size="icon-m"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative p-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+        className="relative border border-gray-200 bg-white hover:bg-gray-50 transition-colors h-10 w-10 p-0 rounded-xl"
         aria-label="Mở thông báo"
       >
         <Bell size={18} className="text-gray-700" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+          <Badge
+            size="xs"
+            color="red"
+            className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center p-0"
+          >
             {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
+          </Badge>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div className="absolute right-0 mt-2 w-[360px] max-w-[90vw] rounded-2xl border border-gray-200 bg-white shadow-xl z-30 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <p className="text-sm font-bold text-gray-900">Thông báo</p>
-            <button
+            <Button
+              variant="subtle"
+              size="s"
               onClick={markAllRead}
-              className="text-xs font-semibold text-gray-500 hover:text-[#f76226] transition-colors"
+              className="text-xs font-semibold text-gray-500 hover:text-[#f76226] transition-colors border-none shadow-none h-auto p-0"
             >
               Đánh dấu đã đọc
-            </button>
+            </Button>
           </div>
 
           <div className="max-h-96 overflow-y-auto custom-scrollbar">
@@ -89,10 +98,11 @@ export default function NotificationBell() {
               <div className="px-4 py-8 text-sm text-center text-gray-500">Chưa có thông báo</div>
             ) : (
               notifications.slice(0, MAX_PREVIEW).map((item) => (
-                <button
+                <Button
                   key={item.id}
+                  variant="subtle"
                   onClick={() => openNotification(item.id, item.link)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 transition-colors ${
+                  className={`w-full text-left px-4 py-3 border-b border-gray-50 transition-colors rounded-none h-auto border-none shadow-none block ${
                     item.isRead ? 'bg-white hover:bg-gray-50' : 'bg-orange-50/40 hover:bg-orange-50'
                   }`}
                 >
@@ -107,21 +117,24 @@ export default function NotificationBell() {
                       </p>
                     </div>
                   </div>
-                </button>
+                </Button>
               ))
             )}
+
           </div>
 
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
-            <button
+            <Button
+              variant="subtle"
+              size="s"
               onClick={() => {
                 setOpen(false);
                 dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.NOTIFICATIONS });
               }}
-              className="w-full text-sm font-semibold text-[#f76226] hover:text-[#e55a2b] transition-colors"
+              className="w-full text-sm font-semibold text-[#f76226] hover:text-[#e55a2b] transition-colors border-none shadow-none"
             >
               Xem tất cả thông báo
-            </button>
+            </Button>
           </div>
         </div>
       )}

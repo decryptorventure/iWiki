@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, ArrowUp, ChevronDown, Plus, Database, Zap, Check, ExternalLink, PanelRightOpen } from 'lucide-react';
-import { Button } from '@frontend-team/ui-kit';
+import { Button, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Badge } from '@frontend-team/ui-kit';
 import { useToast } from '../App';
 import { useIWikiAI } from '../hooks/use-iwiki-ai';
 import { AIChatMessage, AIChatSession } from '../store/useAppStore';
@@ -107,9 +107,15 @@ export default function IWikiAI() {
       <div className={`flex flex-col min-h-0 bg-white relative ${docPanel ? 'w-[480px] shrink-0 border-r border-gray-100' : 'flex-1'}`}>
         <div className="shrink-0 px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-white shadow-sm">
           <div className="flex items-center gap-3">
-            <button onClick={() => setShowHistory(!showHistory)} className={`p-2 rounded-lg transition-all duration-200 ${showHistory ? 'bg-orange-50 text-orange-500' : 'text-gray-500 hover:bg-gray-100'}`} title="Lịch sử">
+            <Button
+              variant={showHistory ? 'dim' : 'subtle'}
+              size="icon-s"
+              onClick={() => setShowHistory(!showHistory)}
+              title="Lịch sử"
+              className={showHistory ? 'text-orange-500 bg-orange-50' : 'text-gray-500'}
+            >
               <Database size={18} />
-            </button>
+            </Button>
             <div className="h-4 w-px bg-gray-200 mx-0.5" />
             <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
               <Sparkles size={16} className="text-orange-500 animate-pulse" />
@@ -141,12 +147,16 @@ export default function IWikiAI() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {DATA_CONNECTORS.map((conn) => (
-                    <button key={conn.id} onClick={() => sendMessage(`Hãy giúp tôi đúc kết dữ liệu từ ${conn.name}...`)}
-                      className="flex flex-col p-4 bg-white border border-gray-100 rounded-2xl hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 group text-left">
+                    <Button
+                      key={conn.id}
+                      variant="subtle"
+                      onClick={() => sendMessage(`Hãy giúp tôi đúc kết dữ liệu từ ${conn.name}...`)}
+                      className="flex flex-col h-auto p-4 bg-white border border-gray-100 rounded-2xl hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 group text-left items-start shadow-none"
+                    >
                       <div className={`mb-3 p-2 w-fit rounded-xl bg-gray-50 ${conn.color} group-hover:scale-110 transition-transform`}><conn.icon size={20} /></div>
-                      <span className="text-sm font-bold text-gray-900 mb-1 flex items-center justify-between">{conn.name}<ExternalLink size={12} className="opacity-0 group-hover:opacity-40 transition-opacity" /></span>
-                      <span className="text-[11px] text-gray-400">{conn.desc}</span>
-                    </button>
+                      <span className="text-sm font-bold text-gray-900 mb-1 flex items-center justify-between w-full">{conn.name}<ExternalLink size={12} className="opacity-0 group-hover:opacity-40 transition-opacity" /></span>
+                      <span className="text-[11px] text-gray-400 font-normal">{conn.desc}</span>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -156,12 +166,16 @@ export default function IWikiAI() {
                   {STARTER_CARDS.map((card, index) => {
                     const Icon = card.icon;
                     return (
-                      <button key={index} onClick={() => { setInput(card.prompt); textareaRef.current?.focus(); }}
-                        className={`flex flex-col items-start p-4 bg-gradient-to-br ${card.gradient} border border-gray-200/60 rounded-xl hover:shadow-md transition-all duration-300 text-left group h-full hover:-translate-y-1`}>
+                      <Button
+                        key={index}
+                        variant="subtle"
+                        onClick={() => { setInput(card.prompt); textareaRef.current?.focus(); }}
+                        className={`flex flex-col items-start h-auto p-4 bg-gradient-to-br ${card.gradient} border border-gray-200/60 rounded-xl hover:shadow-md transition-all duration-300 text-left group hover:-translate-y-1 shadow-none`}
+                      >
                         <div className="mb-3 p-2 bg-white rounded-lg text-gray-600 group-hover:shadow-md transition-all group-hover:scale-110"><Icon size={18} /></div>
                         <span className="text-sm font-semibold text-gray-900 mb-0.5 line-clamp-1">{card.title}</span>
-                        <span className="text-xs text-gray-500 line-clamp-2">{card.desc}</span>
-                      </button>
+                        <span className="text-xs text-gray-500 line-clamp-2 font-normal">{card.desc}</span>
+                      </Button>
                     );
                   })}
                 </div>
@@ -208,29 +222,33 @@ export default function IWikiAI() {
                 placeholder="Hỏi AI, đúc kết tri thức hoặc import dữ liệu..." className="w-full p-4 pb-2 bg-transparent border-none focus:ring-0 resize-none text-[14px] placeholder:text-gray-400 min-h-[52px] outline-none" rows={2} />
               <div className="px-3 pb-2.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <button onClick={() => setShowModelDropdown(!showModelDropdown)} className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm">
-                      <Zap size={11} className="text-orange-500" />{selectedModel}
-                      <ChevronDown size={11} className={`transition-transform text-gray-400 ${showModelDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showModelDropdown && (
-                      <div className="absolute bottom-full left-0 mb-2 w-52 bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] py-1 animate-scale-in">
-                        <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">Mô hình AI</div>
-                        {MODELS.map(model => (
-                          <button key={model.id} onClick={() => { setSelectedModel(model.name); setShowModelDropdown(false); }} className="w-full px-3 py-2 text-left flex items-center justify-between hover:bg-gray-50">
-                            <span className="text-xs font-medium text-gray-700 flex items-center gap-2">
-                              <div className={`p-1 rounded-md ${selectedModel === model.name ? 'bg-orange-50' : 'bg-gray-50'}`}><Zap size={11} className={selectedModel === model.name ? 'text-orange-500' : 'text-gray-400'} /></div>
-                              {model.name}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              {model.badge && <span className="text-[9px] font-black px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-full uppercase">{model.badge}</span>}
-                              {selectedModel === model.name && <Check size={12} className="text-orange-500" />}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="border" size="s" className="gap-1.5 font-bold text-gray-700 bg-white shadow-none">
+                        <Zap size={11} className="text-orange-500" />{selectedModel}
+                        <ChevronDown size={11} className="text-gray-400" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-52">
+                      <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">Mô hình AI</div>
+                      {MODELS.map(model => (
+                        <DropdownMenuItem
+                          key={model.id}
+                          onSelect={() => setSelectedModel(model.name)}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-xs font-medium text-gray-700 flex items-center gap-2">
+                            <div className={`p-1 rounded-md ${selectedModel === model.name ? 'bg-orange-50' : 'bg-gray-50'}`}><Zap size={11} className={selectedModel === model.name ? 'text-orange-500' : 'text-gray-400'} /></div>
+                            {model.name}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {model.badge && <Badge size="xs" color="orange">{model.badge}</Badge>}
+                            {selectedModel === model.name && <Check size={12} className="text-orange-500" />}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <Button size="icon-m" variant={input.trim() && !isTyping ? 'dim' : 'subtle'} onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping}>
                   <ArrowUp size={18} strokeWidth={2.5} />
@@ -238,6 +256,7 @@ export default function IWikiAI() {
               </div>
             </div>
           </div>
+
           <div className="mt-2 text-center text-[10px] text-gray-400 font-medium tracking-wide flex items-center justify-center gap-1">
             <Sparkles size={10} /> iWiki AI · Powered by Gemini 1.5 Pro & iKame Intelligence
           </div>

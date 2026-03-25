@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, Sun, Moon } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
+import { Button } from '@frontend-team/ui-kit';
 
 const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge }: { title: string, children: React.ReactNode, defaultExpanded?: boolean, onAdd?: () => void, badge?: string }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -18,9 +19,9 @@ const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge 
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {onAdd && (
-            <button onClick={(e) => { e.stopPropagation(); onAdd(); }} className="p-0.5 hover:bg-black/10 rounded text-gray-400 hover:text-gray-700 transition-colors">
+            <Button size="icon-xs" variant="subtle" onClick={(e) => { e.stopPropagation(); onAdd(); }}>
               <Plus size={14} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -32,14 +33,16 @@ const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge 
 };
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, indent = false, rightAction, badge }: any) => (
-  <button
+  <Button
+    variant="subtle"
+    size="m"
     onClick={onClick}
     className={`w-full group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive
       ? 'bg-gradient-to-r from-[#f76226]/10 to-orange-50 text-gray-900 font-semibold shadow-sm border border-[#f76226]/10'
       : 'text-gray-600 hover:bg-black/5 hover:text-gray-900'
-      } ${indent ? 'pl-9' : ''}`}
+      } ${indent ? 'pl-9' : ''} border-none shadow-none text-left justify-start`}
   >
-    <div className="flex items-center gap-2.5 truncate">
+    <div className="flex items-center gap-2.5 truncate flex-1">
       <div className={`transition-all duration-200 ${isActive ? 'text-[#f76226]' : 'text-gray-400 group-hover:text-gray-600'}`}>
         <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
       </div>
@@ -49,7 +52,7 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, indent = false, rightAc
       {badge && <span className="text-[10px] font-bold px-1.5 py-0.5 bg-red-500 text-white rounded-full">{badge}</span>}
       {rightAction && <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">{rightAction}</div>}
     </div>
-  </button>
+  </Button>
 );
 
 export default function Sidebar() {
@@ -64,13 +67,14 @@ export default function Sidebar() {
       {/* Collapsed rail — just the expand button */}
       {collapsed && (
         <div className="flex flex-col items-center pt-3 flex-1">
-          <button
+          <Button
+            size="icon-s"
+            variant="subtle"
             onClick={() => setCollapsed(false)}
             title="Mở sidebar"
-            className="p-2 rounded-lg hover:bg-black/5 text-gray-500 hover:text-gray-800 transition-colors"
           >
             <PanelLeftOpen size={18} />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -89,12 +93,12 @@ export default function Sidebar() {
               <ChevronsUpDown size={14} className="text-gray-400 shrink-0" />
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={(e) => { e.stopPropagation(); }} className="p-1 hover:bg-black/10 rounded text-gray-500">
+              <Button size="icon-xs" variant="subtle" onClick={(e) => { e.stopPropagation(); }} className="text-gray-500">
                 <Edit size={13} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} className="p-1 hover:bg-black/10 rounded text-gray-500" title="Ẩn sidebar">
+              </Button>
+              <Button size="icon-xs" variant="subtle" onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} className="text-gray-500" title="Ẩn sidebar">
                 <PanelLeftClose size={14} />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -164,49 +168,59 @@ export default function Sidebar() {
           <div className="mb-3 p-2 rounded-lg border border-gray-200 bg-white">
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Demo persona</p>
             <div className="grid grid-cols-3 gap-1.5">
-              <button
+              <Button
+                variant="subtle"
+                size="xs"
                 onClick={() => {
                   dispatch({ type: 'LOGIN', role: 'viewer' });
                   dispatch({ type: 'RESET_DEMO_STATE' });
                 }}
-                className="text-[10px] font-semibold px-2 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
                 Viewer
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="subtle"
+                size="xs"
                 onClick={() => {
                   dispatch({ type: 'LOGIN', role: 'editor' });
                   dispatch({ type: 'RESET_DEMO_STATE' });
                 }}
-                className="text-[10px] font-semibold px-2 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
                 Editor
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="subtle"
+                size="xs"
                 onClick={() => {
                   dispatch({ type: 'LOGIN', role: 'admin' });
                   dispatch({ type: 'RESET_DEMO_STATE' });
                 }}
-                className="text-[10px] font-semibold px-2 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
                 Admin
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
+              variant="dim"
+              size="xs"
               onClick={() => dispatch({ type: 'RESET_DEMO_STATE' })}
-              className="mt-2 w-full text-[11px] font-semibold px-2 py-2 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="mt-2 w-full font-bold"
             >
               Reset dữ liệu demo
-            </button>
+            </Button>
           </div>
-          <button
+          <Button
+            variant="subtle"
+            size="m"
             onClick={() => dispatch({ type: 'LOGOUT' })}
-            className="flex items-center gap-2.5 px-3 py-2.5 w-full text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 active:scale-95 group"
+            className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 active:scale-95 group justify-start border-none shadow-none font-bold"
             aria-label="Đăng xuất"
           >
             <LogOut size={18} className="text-red-500 group-hover:text-red-600" />
             <span>Đăng xuất</span>
-          </button>
+          </Button>
           <div onClick={() => navigate(APP_SCREENS.PROFILE)} className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-black/5 cursor-pointer transition-all duration-200 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f76226] to-[#FF8A6A] overflow-hidden shrink-0 shadow-sm ring-2 ring-white">
               <img src={currentUser.avatar} alt="Avatar" referrerPolicy="no-referrer" className="w-full h-full object-cover" />

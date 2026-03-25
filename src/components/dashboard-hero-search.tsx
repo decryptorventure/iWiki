@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Sparkles, BookOpen, Clock, Flame, ArrowRight, Target, Zap, TrendingUp, Award } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAccessibleArticles } from '../lib/permissions';
+import { Button } from '@frontend-team/ui-kit';
 
 interface DashboardHeroSearchProps {
   onSearch: (q: string) => void;
@@ -87,10 +88,15 @@ export default function DashboardHeroSearch({ onSearch, onOpenArticle }: Dashboa
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(query); }}
             onFocus={() => setIsFocused(true)}
           />
-          <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-            <button onClick={() => query.trim() && handleSearch(query)} className="p-2.5 text-white bg-gradient-to-r from-[#f76226] to-[#FF8A6A] rounded-full hover:shadow-md hover:shadow-[#f76226]/25 transition-all duration-200 active:scale-95">
+          <div className="absolute inset-y-0 right-0 pr-1 flex items-center pr-2">
+            <Button
+              variant="primary"
+              size="icon-m"
+              onClick={() => query.trim() && handleSearch(query)}
+              className="bg-gradient-to-r from-[#f76226] to-[#FF8A6A] rounded-full hover:shadow-md hover:shadow-[#f76226]/25 transition-all duration-200 active:scale-95 border-none h-10 w-10 p-0"
+            >
               <Search size={18} />
-            </button>
+            </Button>
           </div>
 
           {isFocused && (
@@ -104,12 +110,17 @@ export default function DashboardHeroSearch({ onSearch, onOpenArticle }: Dashboa
                       </div>
                       <div className="space-y-1">
                         {smartSuggestions.map((item, idx) => (
-                          <button key={idx} onClick={() => { setQuery(item.text); handleSearch(item.text); }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all flex items-center gap-3 group">
+                          <Button
+                            key={idx}
+                            variant="subtle"
+                            onClick={() => { setQuery(item.text); handleSearch(item.text); }}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all flex items-center justify-start gap-3 group h-auto border-none shadow-none"
+                          >
                             <div className="w-8 h-8 rounded-lg bg-orange-100/50 flex items-center justify-center text-orange-500 group-hover:bg-white group-hover:shadow-sm transition-all shrink-0">
                               <item.icon size={16} />
                             </div>
                             <span className="font-medium">{item.text}</span>
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -122,9 +133,15 @@ export default function DashboardHeroSearch({ onSearch, onOpenArticle }: Dashboa
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {searchHistory.slice(0, 5).map((h, idx) => (
-                          <button key={idx} onClick={() => { setQuery(h); handleSearch(h); }} className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                          <Button
+                            key={idx}
+                            variant="border"
+                            size="s"
+                            onClick={() => { setQuery(h); handleSearch(h); }}
+                            className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-lg text-xs transition-colors flex items-center gap-1.5 h-auto font-normal"
+                          >
                             <Clock size={12} className="text-gray-400" />{h}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -152,9 +169,14 @@ export default function DashboardHeroSearch({ onSearch, onOpenArticle }: Dashboa
                       </button>
                     ))}
                     {query && (
-                      <button onClick={() => handleSearch(query)} className="w-full mt-2 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-lg transition-colors flex items-center justify-center gap-1">
+                      <Button
+                        variant="subtle"
+                        size="s"
+                        onClick={() => handleSearch(query)}
+                        className="w-full mt-2 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-lg transition-colors flex items-center justify-center gap-1 border-none shadow-none"
+                      >
                         Xem tất cả kết quả <ArrowRight size={12} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

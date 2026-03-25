@@ -5,7 +5,7 @@ import { useToast } from '../App';
 import { useArticleActions } from '../hooks/use-article-actions';
 import ArticleMarkdownRenderer from './article-markdown-renderer';
 import { ArticleToc } from './article-toc';
-import { Button } from '@frontend-team/ui-kit';
+import { Button, Textarea, Badge } from '@frontend-team/ui-kit';
 import { Bot } from 'lucide-react';
 
 export default function ArticleFullView() {
@@ -30,9 +30,14 @@ export default function ArticleFullView() {
       <div className="flex flex-col items-center justify-center h-full text-gray-500">
         <Bot size={48} className="mb-4 opacity-20" />
         <p>Không tìm thấy bài viết hoặc bài viết đã bị xóa.</p>
-        <button onClick={goHome} className="mt-4 text-orange-600 font-bold hover:underline">
+        <Button
+          variant="subtle"
+          size="s"
+          onClick={goHome}
+          className="mt-4 text-orange-600 font-bold hover:underline border-none shadow-none"
+        >
           Quay lại Trang chủ
-        </button>
+        </Button>
       </div>
     );
   }
@@ -87,7 +92,7 @@ export default function ArticleFullView() {
             {/* Tags */}
             <div className="flex flex-wrap items-center gap-2 mb-5">
               {article.tags.map(t => (
-                <span key={t} className="px-2 py-0.5 bg-orange-50 text-orange-600 text-[10px] font-bold rounded-md uppercase tracking-wide">#{t}</span>
+                <Badge key={t} size="xs" color="orange" className="font-bold">#{t}</Badge>
               ))}
             </div>
 
@@ -136,15 +141,24 @@ export default function ArticleFullView() {
               <div className="flex gap-4">
                 <img src={currentUser.avatar} alt="Me" className="w-9 h-9 rounded-full ring-2 ring-white shadow-sm shrink-0" referrerPolicy="no-referrer" />
                 <div className="flex-1 relative">
-                  <textarea ref={commentRef} value={comment} onChange={e => setComment(e.target.value)}
-                    placeholder="Viết bình luận của bạn..." rows={1}
-                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 outline-none resize-none transition-all custom-scrollbar"
+                  <Textarea
+                    ref={commentRef as any}
+                    value={comment}
+                    onChange={e => setComment(e.target.value)}
+                    placeholder="Viết bình luận của bạn..."
+                    rows={1}
+                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 outline-none resize-none transition-all custom-scrollbar shrink-0 min-h-[48px]"
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(); } }}
                   />
-                  <button onClick={submitComment} disabled={!comment.trim()}
-                    className={`absolute right-2 top-2 p-1.5 rounded-lg transition-all ${comment.trim() ? 'text-orange-600 hover:bg-orange-50' : 'text-gray-300'}`}>
+                  <Button
+                    variant="subtle"
+                    size="icon-s"
+                    onClick={submitComment}
+                    disabled={!comment.trim()}
+                    className={`absolute right-2 top-2 p-1.5 rounded-lg transition-all border-none shadow-none ${comment.trim() ? 'text-orange-600 hover:bg-orange-50' : 'text-gray-300'}`}
+                  >
                     <Send size={18} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

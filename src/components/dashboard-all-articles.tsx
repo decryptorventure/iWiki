@@ -35,7 +35,14 @@ function DashboardAllArticles({ articles, onOpenArticle }: DashboardAllArticlesP
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-bold text-gray-900">Tất cả bài viết</h2>
-          <button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'folder-f-company' })} className="text-sm text-gray-500 hover:text-[#f76226] font-medium transition-colors">Xem thêm →</button>
+          <Button
+            variant="subtle"
+            size="s"
+            onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'folder-f-company' })}
+            className="text-sm text-gray-500 hover:text-[#f76226] font-medium transition-colors border-none shadow-none h-auto p-0"
+          >
+            Xem thêm →
+          </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {filterButtons.map(({ id, label, icon: Icon }) => (

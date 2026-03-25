@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles, Eye, Flame, ArrowRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAccessibleArticles } from '../lib/permissions';
+import { Button } from '@frontend-team/ui-kit';
 
 export default function PersonalizedFeed({ onOpenArticle }: { onOpenArticle: (id: string) => void }) {
   const { state } = useApp();
@@ -22,9 +23,13 @@ export default function PersonalizedFeed({ onOpenArticle }: { onOpenArticle: (id
             <Sparkles className="text-yellow-500" size={20} />
             <h2 className="text-xl font-bold text-gray-900">Dành cho bạn</h2>
           </div>
-          <button className="text-sm text-gray-500 hover:text-[#f76226] font-medium transition-colors flex items-center gap-1 group">
+          <Button
+            variant="subtle"
+            size="s"
+            className="text-sm text-gray-500 hover:text-[#f76226] font-medium transition-colors flex items-center gap-1 group border-none shadow-none h-auto p-0"
+          >
             Xem tất cả <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {forYouArticles.map((article) => (

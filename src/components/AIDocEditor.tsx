@@ -4,7 +4,7 @@ import {
   Heading1, Heading2, Heading3, List, ListOrdered, Table,
   Undo2, Redo2, Type, ChevronDown, FileText,
 } from 'lucide-react';
-import { Button } from '@frontend-team/ui-kit';
+import { Button, Input, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@frontend-team/ui-kit';
 
 interface AIDocEditorProps {
   title: string;
@@ -113,10 +113,12 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
           <div className="p-1.5 bg-orange-50 rounded-lg border border-orange-100">
             <FileText size={16} className="text-[#f76226]" />
           </div>
-          <input
+          <Input
+            variant="borderless"
+            size="s"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400 min-w-[200px]"
+            className="bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400 min-w-[200px] border-none shadow-none h-auto p-0"
             placeholder="Tên tài liệu..."
           />
         </div>
@@ -144,29 +146,30 @@ export default function AIDocEditor({ title: initialTitle, content: initialConte
         <div className="w-px h-5 bg-gray-200 mx-1" />
 
         {/* Block style dropdown */}
-        <div className="relative">
-          <button
-            onMouseDown={(e) => { e.preventDefault(); setShowBlockMenu(!showBlockMenu); }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
-          >
-            <Type size={14} />
-            {blockLabels[blockStyle]}
-            <ChevronDown size={12} />
-          </button>
-          {showBlockMenu && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
-              {(Object.keys(blockLabels) as BlockStyle[]).map((style) => (
-                <button
-                  key={style}
-                  onMouseDown={(e) => { e.preventDefault(); handleBlockStyle(style); }}
-                  className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 transition-colors ${blockStyle === style ? 'text-[#f76226] font-bold' : 'text-gray-600'}`}
-                >
-                  {blockLabels[style]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="subtle"
+              size="s"
+              className="flex items-center gap-1.5 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all border-none shadow-none"
+            >
+              <Type size={14} />
+              {blockLabels[blockStyle]}
+              <ChevronDown size={12} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-40">
+            {(Object.keys(blockLabels) as BlockStyle[]).map((style) => (
+              <DropdownMenuItem
+                key={style}
+                onSelect={() => handleBlockStyle(style)}
+                className={`text-xs ${blockStyle === style ? 'text-[#f76226] font-bold' : 'text-gray-600'}`}
+              >
+                {blockLabels[style]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="w-px h-5 bg-gray-200 mx-1" />
 
         <ToolbarButton icon={Sparkles} onClick={() => {}} title="AI Assist" />

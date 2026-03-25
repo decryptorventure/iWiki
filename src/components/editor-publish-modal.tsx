@@ -1,7 +1,7 @@
 // Publish settings modal for Editor — folder, tags, permissions
 import React, { useState, useRef, useEffect } from 'react';
 import { Folder, Tag, Shield, Globe, Lock, Check, Send, Search, X } from 'lucide-react';
-import { Button, Input, Modal } from '@frontend-team/ui-kit';
+import { Button, Input, Modal, Badge, Switch, RadioGroup, RadioGroupItem } from '@frontend-team/ui-kit';
 
 interface FolderItem { id: string; name: string; }
 
@@ -108,16 +108,18 @@ export default function EditorPublishModal({
         <section>
           <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2"><Folder size={16} className="text-indigo-500" /> Vị trí lưu trữ <span className="text-red-500">*</span></h4>
           <div className="relative" ref={dropdownRef}>
-            <button
+            <Button
               type="button"
+              variant="border"
+              size="m"
               onClick={() => setFolderDropdownOpen(o => !o)}
-              className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-left font-normal"
             >
               <span className={selectedFolder ? 'text-gray-900' : 'text-gray-400'}>
                 {selectedFolder ? selectedFolder.name : 'Chọn thư mục...'}
               </span>
               <Search size={15} className="text-gray-400 shrink-0" />
-            </button>
+            </Button>
 
             {folderDropdownOpen && (
               <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
@@ -136,20 +138,32 @@ export default function EditorPublishModal({
                     <div>
                       <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Gần đây</p>
                       {recentFolders.map(f => (
-                        <button key={f.id} type="button" onClick={() => handleSelectFolder(f.id)}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors ${selectedFolderId === f.id ? 'text-indigo-600 font-semibold' : 'text-gray-700'}`}>
+                        <Button
+                          key={f.id}
+                          type="button"
+                          variant="subtle"
+                          size="m"
+                          onClick={() => handleSelectFolder(f.id)}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors justify-start border-none shadow-none ${selectedFolderId === f.id ? 'text-indigo-600 font-semibold' : 'text-gray-700'}`}
+                        >
                           {f.name}
-                        </button>
+                        </Button>
                       ))}
                       <hr className="my-1 border-gray-100" />
                     </div>
                   )}
                   {!folderSearch && <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tất cả</p>}
                   {filteredFolders.map(f => (
-                    <button key={f.id} type="button" onClick={() => handleSelectFolder(f.id)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors ${selectedFolderId === f.id ? 'text-indigo-600 font-semibold' : 'text-gray-700'}`}>
+                    <Button
+                      key={f.id}
+                      type="button"
+                      variant="subtle"
+                      size="m"
+                      onClick={() => handleSelectFolder(f.id)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors justify-start border-none shadow-none ${selectedFolderId === f.id ? 'text-indigo-600 font-semibold' : 'text-gray-700'}`}
+                    >
                       {f.name}
-                    </button>
+                    </Button>
                   ))}
                   {filteredFolders.length === 0 && <p className="px-3 py-3 text-sm text-gray-400 text-center">Không tìm thấy thư mục</p>}
                 </div>
@@ -164,13 +178,24 @@ export default function EditorPublishModal({
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all hover:border-gray-300">
             <div className="flex flex-wrap gap-2 mb-2">
               {tags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700 shadow-sm">
+                <Badge key={tag} color="gray" size="m" className="gap-1.5 py-1 px-2.5">
                   {tag}
-                  <button onClick={() => onRemoveTag(tag)} className="text-gray-400 hover:text-red-500 transition-colors active:scale-90"><X size={12} /></button>
-                </span>
+                  <Button variant="subtle" size="icon-xs" onClick={() => onRemoveTag(tag)} className="p-0 hover:text-red-500 h-auto w-auto">
+                    <X size={12} />
+                  </Button>
+                </Badge>
               ))}
             </div>
-            <input type="text" value={tagInput} onChange={e => onTagInputChange(e.target.value)} onKeyDown={onTagKeyDown} placeholder="Nhập tag và nhấn Enter..." className="w-full bg-transparent border-none focus:ring-0 text-sm p-0 outline-none" />
+            <Input
+              variant="borderless"
+              size="s"
+              type="text"
+              value={tagInput}
+              onChange={e => onTagInputChange(e.target.value)}
+              onKeyDown={onTagKeyDown}
+              placeholder="Nhập tag và nhấn Enter..."
+              className="w-full bg-transparent p-0 outline-none"
+            />
           </div>
         </section>
 
@@ -199,13 +224,24 @@ export default function EditorPublishModal({
               <div className="p-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
                 <div className="flex flex-wrap gap-2 mb-2">
                   {sharedWith.map(user => (
-                    <span key={user} className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium">
+                    <Badge key={user} color="orange" size="m" className="gap-1.5 py-1 px-3">
                       {user}
-                      <button onClick={() => setSharedWith(prev => prev.filter(u => u !== user))} className="text-orange-400 hover:text-red-500 active:scale-90"><X size={11} /></button>
-                    </span>
+                      <Button variant="subtle" size="icon-xs" onClick={() => setSharedWith(prev => prev.filter(u => u !== user))} className="p-0 hover:text-red-500 text-orange-400 h-auto w-auto">
+                        <X size={11} />
+                      </Button>
+                    </Badge>
                   ))}
                 </div>
-                <input type="text" value={sharedInput} onChange={e => setSharedInput(e.target.value)} onKeyDown={handleSharedInputKeyDown} placeholder="Nhập tên hoặc email, nhấn Enter..." className="w-full bg-transparent border-none focus:ring-0 text-sm p-0 outline-none" />
+                <Input
+                  variant="borderless"
+                  size="s"
+                  type="text"
+                  value={sharedInput}
+                  onChange={e => setSharedInput(e.target.value)}
+                  onKeyDown={handleSharedInputKeyDown}
+                  placeholder="Nhập tên hoặc email, nhấn Enter..."
+                  className="w-full bg-transparent p-0 outline-none"
+                />
               </div>
             </div>
           )}
@@ -215,10 +251,7 @@ export default function EditorPublishModal({
               <h5 className="text-sm font-medium text-gray-900">Cho phép bình luận</h5>
               <p className="text-xs text-gray-500 mt-0.5">Người đọc có thể để lại bình luận.</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" checked={allowComments} onChange={e => onAllowCommentsChange(e.target.checked)} />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
+            <Switch checked={allowComments} onCheckedChange={onAllowCommentsChange} />
           </div>
         </section>
       </div>
