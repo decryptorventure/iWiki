@@ -11,7 +11,7 @@ const MyArticles = lazy(() => import('./MyArticles'));
 const Bounties = lazy(() => import('./Bounties'));
 const DataJanitor = lazy(() => import('./DataJanitor'));
 const Favorites = lazy(() => import('./Favorites'));
-const CustomFeed = lazy(() => import('./CustomFeed'));
+// Custom Feed removed as requested
 const DocumentManagement = lazy(() => import('./DocumentManagement'));
 const PermissionManagement = lazy(() => import('./PermissionManagement'));
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
@@ -64,9 +64,7 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
     case APP_SCREENS.MY_ARTICLES:
       screen = <MyArticles />;
       break;
-    case APP_SCREENS.CUSTOM_FEED:
-      screen = <CustomFeed />;
-      break;
+// Custom Feed Case removed
     case APP_SCREENS.BOUNTIES:
       screen = <Bounties />;
       break;

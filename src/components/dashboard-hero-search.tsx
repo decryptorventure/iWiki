@@ -53,23 +53,12 @@ export default function DashboardHeroSearch({ onSearch, onOpenArticle }: Dashboa
 
   return (
     <div className="flex flex-col items-center justify-center pb-14 text-center">
-      <div className="flex items-center gap-6 mb-8 animate-fade-in">
-        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--ds-bg-primary)] rounded-full shadow-sm border border-[var(--ds-border-secondary)] text-sm">
-          <BookOpen size={16} className="text-[var(--ds-fg-accent-primary)]" />
-          <span className="text-[var(--ds-text-secondary)]"><strong className="text-[var(--ds-text-primary)]">{publishedArticles.length}</strong> bài viết</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--ds-bg-primary)] rounded-full shadow-sm border border-[var(--ds-border-secondary)] text-sm">
-          <TrendingUp size={16} className="text-[var(--ds-fg-success)]" />
-          <span className="text-[var(--ds-text-secondary)]"><strong className="text-[var(--ds-text-primary)]">+{publishedArticles.filter(a => { const d = new Date(a.createdAt); return Date.now() - d.getTime() < 7 * 24 * 3600 * 1000; }).length}</strong> tuần này</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--ds-bg-primary)] rounded-full shadow-sm border border-[var(--ds-border-secondary)] text-sm">
-          <Award size={16} className="text-[var(--ds-fg-accent-secondary)]" />
-          <span className="text-[var(--ds-text-secondary)]">Level <strong className="text-[var(--ds-text-primary)]">{currentUser.level}</strong></span>
-        </div>
+      <div className="mb-6 animate-fade-in">
+        {/* Stats removed as requested */}
       </div>
 
       <h1 className="text-4xl font-bold text-[var(--ds-text-primary)] mb-3 leading-tight animate-slide-up">
-        Xin chào, <span className="gradient-text">{currentUser.name}</span> 👋
+        Xin chào, <span className="text-[var(--ds-fg-orange-strong)]">{currentUser.name}</span> 👋
       </h1>
       <p className="text-lg text-[var(--ds-text-secondary)] mb-8 animate-slide-up stagger-1">Tìm kiếm kiến thức, hướng dẫn và tài liệu nội bộ</p>
 

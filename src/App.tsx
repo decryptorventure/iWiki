@@ -51,8 +51,7 @@ function AppInner() {
       <div className="flex h-screen bg-[var(--ds-bg-secondary)] text-[var(--ds-text-primary)] font-sans overflow-hidden">
         <Sidebar />
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          <header className="h-14 shrink-0 border-b border-[var(--ds-border-tertiary)] bg-[var(--ds-bg-primary)] px-6 flex items-center justify-between z-20 relative">
-            <p className="text-sm font-semibold text-[var(--ds-text-primary)]">iWiki</p>
+          <header className="h-14 shrink-0 border-b border-[var(--ds-border-tertiary)] bg-[var(--ds-bg-primary)] px-6 flex items-center justify-end z-20 relative">
             <NotificationBell />
           </header>
           <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative">

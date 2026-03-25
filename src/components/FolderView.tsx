@@ -77,10 +77,10 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-slide-up stagger-1">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 animate-slide-up stagger-1">
+        <div className="text-left items-start flex flex-col">
           <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] mb-2">{title}</h1>
-          {description && <p className="text-[var(--ds-text-secondary)] max-w-2xl">{description}</p>}
+          {description && <p className="text-[var(--ds-text-secondary)] max-w-2xl text-left">{description}</p>}
           <div className="flex items-center gap-4 mt-3 text-sm text-[var(--ds-text-secondary)]">
             <span className="flex items-center gap-1.5"><BookOpen size={15} /> {scopedArticles.length} bài viết</span>
             {isParentFolder && (
@@ -93,7 +93,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ds-text-secondary)]" size={16} />
             <Input type="text" placeholder="Tìm trong thư mục..." className="pl-9 pr-4 w-52" value={searchQuery} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)} />
           </div>
-          <Button variant="primary" onClick={handleNewArticle}>
+          <Button variant="primary" onClick={(e) => { e.stopPropagation(); handleNewArticle(); }}>
             <Plus size={18} /> Viết bài mới
           </Button>
         </div>
@@ -144,7 +144,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
           <h3 className="text-xl font-bold text-[var(--ds-text-primary)] mb-2">{searchQuery ? 'Không tìm thấy bài viết' : 'Thư mục chưa có bài viết'}</h3>
           <p className="text-[var(--ds-text-secondary)] mb-6">{searchQuery ? 'Thử tìm từ khóa khác' : 'Hãy là người đầu tiên đóng góp kiến thức!'}</p>
           {!searchQuery && (
-            <Button variant="primary" onClick={handleNewArticle}>
+            <Button variant="primary" onClick={(e) => { e.stopPropagation(); handleNewArticle(); }}>
               <Plus size={16} /> Viết bài đầu tiên
             </Button>
           )}

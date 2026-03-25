@@ -20,21 +20,40 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
     dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: currentUser.id, articleId: id } });
   };
 
-  const leaderboard = useMemo(() => {
-    const scoreByAuthor = publishedArticles.reduce<Record<string, { name: string; role: string; avatar?: string; score: number }>>(
-      (acc, article) => {
-        const key = article.author.id;
-        if (!acc[key]) acc[key] = { name: article.author.name, role: article.author.role, avatar: article.author.avatar, score: 0 };
-        acc[key].score += article.views + article.likes * 8 + article.comments.length * 4;
-        return acc;
-      }, {}
-    );
-    const base = Object.values(scoreByAuthor).sort((a, b) => b.score - a.score).slice(0, 5).map((item, idx) => ({ ...item, rank: idx + 1 }));
-    if (!base.some(item => item.name === currentUser.name)) {
-      base.splice(Math.min(4, base.length), 0, { rank: 0, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar, score: currentUser.xp });
-    }
-    return base.sort((a, b) => b.score - a.score).slice(0, 5).map((item, idx) => ({ ...item, rank: idx + 1 }));
-  }, [publishedArticles, currentUser]);
+  const { individualLeaderboard, teamLeaderboard } = useMemo(() => {
+    const authorCounts: Record<string, { name: string; role: string; avatar?: string; count: number; team: string }> = {};
+    const teamCounts: Record<string, { name: string; count: number }> = {};
+
+    const getTeam = (roleOrTitle: string) => {
+      const lower = roleOrTitle.toLowerCase();
+      if (lower.includes('product')) return 'Product Team';
+      if (lower.includes('frontend') || lower.includes('fe')) return 'Frontend Team';
+      if (lower.includes('backend') || lower.includes('be')) return 'Backend Team';
+      if (lower.includes('devops') || lower.includes('infra')) return 'DevOps Team';
+      if (lower.includes('hr') || lower.includes('admin')) return 'HR & Admin';
+      return 'Others';
+    };
+
+    publishedArticles.forEach(a => {
+      const authorId = a.author.id;
+        const team = getTeam(a.author.role || '');
+      
+      if (!authorCounts[authorId]) {
+        authorCounts[authorId] = { name: a.author.name, role: a.author.role, avatar: a.author.avatar, count: 0, team };
+      }
+      authorCounts[authorId].count += 1;
+
+      if (!teamCounts[team]) {
+        teamCounts[team] = { name: team, count: 0 };
+      }
+      teamCounts[team].count += 1;
+    });
+
+    const indSub = Object.values(authorCounts).sort((a, b) => b.count - a.count).slice(0, 5).map((u, i) => ({ ...u, rank: i + 1, score: u.count }));
+    const teamSub = Object.values(teamCounts).sort((a, b) => b.count - a.count).slice(0, 5).map((t, i) => ({ ...t, rank: i + 1, score: t.count, avatar: undefined }));
+
+    return { individualLeaderboard: indSub, teamLeaderboard: teamSub };
+  }, [publishedArticles]);
 
   const recentReadArticles = useMemo(() => {
     const history = recentReadsByUser[currentUser.id] || [];
@@ -51,7 +70,7 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
       <DashboardFeaturedArticles articles={publishedArticles} onOpenArticle={openArticle} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-slide-up stagger-4">
         <DashboardAllArticles articles={publishedArticles} onOpenArticle={openArticle} />
-        <DashboardRightSidebar leaderboard={leaderboard} recentReadArticles={recentReadArticles} onOpenArticle={openArticle} />
+        <DashboardRightSidebar individualLeaderboard={individualLeaderboard} teamLeaderboard={teamLeaderboard} recentReadArticles={recentReadArticles} onOpenArticle={openArticle} />
       </div>
     </div>
   );

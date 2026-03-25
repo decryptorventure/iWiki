@@ -228,7 +228,7 @@ export default function DataJanitor() {
                 </div>
               </div>
 
-              <div className="flex flex-row lg:flex-col items-center lg:items-end justify-start lg:justify-center gap-2 border-t lg:border-t-0 lg:border-l border-[var(--ds-border-secondary)] pt-4 lg:pt-0 lg:pl-6 shrink-0">
+              <div className="flex flex-row lg:flex-col items-center lg:items-stretch justify-start gap-2 border-t lg:border-t-0 lg:border-l border-[var(--ds-border-secondary)] pt-4 lg:pt-0 lg:pl-6 shrink-0 min-w-[140px]">
                 <Button size="s" variant="primary" onClick={() => handleUpdate(task.id, task.title)}>
                   <RefreshCw size={16} /> Cập nhật
                 </Button>

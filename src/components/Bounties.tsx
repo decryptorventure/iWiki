@@ -132,7 +132,7 @@ export default function Bounties() {
           {filtered.map((bounty, i) => {
             const isAccepted = bounty.acceptedBy.includes(currentUser.id);
             return (
-              <div key={bounty.id} className={`card-premium p-5 flex flex-col sm:flex-row sm:items-center gap-5 animate-slide-up stagger-${Math.min(i + 2, 6)}`}>
+              <div key={bounty.id} className={`card-premium p-5 flex flex-col sm:flex-row sm:items-start gap-5 animate-slide-up stagger-${Math.min(i + 2, 6)}`}>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     {bounty.hot && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--ds-bg-danger-subtle)] text-[var(--ds-fg-danger)] text-xs font-bold uppercase tracking-wider animate-pulse-glow"><Flame size={12} /> Hot</span>}
@@ -146,8 +146,8 @@ export default function Bounties() {
                     {bounty.tags.map(tag => <span key={tag} className="px-2.5 py-1 bg-[var(--ds-bg-secondary)] text-[var(--ds-text-secondary)] text-xs font-medium rounded-lg hover:bg-[var(--ds-bg-tertiary)] transition-colors">{tag}</span>)}
                   </div>
                 </div>
-                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-4 sm:gap-3 border-t sm:border-t-0 sm:border-l border-[var(--ds-border-secondary)] pt-4 sm:pt-0 sm:pl-5">
-                  <div className="text-center sm:text-right">
+                <div className="flex sm:flex-col items-start sm:items-end justify-between gap-4 sm:gap-3 border-t sm:border-t-0 sm:border-l border-[var(--ds-border-secondary)] pt-4 sm:pt-0 sm:pl-5 shrink-0">
+                  <div className="text-left sm:text-right">
                     <div className="text-xs text-[var(--ds-text-secondary)] font-medium mb-1">Phần thưởng</div>
                     <div className="text-xl font-extrabold text-[var(--ds-fg-orange-strong)] flex items-center gap-1.5">+{bounty.reward} <Coins size={20} /></div>
                   </div>

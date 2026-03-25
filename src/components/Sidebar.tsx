@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, Sun, Moon } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, Sun, Moon, BookOpen } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 import { Button } from '@frontend-team/ui-kit';
@@ -82,24 +82,27 @@ export default function Sidebar() {
       {!collapsed && <>
         {/* Workspace Header */}
         <div className="px-3 pt-3 pb-2">
-          <div className="px-2 py-2.5 hover:bg-black/5 cursor-pointer transition-all duration-200 flex items-center justify-between group rounded-lg">
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="w-7 h-7 bg-[var(--ds-bg-accent-primary)] rounded-lg flex items-center justify-center text-[var(--ds-fg-on-contrast)] shrink-0 shadow-md">
-                <Flame size={14} strokeWidth={2.5} />
+          <div className="px-2 py-2 flex items-center justify-between group">
+            <div 
+              className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => navigate(APP_SCREENS.DASHBOARD)}
+            >
+              <div className="w-8 h-8 bg-[var(--ds-bg-accent-primary)] rounded-xl flex items-center justify-center text-[var(--ds-fg-on-contrast)] shrink-0 shadow-sm border border-[var(--ds-border-tertiary)]/10">
+                <BookOpen size={16} strokeWidth={2.5} />
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-bold text-sm truncate block text-gray-900">iKame Workspace</span>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-base tracking-tight text-[var(--ds-text-primary)] leading-none">iWiki</span>
               </div>
-              <ChevronsUpDown size={14} className="text-gray-400 shrink-0" />
             </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button size="icon-xs" variant="subtle" onClick={(e) => { e.stopPropagation(); }} className="text-gray-500">
-                <Edit size={13} />
-              </Button>
-              <Button size="icon-xs" variant="subtle" onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} className="text-gray-500" title="Ẩn sidebar">
-                <PanelLeftClose size={14} />
-              </Button>
-            </div>
+            <Button
+              size="icon-xs"
+              variant="subtle"
+              onClick={(e) => { e.stopPropagation(); setCollapsed(true); }}
+              className="text-gray-400 hover:text-[var(--ds-fg-accent-primary)] hover:bg-[var(--ds-bg-secondary)] transition-all"
+              title="Ẩn sidebar"
+            >
+              <PanelLeftClose size={16} />
+            </Button>
           </div>
         </div>
 
@@ -110,24 +113,22 @@ export default function Sidebar() {
               <NavItem icon={Sparkles} label="iWiki AI" isActive={currentScreen === APP_SCREENS.AI} onClick={() => navigate(APP_SCREENS.AI)} />
               <NavItem icon={Home} label="Trang chủ" isActive={currentScreen === APP_SCREENS.DASHBOARD} onClick={() => navigate(APP_SCREENS.DASHBOARD)} />
               <NavItem icon={FileText} label="Bài viết của tôi" isActive={currentScreen === APP_SCREENS.MY_ARTICLES} onClick={() => navigate(APP_SCREENS.MY_ARTICLES)} />
-              <NavItem
-                icon={Compass}
-                label="Custom Feed"
-                isActive={currentScreen === APP_SCREENS.CUSTOM_FEED}
-                onClick={() => navigate(APP_SCREENS.CUSTOM_FEED)}
-              />
-              <NavItem
-                icon={Target}
-                label="Săn thưởng"
-                isActive={currentScreen === APP_SCREENS.BOUNTIES}
-                onClick={() => navigate(APP_SCREENS.BOUNTIES)}
-              />
-              <NavItem
-                icon={AlertTriangle}
-                label="Dọn rác dữ liệu"
-                isActive={currentScreen === APP_SCREENS.JANITOR}
-                onClick={() => navigate(APP_SCREENS.JANITOR)}
-              />
+              {currentUser.role !== 'viewer' && currentUser.role !== 'editor' && (
+                <>
+                  <NavItem
+                    icon={Target}
+                    label="Săn thưởng"
+                    isActive={currentScreen === APP_SCREENS.BOUNTIES}
+                    onClick={() => navigate(APP_SCREENS.BOUNTIES)}
+                  />
+                  <NavItem
+                    icon={AlertTriangle}
+                    label="Dọn rác dữ liệu"
+                    isActive={currentScreen === APP_SCREENS.JANITOR}
+                    onClick={() => navigate(APP_SCREENS.JANITOR)}
+                  />
+                </>
+              )}
             </div>
           </div>
 

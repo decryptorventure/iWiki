@@ -139,7 +139,9 @@ export default function IWikiAI() {
                   <Sparkles size={44} className="text-[var(--ds-text-primary)]" strokeWidth={1.5} />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold mb-2 text-center text-[var(--ds-text-primary)] animate-slide-up">Xin chào, {currentUser.name.split(' ').pop()}!</h1>
+              <h1 className="text-3xl font-bold mb-2 text-center text-[var(--ds-text-primary)] animate-slide-up">
+                Xin chào, <span className="text-[var(--ds-fg-orange-strong)]">{currentUser.name.split(' ').pop()}</span>!
+              </h1>
               <p className="text-[var(--ds-text-tertiary)] text-sm mb-10 animate-slide-up stagger-1">iWiki AI — Trợ lý tri thức nội bộ iKame</p>
               <div className="w-full mb-8 animate-slide-up stagger-2">
                 <h3 className="text-sm font-bold text-[var(--ds-text-secondary)] uppercase tracking-wider flex items-center gap-2 mb-4">

@@ -63,10 +63,10 @@ export default function NotificationBell() {
         variant="subtle"
         size="icon-m"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative border border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)] hover:bg-[var(--ds-bg-secondary)] transition-colors h-10 w-10 p-0 rounded-xl"
+        className="relative border-2 border-[var(--ds-border-tertiary)] bg-white hover:bg-[var(--ds-bg-secondary)] transition-all h-10 w-10 p-0 rounded-xl shadow-sm group"
         aria-label="Mở thông báo"
       >
-        <Bell size={18} className="text-[var(--ds-text-primary)]" />
+        <Bell size={20} className="text-gray-900 group-hover:text-[var(--ds-fg-accent-primary)] transition-colors" strokeWidth={2.5} />
         {unreadCount > 0 && (
           <Badge
             size="xs"
