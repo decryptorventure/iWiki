@@ -55,7 +55,6 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
 
   const openArticle = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
-    dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
     dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
     dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: currentUser.id, articleId: id } });
   };

@@ -42,7 +42,6 @@ export default function MyArticles() {
 
   const handleView = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
-    dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
     dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
     setOpenMenuId(null);
   };

@@ -33,7 +33,6 @@ export default function NotificationBell() {
       const articleId = link.split(':')[1];
       dispatch({ type: 'SET_SELECTED_ARTICLE', articleId });
       dispatch({ type: 'INCREMENT_VIEWS', articleId });
-      dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.ARTICLE_DETAIL });
       return;
     }
     if (link === 'bounties') {
