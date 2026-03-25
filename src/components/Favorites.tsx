@@ -9,6 +9,7 @@ export default function Favorites() {
 
   const openArticle = (articleId: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId });
+    dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
     dispatch({ type: 'INCREMENT_VIEWS', articleId });
     dispatch({
       type: 'TRACK_EVENT',

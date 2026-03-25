@@ -83,6 +83,20 @@ body,
   }
 }
 
+/* Alignment overrides when embedded in iWiki editor (body aligns with title) */
+.editor-tiptap-container .notion-like-editor-content {
+  max-width: 100%;
+  margin: 0;
+}
+.editor-tiptap-container .notion-like-editor-content .tiptap.ProseMirror.notion-like-editor {
+  padding-left: 0;
+  padding-right: 0;
+}
+.editor-tiptap-container .notion-like-editor-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* Spinner */
 .spinner-container {
   min-height: 100vh;

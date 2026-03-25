@@ -27,7 +27,7 @@ export default function EditorAIChatPanel({
   messages, isTyping, input, onInputChange, onSend, onKeyDown, onInsert, onClose, messagesEndRef, inputRef,
 }: EditorAIChatPanelProps) {
   return (
-    <div className="w-[260px] shrink-0 flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="w-[340px] shrink-0 flex flex-col bg-white h-full">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-gray-900 flex items-center justify-center shadow-sm">

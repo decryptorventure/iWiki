@@ -21,7 +21,12 @@
       "Bash(find \"d:/iWiki-main/src/components\" -name \"*.tsx\" -exec wc -l {} +)",
       "Bash(\"d:/iWiki-main/plans/reports/Scout-260325-1500-ui-kit-migration.md\":*)",
       "Bash(python -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\(''''main:'''', p.get\\(''''main''''\\)\\); print\\(''''types:'''', p.get\\(''''types''''\\)\\); print\\(''''exports:'''', list\\(p.get\\(''''exports'''',{}\\).keys\\(\\)\\)[:10]\\)\")",
-      "Bash(grep -rn className=.*px-.*py-.*rounded.*font-.*hover:bg src/components/dashboard-*.tsx src/components/Dashboard.tsx)"
+      "Bash(grep -rn className=.*px-.*py-.*rounded.*font-.*hover:bg src/components/dashboard-*.tsx src/components/Dashboard.tsx)",
+      "Bash(find d:/iWiki-main/node_modules/@frontend-team -maxdepth 3 -name heading-button*)",
+      "Bash(find d:/iWiki-main -path */tiptap-kit* -name *.d.ts)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

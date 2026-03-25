@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 
@@ -56,10 +56,26 @@ export default function Sidebar() {
   const { state, dispatch } = useApp();
   const { currentScreen, currentUser, folders } = state;
   const navigate = (screen: string) => dispatch({ type: 'SET_SCREEN', screen });
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <>
-      <aside className="w-64 bg-[#f8f8f6] border-r border-gray-200/80 flex flex-col h-full overflow-hidden text-[#37352f]">
+    <aside className={`bg-[#f8f8f6] border-r border-gray-200/80 flex flex-col h-full overflow-hidden text-[#37352f] transition-all duration-300 ease-in-out shrink-0 ${collapsed ? 'w-12' : 'w-64'}`}>
+
+      {/* Collapsed rail — just the expand button */}
+      {collapsed && (
+        <div className="flex flex-col items-center pt-3 flex-1">
+          <button
+            onClick={() => setCollapsed(false)}
+            title="Mở sidebar"
+            className="p-2 rounded-lg hover:bg-black/5 text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Full sidebar content */}
+      {!collapsed && <>
         {/* Workspace Header */}
         <div className="px-3 pt-3 pb-2">
           <div className="px-2 py-2.5 hover:bg-black/5 cursor-pointer transition-all duration-200 flex items-center justify-between group rounded-lg">
@@ -72,9 +88,14 @@ export default function Sidebar() {
               </div>
               <ChevronsUpDown size={14} className="text-gray-400 shrink-0" />
             </div>
-            <button className="p-1 hover:bg-black/10 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-500">
-              <Edit size={13} />
-            </button>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={(e) => { e.stopPropagation(); }} className="p-1 hover:bg-black/10 rounded text-gray-500">
+                <Edit size={13} />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} className="p-1 hover:bg-black/10 rounded text-gray-500" title="Ẩn sidebar">
+                <PanelLeftClose size={14} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -197,7 +218,7 @@ export default function Sidebar() {
             <div className="w-2 h-2 rounded-full bg-green-500 ring-2 ring-green-500/20 shrink-0"></div>
           </div>
         </div>
-      </aside>
-    </>
+      </>}
+    </aside>
   );
 }

@@ -15,6 +15,7 @@ export default function Dashboard({ onSearch }: { onSearch: (q: string) => void 
 
   const openArticle = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
+    dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
     dispatch({ type: 'INCREMENT_VIEWS', articleId: id });
     dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: currentUser.id, articleId: id } });
   };

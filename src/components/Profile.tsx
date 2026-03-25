@@ -115,7 +115,7 @@ export default function Profile() {
               </div>
             ) : (
               myArticles.slice(0, 4).map(article => (
-                <div key={article.id} onClick={() => { dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id }); dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id }); }} className="card-premium p-4 cursor-pointer flex items-start gap-3">
+                <div key={article.id} onClick={() => { dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id }); dispatch({ type: 'SET_SCREEN', screen: 'article-detail' }); dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id }); }} className="card-premium p-4 cursor-pointer flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-gray-900 line-clamp-1 hover:text-[#f76226] transition-colors">{article.title}</p>
                     <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
@@ -140,7 +140,7 @@ export default function Profile() {
               </div>
             ) : (
               favoriteArticles.slice(0, 4).map((article) => (
-                <div key={article.id} onClick={() => { dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id }); dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id }); }} className="card-premium p-4 cursor-pointer flex items-start gap-3">
+                <div key={article.id} onClick={() => { dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: article.id }); dispatch({ type: 'SET_SCREEN', screen: 'article-detail' }); dispatch({ type: 'INCREMENT_VIEWS', articleId: article.id }); }} className="card-premium p-4 cursor-pointer flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-gray-900 line-clamp-1 hover:text-[#f76226] transition-colors">{article.title}</p>
                     <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">

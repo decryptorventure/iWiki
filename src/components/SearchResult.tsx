@@ -149,6 +149,7 @@ export default function SearchResult({ query, onBack }: { query: string, onBack:
               return (
                 <div key={source.id} onClick={() => {
                   dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: source.id });
+                  dispatch({ type: 'SET_SCREEN', screen: 'article-detail' });
                   dispatch({ type: 'INCREMENT_VIEWS', articleId: source.id });
                   dispatch({ type: 'TRACK_EVENT', event: { type: 'open_article', userId: state.currentUser.id, articleId: source.id } });
                 }} className="card-premium p-4 cursor-pointer group flex flex-col h-full">

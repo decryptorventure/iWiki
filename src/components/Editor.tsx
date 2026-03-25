@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Sparkles, AlignLeft, Type, Table, Languages, ArrowLeft, Save, Send, FileText, ChevronDown, Check, Users } from 'lucide-react';
+import { Sparkles, AlignLeft, Type, Table, Languages, ArrowLeft, Save, Send, FileText, ChevronDown, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../App';
 import { Article } from '../store/useAppStore';
@@ -44,7 +44,6 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
 
   // AI chat panel state
   const [aiMode, setAiMode] = useState(false);
-  const [collabMode, setCollabMode] = useState(true);
   const [aiMessages, setAiMessages] = useState<EditorAIMessage[]>([]);
   const [aiInput, setAiInput] = useState('');
   const [aiIsTyping, setAiIsTyping] = useState(false);
@@ -194,19 +193,14 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
   };
 
   return (
-    <div className="max-w-6xl w-full pl-6 pr-8 py-8 relative h-full flex flex-col animate-fade-in">
+    <div className={`w-full relative h-full flex flex-col animate-fade-in ${aiMode ? '' : 'max-w-4xl mx-auto pl-6 pr-8 py-8'}`}>
       {/* Top Bar */}
-      <div className="flex items-center justify-between mb-6">
+      <div className={`flex items-center justify-between mb-6 ${aiMode ? 'px-6 pt-6' : ''}`}>
         <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-500 shrink-0 active:scale-90"><ArrowLeft size={20} /></button>
         <div className="flex items-center gap-2 text-xs text-gray-400">
           {isSaved && <span className="flex items-center gap-1 text-green-600"><Check size={12} /> Đã lưu tự động</span>}
         </div>
         <div className="flex items-center gap-3">
-          {!collabMode && (
-            <Button type="button" variant="border" size="s" onClick={() => setCollabMode(true)} className="hidden sm:inline-flex text-blue-700 border-blue-200 hover:bg-blue-50">
-              <Users size={14} /> Bật Collab mode
-            </Button>
-          )}
           <Button variant="border" size="m" onClick={handleSaveDraft}>
             <Save size={16} /> Lưu nháp
           </Button>
@@ -223,32 +217,15 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         </div>
       )}
 
-      {collabMode && (
-        <div className="mb-4 p-3 rounded-xl border border-blue-100 bg-blue-50/40">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5"><Users size={14} /> Collaborative editing demo mode</p>
-            <button onClick={() => setCollabMode(false)} className="text-[11px] font-semibold text-blue-600 hover:text-blue-800" type="button">Ẩn</button>
-          </div>
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-blue-900">
-            <div className="rounded-lg bg-white border border-blue-100 px-2.5 py-2">Huy đang chỉnh phần "Checklist release"</div>
-            <div className="rounded-lg bg-white border border-blue-100 px-2.5 py-2">Mai để lại inline comment ở đoạn "Mục tiêu"</div>
-          </div>
-        </div>
-      )}
-
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        {/* Left group: Format + Template */}
+      <div className={`flex flex-wrap items-center justify-between gap-3 mb-4 ${aiMode ? 'px-6' : ''}`}>
+        {/* Left: hint */}
+        <span className="text-xs text-gray-400 hidden sm:inline">Markdown • <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px] font-mono">/ai</kbd></span>
+        {/* Right group: Template + AI tools */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1.5 bg-gray-50 border border-gray-200 rounded-xl">
-            <span className="text-xs text-gray-400 px-2 hidden sm:inline">Markdown • <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">/ai</kbd></span>
-          </div>
           <Button variant="border" size="s" onClick={() => { if (!activeTemplateId && EDITOR_TEMPLATES.length > 0) setActiveTemplateId(EDITOR_TEMPLATES[0].id); setShowTemplates(true); }}>
             <FileText size={16} className="text-gray-500" /> Mẫu <ChevronDown size={14} className="text-gray-400" />
           </Button>
-        </div>
-        {/* Right group: AI tools */}
-        <div className="flex items-center gap-2">
           <Button type="button" variant="dim" size="s" onClick={handleDraftFromBullets}>
             <Sparkles size={14} className="text-orange-300" /> AI dựng draft
           </Button>
@@ -261,20 +238,22 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       </div>
 
       {/* Main Editor Area */}
-      <div className="flex-1 flex gap-4 mt-1">
+      <div className="flex-1 flex mt-1 min-h-0">
         {aiMode && (
-          <EditorAIChatPanel
-            messages={aiMessages} isTyping={aiIsTyping}
-            input={aiInput} onInputChange={setAiInput}
-            onSend={handleAiSend}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAiSend(); } }}
-            onInsert={handleInsertFromAI}
-            onClose={() => setAiMode(false)}
-            messagesEndRef={aiMessagesEndRef} inputRef={aiTextareaRef}
-          />
+          <div className="border-r border-gray-100 shrink-0">
+            <EditorAIChatPanel
+              messages={aiMessages} isTyping={aiIsTyping}
+              input={aiInput} onInputChange={setAiInput}
+              onSend={handleAiSend}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAiSend(); } }}
+              onInsert={handleInsertFromAI}
+              onClose={() => setAiMode(false)}
+              messagesEndRef={aiMessagesEndRef} inputRef={aiTextareaRef}
+            />
+          </div>
         )}
 
-        <div className="flex-1 flex flex-col">
+        <div className={`flex-1 flex flex-col min-w-0 ${aiMode ? 'px-8 py-4 overflow-y-auto' : ''}`}>
           <input type="text" placeholder="Tiêu đề bài viết..." value={title} onChange={e => setTitle(e.target.value)}
             className="text-4xl font-bold text-gray-900 placeholder:text-gray-300 border-none focus:ring-0 bg-transparent mb-4 outline-none w-full" />
           <div className="relative flex-1 editor-tiptap-container w-full" style={{ minHeight: '400px' }}>
@@ -301,21 +280,23 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
           </div>
         </div>
 
-        {/* Outline Panel */}
-        <div className="hidden lg:flex w-[220px] shrink-0">
-          <div className="h-full w-full rounded-2xl border border-gray-200 bg-white/60 px-3 py-3 flex flex-col">
-            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Mục lục</p>
-            <div className="flex-1 overflow-y-auto custom-scrollbar text-[12px] leading-relaxed">
-              {headings.length === 0 ? (
-                <p className="text-gray-400">Dùng các thẻ <code className="px-1 py-0.5 bg-gray-100 rounded">#</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">##</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">###</code> để tạo mục lục tự động.</p>
-              ) : (
-                <ul className="space-y-1">
-                  {headings.map(h => <li key={h.id} className={`text-gray-700 cursor-default ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'pl-3' : 'pl-5 text-gray-500'}`}>{h.text}</li>)}
-                </ul>
-              )}
+        {/* Outline Panel — hidden in AI mode */}
+        {!aiMode && (
+          <div className="hidden lg:flex w-[220px] shrink-0">
+            <div className="h-full w-full rounded-2xl border border-gray-200 bg-white/60 px-3 py-3 flex flex-col">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Mục lục</p>
+              <div className="flex-1 overflow-y-auto custom-scrollbar text-[12px] leading-relaxed">
+                {headings.length === 0 ? (
+                  <p className="text-gray-400">Dùng các thẻ <code className="px-1 py-0.5 bg-gray-100 rounded">#</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">##</code>, <code className="px-1 py-0.5 bg-gray-100 rounded">###</code> để tạo mục lục tự động.</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {headings.map(h => <li key={h.id} className={`text-gray-700 cursor-default ${h.level === 1 ? 'font-semibold' : h.level === 2 ? 'pl-3' : 'pl-5 text-gray-500'}`}>{h.text}</li>)}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {isPublishModalOpen && (

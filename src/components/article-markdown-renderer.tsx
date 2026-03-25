@@ -16,9 +16,9 @@ export default function ArticleMarkdownRenderer({ content }: { content: string }
   return (
     <div className="prose prose-orange max-w-none text-gray-800 leading-relaxed font-sans selection:bg-orange-100">
       {lines.map((line, i) => {
-        if (line.startsWith('# ')) return <h1 key={i} className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-10 mb-6 tracking-tight leading-tight">{line.slice(2)}</h1>;
-        if (line.startsWith('## ')) return <h2 key={i} className="text-xl md:text-2xl font-bold text-gray-900 mt-8 mb-4 border-b border-gray-100 pb-2">{line.slice(3)}</h2>;
-        if (line.startsWith('### ')) return <h3 key={i} className="text-lg font-semibold text-gray-900 mt-4 mb-2">{line.slice(4)}</h3>;
+        if (line.startsWith('# ')) return <h1 key={i} id={`heading-${i}`} className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-10 mb-6 tracking-tight leading-tight">{line.slice(2)}</h1>;
+        if (line.startsWith('## ')) return <h2 key={i} id={`heading-${i}`} className="text-xl md:text-2xl font-bold text-gray-900 mt-8 mb-4 border-b border-gray-100 pb-2">{line.slice(3)}</h2>;
+        if (line.startsWith('### ')) return <h3 key={i} id={`heading-${i}`} className="text-lg font-semibold text-gray-900 mt-4 mb-2">{line.slice(4)}</h3>;
         if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 text-gray-700 mb-1">{renderInline(line.slice(2))}</li>;
         if (line.match(/^\d+\. /)) return <li key={i} className="ml-4 list-decimal text-gray-700 mb-1">{renderInline(line.replace(/^\d+\. /, ''))}</li>;
         if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-[#f76226] pl-4 italic text-gray-600 my-3">{line.slice(2)}</blockquote>;
