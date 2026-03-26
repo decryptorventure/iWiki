@@ -45,7 +45,7 @@ export function PermissionFolderTreeManager() {
           onClick={() => setSelectedFolderId(folder.id)}
           className={`group flex items-center justify-between py-2 px-3 rounded-lg cursor-pointer transition-all duration-200 ${
             selectedFolderId === folder.id
-              ? 'bg-[var(--ds-bg-info)] text-white shadow-md'
+              ? 'bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-fg-accent-primary)] shadow-sm'
               : 'hover:bg-[var(--ds-bg-subtle)] text-[var(--ds-text-secondary)]'
           }`}
           style={{ marginLeft: `${depth * 1.25}rem` }}
@@ -56,14 +56,14 @@ export function PermissionFolderTreeManager() {
                  onClick={(e) => { e.stopPropagation(); toggleExpand(folder.id); }}
                  className={`p-0.5 rounded transition-transform ${expandedFolders.includes(folder.id) ? 'rotate-90' : ''}`}
                >
-                 <ChevronRight size={14} />
+                 <ChevronRight size={14} className={selectedFolderId === folder.id ? 'text-[var(--ds-fg-accent-primary)]' : ''} />
                </button>
              ) : <div className="w-5" />}
              <span className="text-xl leading-none">{folder.icon || '📁'}</span>
-             <span className="text-sm font-semibold truncate">{folder.name}</span>
+             <span className={`text-sm font-semibold truncate ${selectedFolderId === folder.id ? 'text-[var(--ds-fg-accent-primary)]' : ''}`}>{folder.name}</span>
           </div>
           {state.currentUser.scopes?.find(s => s.folderId === folder.id) && (
-            <Shield size={12} className={selectedFolderId === folder.id ? 'text-blue-100' : 'text-blue-500'} />
+            <Shield size={12} className={selectedFolderId === folder.id ? 'text-[var(--ds-fg-accent-primary)]' : 'text-blue-500'} />
           )}
         </div>
         {folder.children && expandedFolders.includes(folder.id) && (

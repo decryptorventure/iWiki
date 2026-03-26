@@ -6,6 +6,8 @@ import { Button, Input, Textarea, Select, Modal, Tabs } from '@frontend-team/ui-
 import { PermissionRolesGrid } from './permission-roles-grid';
 import { PermissionMatrixTable } from './permission-matrix-table';
 import { PermissionFolderTreeManager } from './permission-folder-tree-manager';
+import { PermissionSpaceConfig } from './permission-space-config';
+import { Layout } from 'lucide-react';
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Quản trị viên (Admin)' },
@@ -115,6 +117,13 @@ export default function PermissionManagement() {
       label: <div className="flex items-center gap-2 px-1"><Database size={18} /> Quyền dữ liệu (Spaces)</div>,
       content: <div className="mt-8 animate-slide-up">
           <PermissionFolderTreeManager />
+        </div>,
+    },
+    {
+      value: 'spaces',
+      label: <div className="flex items-center gap-2 px-1"><Layout size={18} /> Cấu hình Space</div>,
+      content: <div className="mt-8 animate-slide-up bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-[var(--ds-border-subtle)] shadow-xl overflow-hidden">
+          <PermissionSpaceConfig />
         </div>,
     },
   ];
