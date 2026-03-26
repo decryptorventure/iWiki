@@ -1,79 +1,80 @@
-// Demo/seed data for development. Replace with real API calls in production.
-
-import type { User, Article, Folder, Bounty, Notification, AnalyticsEvent } from '../types';
+import type { Article, Folder, Bounty, Notification, AnalyticsEvent } from '../types';
+import { User, UserRole, SpaceRole, AtomicPermission, RoleDefinition, Team, SpaceMember } from '../types/user';
 import { ARTICLE_CONTENTS } from './articleContents';
 
-// ===== DEFAULT USER (logged-in session fallback) =====
+// ===== INITIAL DATA =====
+
+export const INITIAL_ROLES: RoleDefinition[] = [
+  { id: 'super_admin', name: 'Super Admin', permissions: ['article.read', 'article.create', 'article.edit', 'article.approve', 'article.delete', 'space.manage_members', 'space.manage_settings', 'ai.write', 'ai.chat'] },
+  { id: 'admin', name: 'Admin', permissions: ['article.read', 'article.create', 'article.edit', 'article.approve', 'article.delete', 'space.manage_members', 'space.manage_settings', 'ai.write', 'ai.chat'] },
+  { id: 'km', name: 'Knowledge Manager', permissions: ['article.read', 'article.create', 'article.edit', 'article.approve', 'article.delete', 'space.manage_members', 'space.manage_settings', 'ai.write', 'ai.chat'] },
+  { id: 'member', name: 'Member', permissions: ['article.read', 'article.create', 'ai.chat'] },
+];
+
+export const INITIAL_TEAMS: Team[] = [
+  { id: 'production', name: 'Production' },
+  { id: 'marketing', name: 'Marketing' },
+  { id: 'monetization', name: 'Monetization' },
+  { id: 'publishing', name: 'Publishing' },
+  { id: 'tech-dev', name: 'Dev Team' },
+  { id: 'tech-ai', name: 'AI Team' },
+  { id: 'hr', name: 'Human Resources' },
+];
+
+export const INITIAL_SPACE_MEMBERS: SpaceMember[] = [
+  { userId: 'user-admin', spaceId: 's-my-ikame', roleId: 'km' },
+  { userId: 'user-admin', spaceId: 's-tech', roleId: 'km' },
+  { userId: 'user-1', spaceId: 's-my-ikame', roleId: 'km' },
+  { userId: 'user-1', spaceId: 's-apps', roleId: 'km' },
+  { userId: 'user-new', spaceId: 's-my-ikame', roleId: 'member' },
+  { userId: 'user-official', spaceId: 's-my-ikame', roleId: 'member' },
+  { userId: 'user-official', spaceId: 's-tech', roleId: 'member' },
+];
 
 export const INITIAL_USER: User = {
   id: 'user-1',
   name: 'Nguyễn Văn A',
-  role: 'manager',
+  role: 'staff',
+  teamId: 'production',
   title: 'Product Manager',
   avatar: 'https://picsum.photos/seed/ikame/100/100',
   level: 12,
   xp: 8450,
   xpToNext: 10000,
   coins: 1250,
-  scopes: [
-    { folderId: 'f-apps-pm', level: 'admin' },
-    { folderId: 'f-apps-pm-process', level: 'admin' },
-    { folderId: 's-my-ikame', level: 'read' },
-    { folderId: 'f-apps-pm-knowledge', level: 'write' },
-  ],
   badges: [
     { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: true },
     { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: true },
     { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: true },
-    { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
   ],
 };
 
-/** Preset users cho màn đăng nhập: Nhân viên mới (viewer), Nhân viên chính thức (editor), Admin (admin) */
 export const PRESET_USERS: Record<'viewer' | 'editor' | 'admin', User> = {
   viewer: {
     id: 'user-new',
     name: 'Nguyễn Thành Viên',
-    role: 'viewer',
+    role: 'staff',
+    teamId: 'marketing',
     title: 'Nhân viên mới',
     avatar: 'https://picsum.photos/seed/newemp/100/100',
     level: 1,
     xp: 0,
     xpToNext: 500,
     coins: 0,
-    scopes: [
-      { folderId: 's-my-ikame', level: 'read' },
-      { folderId: 'f-policies', level: 'read' },
-    ],
-    badges: [
-      { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: false },
-      { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: false },
-      { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: false },
-      { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
-    ],
+    badges: [],
   },
   editor: {
     id: 'user-official',
     name: 'Trần Nhân Viên',
-    role: 'editor',
+    role: 'staff',
+    teamId: 'tech-dev',
     title: 'Nhân viên chính thức',
     avatar: 'https://picsum.photos/seed/official/100/100',
     level: 8,
     xp: 3200,
     xpToNext: 5000,
     coins: 450,
-    scopes: [
-      { folderId: 's-my-ikame', level: 'read' },
-      { folderId: 'f-policies', level: 'write' },
-      { folderId: 'f-apps-pm-knowledge', level: 'write' },
-      { folderId: 's-tech', level: 'read' },
-    ],
-    badges: [
-      { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: true },
-      { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: true },
-      { id: 'b3', name: 'Top Contributor', icon: '🏆', color: 'yellow', earned: false },
-      { id: 'b4', name: 'AI Pioneer', icon: '🤖', color: 'green', earned: false },
-    ],
+    badges: [],
   },
   admin: {
     id: 'user-admin',
@@ -85,12 +86,6 @@ export const PRESET_USERS: Record<'viewer' | 'editor' | 'admin', User> = {
     xp: 12000,
     xpToNext: 15000,
     coins: 2000,
-    scopes: [
-      { folderId: 's-my-ikame', level: 'admin' },
-      { folderId: 's-tech', level: 'admin' },
-      { folderId: 'f-apps-pm-knowledge', level: 'admin' },
-      { folderId: 'f-apps-pm', level: 'admin' },
-    ],
     badges: [
       { id: 'b1', name: 'First Article', icon: '✍️', color: 'blue', earned: true },
       { id: 'b2', name: 'Knowledge Sharer', icon: '📚', color: 'purple', earned: true },
@@ -117,6 +112,7 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'My iKame',
     description: 'Public cho TOÀN BỘ nhân sự iKame',
     icon: '🏠',
+    visibilityType: 'all_space_members',
     children: [
       { id: 'f-vision', name: 'Vision, Mission, Core Values', parentId: 's-my-ikame', icon: '🎯' },
       { id: 'f-structure', name: 'iKame Structure', parentId: 's-my-ikame', icon: '🏢' },
@@ -132,11 +128,14 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'iKame Apps',
     description: 'Chỉ nhân sự thuộc iKame Apps',
     icon: '📱',
+    visibilityType: 'all_space_members',
     children: [
       {
         id: 'f-apps-prod',
         name: 'Production',
         parentId: 's-apps',
+        visibilityType: 'team_restricted',
+        allowedTeams: ['production'],
         children: [
           { id: 'f-apps-pm', name: 'Product Management', parentId: 'f-apps-prod', children: STDS('f-apps-pm') },
           { id: 'f-apps-dev', name: 'App Development', parentId: 'f-apps-prod', children: STDS('f-apps-dev') },
@@ -149,6 +148,8 @@ export const INITIAL_FOLDERS: Folder[] = [
         id: 'f-apps-mkt',
         name: 'Marketing',
         parentId: 's-apps',
+        visibilityType: 'team_restricted',
+        allowedTeams: ['marketing'],
         children: [
           { id: 'f-apps-ua', name: 'User Acquisition', parentId: 'f-apps-mkt', children: STDS('f-apps-ua') },
           {
@@ -164,7 +165,7 @@ export const INITIAL_FOLDERS: Folder[] = [
           },
         ],
       },
-      { id: 'f-apps-monetization', name: 'Monetization', parentId: 's-apps', children: STDS('f-apps-monetization') },
+      { id: 'f-apps-monetization', name: 'Monetization', parentId: 's-apps', visibilityType: 'team_restricted', allowedTeams: ['monetization'], children: STDS('f-apps-monetization') },
     ],
   },
   // SPACE 3: iKame Games
@@ -173,11 +174,14 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'iKame Games',
     description: 'Chỉ nhân sự thuộc iKame Games',
     icon: '🎮',
+    visibilityType: 'all_space_members',
     children: [
       {
         id: 'f-games-prod',
         name: 'Production',
         parentId: 's-games',
+        visibilityType: 'team_restricted',
+        allowedTeams: ['production'],
         children: [
           { id: 'f-games-pm', name: 'Product Management', parentId: 'f-games-prod', children: STDS('f-games-pm') },
           { id: 'f-games-design', name: 'Game Design', parentId: 'f-games-prod', children: STDS('f-games-design') },
@@ -191,6 +195,8 @@ export const INITIAL_FOLDERS: Folder[] = [
         id: 'f-games-mkt',
         name: 'Marketing',
         parentId: 's-games',
+        visibilityType: 'team_restricted',
+        allowedTeams: ['marketing'],
         children: [
           { id: 'f-games-ua', name: 'User Acquisition', parentId: 'f-games-mkt', children: STDS('f-games-ua') },
           {
@@ -206,11 +212,13 @@ export const INITIAL_FOLDERS: Folder[] = [
           },
         ],
       },
-      { id: 'f-games-monetization', name: 'Monetization', parentId: 's-games', children: STDS('f-games-monetization') },
+      { id: 'f-games-monetization', name: 'Monetization', parentId: 's-games', visibilityType: 'team_restricted', allowedTeams: ['monetization'], children: STDS('f-games-monetization') },
       {
         id: 'f-games-publishing',
         name: 'Publishing',
         parentId: 's-games',
+        visibilityType: 'team_restricted',
+        allowedTeams: ['publishing'],
         children: [
           { id: 'f-games-bd', name: 'Business Development', parentId: 'f-games-publishing', children: STDS('f-games-bd') },
           { id: 'f-games-pub-ua', name: 'User Acquisition', parentId: 'f-games-publishing', children: STDS('f-games-pub-ua') },
@@ -224,6 +232,7 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'Technology',
     description: 'Chỉ nhân sự thuộc Tech',
     icon: '💻',
+    visibilityType: 'all_space_members',
     children: [
       { id: 'f-tech-bi-game', name: 'BI - Game', parentId: 's-tech', children: STDS('f-tech-bi-game') },
       { id: 'f-tech-bi-app', name: 'BI - App', parentId: 's-tech', children: STDS('f-tech-bi-app') },
@@ -240,6 +249,7 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'P&OD',
     description: 'Chỉ nhân sự thuộc P&OD',
     icon: '👥',
+    visibilityType: 'all_space_members',
     children: [
       { id: 'f-pod-admin', name: 'Office Admin', parentId: 's-pod', children: STDS('f-pod-admin') },
       { id: 'f-pod-culture', name: 'Communications & Culture', parentId: 's-pod', children: STDS('f-pod-culture') },
@@ -255,6 +265,7 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'Finance & Accounting',
     description: 'Chỉ nhân sự thuộc Finance & Accounting',
     icon: '💰',
+    visibilityType: 'all_space_members',
     children: STDS('s-finance'),
   },
   // SPACE 7: Legal & Compliance
@@ -263,6 +274,7 @@ export const INITIAL_FOLDERS: Folder[] = [
     name: 'Legal & Compliance',
     description: 'Chỉ nhân sự thuộc Legal & Compliance',
     icon: '⚖️',
+    visibilityType: 'all_space_members',
     children: STDS('s-legal'),
   },
 ];
