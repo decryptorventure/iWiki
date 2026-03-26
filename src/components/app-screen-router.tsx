@@ -19,6 +19,8 @@ const FolderView = lazy(() => import('./FolderView'));
 const Notifications = lazy(() => import('./Notifications'));
 const Editor = lazy(() => import('./Editor'));
 const ArticleFullView = lazy(() => import('./ArticleFullView'));
+const ApprovalQueue = lazy(() => import('./ApprovalQueue'));
+const ArticleReviewer = lazy(() => import('./ArticleReviewer'));
 
 const ScreenFallback = () => (
   <div className="flex items-center justify-center h-full">
@@ -93,6 +95,17 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
       break;
     case APP_SCREENS.EMPTY_FOLDER:
       screen = <EmptyFolderBounty folderId={state.currentFolderId || 'f-process'} folderName="Process & Checklist" breadcrumbs={['Know-How', 'iKame', 'Process & Checklist']} />;
+      break;
+    case APP_SCREENS.APPROVAL_QUEUE:
+      screen = <ApprovalQueue />;
+      break;
+    case 'article-review':
+      screen = (
+        <ArticleReviewer
+          articleId={state.selectedArticleId || ''}
+          onBack={() => dispatch({ type: 'SET_SCREEN', screen: APP_SCREENS.APPROVAL_QUEUE })}
+        />
+      );
       break;
     default: {
       if (currentScreen.startsWith('folder-')) {

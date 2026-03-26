@@ -33,7 +33,7 @@ export default function MyArticleCard({
           {article.status === 'rejected' && <Badge color="red" size="xs">Bị từ chối</Badge>}
           <h3 className="font-bold text-[var(--ds-text-primary)] text-sm truncate hover:text-[var(--ds-fg-accent-primary)] transition-colors">{article.title}</h3>
         </div>
-        <div className="flex items-center gap-4 text-xs text-[var(--ds-text-secondary)]">
+        <div className="flex items-center gap-4 text-xs text-[var(--ds-text-secondary)] mt-1">
           <span>{article.updatedAt}</span>
           {article.status === 'published' && (
             <>
@@ -50,6 +50,23 @@ export default function MyArticleCard({
             </div>
           )}
         </div>
+        
+        {/* Rejection Feedback Area */}
+        {article.status === 'rejected' && article.approval?.rejectionReason && (
+          <div className="mt-3 p-3 bg-red-50/50 border border-red-100 rounded-xl animate-slide-up">
+             <div className="flex items-center gap-1.5 text-[var(--ds-fg-danger)] text-[10px] font-black uppercase mb-1">
+                <MessageSquare size={12} /> Feedback từ Người duyệt (KM)
+             </div>
+             <p className="text-xs text-red-800 font-medium leading-relaxed italic">
+               "{article.approval.rejectionReason}"
+             </p>
+             {article.approval.comments && article.approval.comments.length > 0 && (
+               <div className="mt-2 text-[10px] text-red-600 font-bold">
+                 + {article.approval.comments.length} nhận xét chi tiết trong bài
+               </div>
+             )}
+          </div>
+        )}
       </div>
 
       <div className="relative shrink-0">

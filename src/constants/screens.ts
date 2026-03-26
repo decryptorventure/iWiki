@@ -13,6 +13,7 @@ export const APP_SCREENS = {
   ARTICLE_DETAIL: 'article-detail',
   EDITOR: 'editor',
   EMPTY_FOLDER: 'empty-folder',
+  APPROVAL_QUEUE: 'approval-queue',
 } as const;
 
 export type AppScreen = (typeof APP_SCREENS)[keyof typeof APP_SCREENS] | `folder-${string}`;

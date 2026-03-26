@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, Sun, Moon, BookOpen } from 'lucide-react';
+import { FolderTree, FileText, ChevronDown, Plus, Sparkles, Shield, Compass, Target, Flame, BarChart, Home, AlertTriangle, Edit, ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, Sun, Moon, BookOpen, CheckCircle } from 'lucide-react';
 import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 import { Button } from '@frontend-team/ui-kit';
@@ -127,6 +127,15 @@ export default function Sidebar() {
                     isActive={currentScreen === APP_SCREENS.JANITOR}
                     onClick={() => navigate(APP_SCREENS.JANITOR)}
                   />
+                  {(currentUser.role === 'manager' || currentUser.role === 'admin') && (
+                    <NavItem
+                      icon={CheckCircle}
+                      label="Duyệt bài viết"
+                      isActive={currentScreen === APP_SCREENS.APPROVAL_QUEUE}
+                      badge={state.articles.filter(a => a.status === 'in_review').length.toString()}
+                      onClick={() => navigate(APP_SCREENS.APPROVAL_QUEUE)}
+                    />
+                  )}
                 </>
               )}
             </div>
