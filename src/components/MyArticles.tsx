@@ -63,41 +63,49 @@ export default function MyArticles() {
 
   return (
     <div className="max-w-6xl mx-auto pb-12 animate-fade-in px-8 pt-10">
-      {/* Redesigned Header with Profile Info */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 pb-6 border-b border-gray-100/80 animate-slide-up">
-        <div className="flex items-center gap-5">
-          <div className="p-3.5 bg-[var(--ds-bg-accent-primary)] rounded-2xl text-white shadow-lg shadow-orange-500/20 ring-4 ring-orange-500/5"><FileText size={32} /></div>
-          <div>
-            <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] tracking-tight">Bài viết của tôi</h1>
-            <p className="text-[var(--ds-text-secondary)] mt-1.5 font-medium flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-              Quản lý và theo dõi đóng góp của bạn
-            </p>
+      {/* Redesigned Header with Profile Info aligned left & New Article Button */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 pb-8 border-b border-gray-100/80 animate-slide-up">
+        <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-8 lg:gap-12">
+          {/* Title Section */}
+          <div className="flex items-center gap-5">
+            <div className="p-3.5 bg-[var(--ds-bg-accent-primary)] rounded-2xl text-white shadow-lg shadow-orange-500/20 ring-4 ring-orange-500/5"><FileText size={32} /></div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-[var(--ds-text-primary)] tracking-tight">Bài viết của tôi</h1>
+              <p className="text-[var(--ds-text-secondary)] mt-1 font-medium flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                Quản lý và theo dõi đóng góp của bạn
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Compact User Info Card on Right */}
-        <div className="flex items-center gap-3 bg-white p-2 pr-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="relative">
-            <img 
-              src={currentUser.avatar} 
-              alt={currentUser.name} 
-              className="w-14 h-14 rounded-xl object-cover shadow-sm border border-gray-50 p-0.5" 
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-          </div>
-          <div className="min-w-0">
-            <p className="text-base font-bold text-gray-900 leading-tight">{currentUser.name}</p>
-            <div className="flex flex-col gap-0.5 mt-1">
-              <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1"><Mail size={10} /> {currentUser.id}@ikameglobal.com</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[var(--ds-fg-accent-primary)] bg-[var(--ds-bg-accent-primary-subtle)] px-2 py-0.5 rounded-full uppercase tracking-tight">{currentUser.role || 'Member'}</span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Technology</span>
+          {/* Compact User Info Card */}
+          <div className="flex items-center gap-3 bg-white p-2.5 pr-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="relative">
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name} 
+                className="w-12 h-12 rounded-xl object-cover shadow-sm border border-gray-50 p-0.5" 
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-gray-900 leading-tight">{currentUser.name}</p>
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1 leading-none"><Mail size={9} /> {currentUser.id}@ikameglobal.com</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[9px] font-bold text-[var(--ds-fg-accent-primary)] bg-[var(--ds-bg-accent-primary-subtle)] px-1.5 py-0.5 rounded-md uppercase tracking-tight">{currentUser.role || 'Member'}</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Technology Team</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Action Button */}
+        <Button variant="primary" size="m" onClick={handleNewArticle} className="shadow-lg shadow-orange-500/20 h-12 px-6 rounded-xl">
+          <Plus size={20} /> Viết bài mới
+        </Button>
       </div>
 
       {/* Stats */}
