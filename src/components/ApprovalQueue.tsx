@@ -10,7 +10,7 @@ export default function ApprovalQueue() {
   const pendingArticles = state.articles.filter(a => a.status === 'in_review');
 
   const handleReview = (id: string) => {
-    dispatch({ type: 'SET_SELECTED_ARTICLE', id });
+    dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
     dispatch({ type: 'SET_SCREEN', screen: 'article-review' }); 
   };
 

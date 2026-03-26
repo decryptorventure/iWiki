@@ -40,16 +40,10 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
       lineNumber: 0,
     };
 
-    const updatedComments = [...inlineComments, newComment];
     dispatch({ 
-      type: 'SAVE_ARTICLE', 
-      article: { 
-        ...article, 
-        approval: { 
-          ...article.approval, 
-          comments: updatedComments 
-        } 
-      } 
+      type: 'ADD_APPROVAL_COMMENT', 
+      articleId,
+      comment: newComment
     });
     setCommentInput('');
     setSelectedQuote('');
@@ -58,9 +52,15 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
 
   const handleApprove = () => {
     dispatch({ 
-      type: 'SAVE_ARTICLE', 
-      article: { ...article, status: 'published', updatedAt: new Date().toISOString().split('T')[0] } 
+      type: 'APPROVE_ARTICLE', 
+      articleId,
+      approverId: state.currentUser.id
     });
+    // The reducer doesn't set it to 'published' automatically, but to 'approved'
+    // Usually, Approved articles can then be Published. 
+    // To match user's 'Published' requirement, let's also call PUBLISH_APPROVED_ARTICLE
+    dispatch({ type: 'PUBLISH_APPROVED_ARTICLE', articleId });
+    
     addToast('Đã phê duyệt và xuất bản bài viết thành công! 🎉', 'success');
     onBack();
   };
@@ -72,17 +72,10 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
       return;
     }
     dispatch({ 
-      type: 'SAVE_ARTICLE', 
-      article: { 
-        ...article, 
-        status: 'draft', 
-        approval: { 
-          ...article.approval, 
-          rejectionReason: rejectionReason.trim(),
-          reviewedAt: new Date().toISOString(),
-          reviewedBy: state.currentUser.name
-        } 
-      } 
+      type: 'REJECT_ARTICLE', 
+      articleId,
+      approverId: state.currentUser.id,
+      reason: rejectionReason.trim()
     });
     addToast('Đã từ chối bài viết. Tác giả sẽ nhận được feedback để sửa lại.', 'info');
     onBack();
