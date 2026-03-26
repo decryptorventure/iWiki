@@ -50,7 +50,7 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, indent = false, rightAc
     </div>
     <div className="flex items-center gap-2">
       {badge && (
-        <span className="flex items-center justify-center min-w-[20px] h-5 text-[10px] font-black px-1.5 bg-[var(--ds-fg-status-error)] text-white rounded-full shadow-sm">
+        <span className="flex items-center justify-center min-w-[20px] h-5 text-[10px] font-black px-2 bg-[var(--ds-bg-error-subtle)] text-[var(--ds-fg-status-error)] rounded-full ring-1 ring-[var(--ds-border-error-subtle)]">
           {badge}
         </span>
       )}
