@@ -84,10 +84,10 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
   return (
     <div className="h-full flex flex-col bg-[var(--ds-bg-canvas-secondary)] animate-fade-in overflow-hidden">
       {/* Review Header Bar - Slimmer & Pro */}
-      <header className="shrink-0 bg-white/80 backdrop-blur-md border-b border-[var(--ds-border-secondary)] px-8 py-4 flex items-center justify-between z-30 shadow-sm">
+      <header className="shrink-0 bg-[var(--ds-bg-primary)]/80 backdrop-blur-md border-b border-[var(--ds-border-secondary)] px-8 py-4 flex items-center justify-between z-30 shadow-sm">
          <div className="flex items-center gap-5">
-            <Button variant="subtle" size="icon-m" onClick={onBack} className="rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all">
-              <ArrowLeft size={20} className="text-gray-500" />
+            <Button variant="subtle" size="icon-m" onClick={onBack} className="rounded-2xl bg-[var(--ds-bg-subtle)] hover:bg-[var(--ds-bg-tertiary)] transition-all">
+              <ArrowLeft size={20} className="text-[var(--ds-icon-secondary)]" />
             </Button>
             <div className="flex flex-col">
                <div className="flex items-center gap-3">
@@ -95,20 +95,20 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
                  <Badge variant="warning" size="xs" className="px-2 py-0.5 rounded-full font-bold">Review Mode</Badge>
                </div>
                <div className="flex items-center gap-3 mt-0.5">
-                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg uppercase tracking-tight">
+                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--ds-text-tertiary)] bg-[var(--ds-bg-subtle)] px-2 py-0.5 rounded-lg uppercase tracking-tight">
                    <User size={10}/> {article.author.name}
                  </div>
-                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg uppercase tracking-tight">
+                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--ds-text-tertiary)] bg-[var(--ds-bg-subtle)] px-2 py-0.5 rounded-lg uppercase tracking-tight">
                    <FolderIcon size={10}/> {article.folderName}
                  </div>
                </div>
             </div>
          </div>
          <div className="flex items-center gap-4">
-            <Button variant="border" size="m" onClick={() => setShowRejectReason(true)} className="rounded-2xl text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200 font-bold px-6">
+            <Button variant="border" size="m" onClick={() => setShowRejectReason(true)} className="rounded-2xl text-[var(--ds-fg-danger)] border-[var(--ds-border-danger-subtle)] hover:bg-[var(--ds-bg-danger-subtle)] font-bold px-6">
                <XCircle size={18} className="mr-2" /> Từ chối
             </Button>
-            <Button variant="primary" size="m" onClick={handleApprove} className="rounded-2xl bg-green-600 hover:bg-green-700 border-green-600 shadow-xl shadow-green-500/20 font-bold px-8">
+            <Button variant="primary" size="m" onClick={handleApprove} className="rounded-2xl bg-[var(--ds-fg-success)] hover:opacity-90 border-none shadow-xl shadow-[var(--ds-fg-success)]/20 font-bold px-8">
                <CheckCircle size={18} className="mr-2" /> Duyệt & Xuất bản
             </Button>
          </div>
@@ -116,11 +116,11 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
 
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT: Document Content (Hero Area) */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-zinc-950 px-12 py-16 scroll-smooth">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--ds-bg-primary)] px-12 py-16 scroll-smooth">
            <article className="max-w-3xl mx-auto">
               {/* Review Guidance Info */}
-              <div className="mb-12 flex items-center gap-4 p-5 bg-orange-50/40 border border-orange-100 rounded-3xl text-orange-800 animate-slide-up">
-                <div className="p-3 bg-orange-500 rounded-2xl text-white shadow-lg">
+              <div className="mb-12 flex items-center gap-4 p-5 bg-[var(--ds-bg-accent-secondary-subtle)] border border-[var(--ds-border-accent-secondary-subtle)] rounded-3xl text-[var(--ds-fg-accent-secondary)] animate-slide-up">
+                <div className="p-3 bg-[var(--ds-bg-accent-secondary)] rounded-2xl text-[var(--ds-fg-on-contrast)] shadow-lg">
                   <Info size={20} />
                 </div>
                 <div>
@@ -136,15 +136,15 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
               <h2 className="text-5xl font-black mb-10 text-[var(--ds-text-primary)] leading-[1.1] tracking-tight">{article.title}</h2>
               
               <div 
-                className="prose prose-xl prose-stone dark:prose-invert max-w-none text-[var(--ds-text-secondary)] leading-[1.8] font-medium selection:bg-orange-200 selection:text-orange-950"
+                className="prose prose-xl prose-stone dark:prose-invert max-w-none text-[var(--ds-text-secondary)] leading-[1.8] font-medium selection:bg-[var(--ds-bg-accent-secondary-subtle)] selection:text-[var(--ds-fg-accent-secondary)]"
                 onMouseUp={handleAddInlineComment}
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
 
-              <div className="mt-24 pt-12 border-t border-gray-100 flex flex-col items-center justify-center text-center opacity-40 grayscale group hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-                 <Quote className="text-orange-400 mb-6 group-hover:scale-110 transition-transform" size={48} />
-                 <h4 className="font-black text-xl text-gray-800 mb-2">Hết nội dung cần Review</h4>
-                 <p className="text-sm text-gray-500 max-w-sm font-medium">Anh đã đọc trọn vẹn bản nháp. Vui lòng kiểm tra lại các feedback trước khi đưa ra quyết định cuối cùng.</p>
+              <div className="mt-24 pt-12 border-t border-[var(--ds-border-subtle)] flex flex-col items-center justify-center text-center opacity-40 grayscale group hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                 <Quote className="text-[var(--ds-fg-accent-secondary)] mb-6 group-hover:scale-110 transition-transform" size={48} />
+                 <h4 className="font-black text-xl text-[var(--ds-text-primary)] mb-2">Hết nội dung cần Review</h4>
+                 <p className="text-sm text-[var(--ds-text-secondary)] max-w-sm font-medium">Anh đã đọc trọn vẹn bản nháp. Vui lòng kiểm tra lại các feedback trước khi đưa ra quyết định cuối cùng.</p>
               </div>
            </article>
         </div>
@@ -152,7 +152,7 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
         {/* RIGHT: Fixed Review Sidebar */}
         <aside className="w-[420px] bg-[var(--ds-bg-canvas-secondary)] border-l border-[var(--ds-border-secondary)] flex flex-col z-20 shadow-2xl overflow-hidden">
            {/* Sidebar Section 1: Interaction Zone */}
-           <div className="p-8 border-b border-[var(--ds-border-secondary)] bg-white/50">
+           <div className="p-8 border-b border-[var(--ds-border-secondary)] bg-[var(--ds-bg-primary)]/50">
               <h3 className="flex items-center gap-2.5 font-black text-sm uppercase tracking-widest text-[var(--ds-fg-accent-primary)] mb-6">
                 <div className="w-8 h-8 rounded-xl bg-[var(--ds-bg-accent-primary-subtle)] flex items-center justify-center">
                   <MessageSquare size={16} />
@@ -162,28 +162,28 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
 
               {selectedQuote ? (
                 <div className="bg-[var(--ds-bg-accent-secondary-subtle)] border-2 border-[var(--ds-border-accent-secondary-subtle)] p-5 rounded-[24px] mb-6 animate-in fade-in slide-in-from-right-4 relative group">
-                   <div className="absolute top-4 right-4 text-orange-500 opacity-20">
+                   <div className="absolute top-4 right-4 text-[var(--ds-fg-accent-secondary)] opacity-20">
                      <Quote size={24} />
                    </div>
-                   <p className="text-[10px] font-black text-orange-600 mb-2 uppercase tracking-tighter flex items-center gap-1.5">
-                     <div className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Đang trích dẫn
+                   <p className="text-[10px] font-black text-[var(--ds-fg-accent-secondary)] mb-2 uppercase tracking-tighter flex items-center gap-1.5">
+                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--ds-bg-accent-secondary)]" /> Đang trích dẫn
                    </p>
-                   <p className="text-[13px] italic font-semibold text-orange-900 leading-relaxed blur-0 group-hover:blur-[0.5px] transition-all">
+                   <p className="text-[13px] italic font-semibold text-[var(--ds-fg-accent-secondary)] leading-relaxed blur-0 group-hover:blur-[0.5px] transition-all">
                      "{selectedQuote.length > 150 ? selectedQuote.slice(0, 150) + '...' : selectedQuote}"
                    </p>
                    <button 
                      onClick={() => setSelectedQuote('')}
-                     className="mt-3 text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2"
+                     className="mt-3 text-[10px] font-bold text-[var(--ds-fg-accent-secondary)] hover:opacity-80 underline underline-offset-2"
                    >
                      Gỡ trích dẫn
                    </button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center gap-3 py-10 px-6 border-2 border-dashed border-gray-200 rounded-[24px] mb-6 text-center group hover:border-orange-200 transition-all">
-                   <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:text-orange-400 group-hover:bg-orange-50 transition-all">
+                <div className="flex flex-col items-center justify-center gap-3 py-10 px-6 border-2 border-dashed border-[var(--ds-border-subtle)] rounded-[24px] mb-6 text-center group hover:border-[var(--ds-border-accent-secondary-subtle)] transition-all">
+                   <div className="w-12 h-12 rounded-full bg-[var(--ds-bg-subtle)] flex items-center justify-center text-[var(--ds-text-tertiary)] group-hover:text-[var(--ds-fg-accent-secondary)] group-hover:bg-[var(--ds-bg-accent-secondary-subtle)] transition-all">
                      <Edit size={24} />
                    </div>
-                   <p className="text-xs font-bold text-gray-400 max-w-[200px] leading-relaxed group-hover:text-orange-600">Bôi đen văn bản để trích dẫn rồi gõ feedback</p>
+                   <p className="text-xs font-bold text-[var(--ds-text-tertiary)] max-w-[200px] leading-relaxed group-hover:text-[var(--ds-fg-accent-secondary)]">Bôi đen văn bản để trích dẫn rồi gõ feedback</p>
                 </div>
               )}
 
@@ -192,7 +192,7 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
                   placeholder="KM đánh giá thế nào về đoạn này?"
                   value={commentInput}
                   onChange={e => setCommentInput(e.target.value)}
-                  className="w-full text-sm font-medium min-h-[120px] rounded-2xl border-gray-200 focus:border-orange-500 focus:ring-0 resize-none shadow-inner bg-white"
+                  className="w-full text-sm font-medium min-h-[120px] rounded-2xl border-[var(--ds-border-subtle)] focus:border-[var(--ds-fg-accent-primary)] focus:ring-0 resize-none shadow-inner bg-[var(--ds-bg-primary)]"
                 />
                 <Button 
                   variant="primary" 
@@ -200,7 +200,7 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
                   size="l" 
                   disabled={!commentInput.trim()}
                   onClick={submitInlineComment}
-                  className="rounded-2xl py-6 font-black shadow-lg shadow-orange-500/10 gap-3"
+                  className="rounded-2xl py-6 font-black shadow-lg shadow-[var(--ds-fg-accent-primary)]/10 gap-3"
                 >
                   Gửi Feedback <SendHorizontal size={20} />
                 </Button>
@@ -208,34 +208,34 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
            </div>
 
            {/* Sidebar Section 2: History (Scrollable) */}
-           <div className="flex-1 flex flex-col min-h-0 bg-gray-50/50">
-              <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="font-black text-[10px] uppercase tracking-widest text-gray-400">Feedback đã gửi ({inlineComments.length})</h3>
+           <div className="flex-1 flex flex-col min-h-0 bg-[var(--ds-bg-subtle)]/50">
+              <div className="px-8 py-5 border-b border-[var(--ds-border-secondary)] flex items-center justify-between">
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-[var(--ds-text-tertiary)]">Feedback đã gửi ({inlineComments.length})</h3>
                 <Badge variant="subtle" size="xs" className="opacity-50">Timeline</Badge>
               </div>
               <div className="flex-1 overflow-y-auto px-8 py-6 space-y-5 custom-scrollbar">
                 {inlineComments.map((c: any) => (
-                  <div key={c.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all group border-l-4 border-l-orange-400">
+                  <div key={c.id} className="bg-[var(--ds-bg-primary)] rounded-3xl p-5 border border-[var(--ds-border-subtle)] shadow-sm hover:shadow-md transition-all group border-l-4 border-l-[var(--ds-fg-accent-secondary)]">
                      <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600">KM</div>
-                          <span className="text-[10px] font-black text-gray-800 uppercase">{c.authorName}</span>
+                          <div className="w-6 h-6 rounded-full bg-[var(--ds-bg-accent-secondary-subtle)] flex items-center justify-center text-[10px] font-bold text-[var(--ds-fg-accent-secondary)]">KM</div>
+                          <span className="text-[10px] font-black text-[var(--ds-text-primary)] uppercase">{c.authorName}</span>
                         </div>
-                        <span className="text-[9px] font-bold text-gray-400">{new Date(c.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        <span className="text-[9px] font-bold text-[var(--ds-text-tertiary)]">{new Date(c.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                      </div>
-                     <p className="text-[11px] text-gray-400 mb-3 italic bg-gray-50 p-2 rounded-xl line-clamp-2 border-l border-orange-200">"{c.quote}"</p>
-                     <p className="text-sm font-bold text-gray-900 leading-snug">{c.content}</p>
+                     <p className="text-[11px] text-[var(--ds-text-tertiary)] mb-3 italic bg-[var(--ds-bg-subtle)] p-2 rounded-xl line-clamp-2 border-l border-[var(--ds-border-accent-secondary-subtle)]">"{c.quote}"</p>
+                     <p className="text-sm font-bold text-[var(--ds-text-primary)] leading-snug">{c.content}</p>
                      <div className="mt-4 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="text-red-400 hover:text-red-600"><Trash2 size={14}/></button>
+                        <button className="text-[var(--ds-fg-danger)] hover:opacity-80"><Trash2 size={14}/></button>
                      </div>
                   </div>
                 ))}
                 {inlineComments.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-gray-50 opacity-50">
-                       <MessageSquare size={24} className="text-gray-300" />
+                     <div className="w-16 h-16 bg-[var(--ds-bg-primary)] rounded-full flex items-center justify-center shadow-sm mb-4 border border-[var(--ds-border-subtle)] opacity-50">
+                       <MessageSquare size={24} className="text-[var(--ds-icon-secondary)]" />
                      </div>
-                     <p className="text-xs font-bold text-gray-300 tracking-wide uppercase">Chưa có feedback</p>
+                     <p className="text-xs font-bold text-[var(--ds-text-tertiary)] tracking-wide uppercase">Chưa có feedback</p>
                   </div>
                 )}
               </div>
@@ -245,21 +245,21 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
 
       {/* Reject Modal - Clean & Bold */}
       {showRejectReason && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/80 backdrop-blur-md animate-in fade-in transition-all">
-           <div className="bg-white rounded-[40px] p-12 max-w-2xl w-full mx-6 shadow-[0_20px_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 border border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ds-bg-canvas-secondary)]/90 backdrop-blur-md animate-in fade-in transition-all">
+           <div className="bg-[var(--ds-bg-primary)] rounded-[40px] p-12 max-w-2xl w-full mx-6 shadow-[0_20px_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 border border-[var(--ds-border-subtle)]">
               <div className="flex items-center gap-4 mb-8">
-                 <div className="w-16 h-16 bg-red-50 rounded-[28px] flex items-center justify-center text-red-600">
+                 <div className="w-16 h-16 bg-[var(--ds-bg-danger-subtle)] rounded-[28px] flex items-center justify-center text-[var(--ds-fg-danger)]">
                    <XCircle size={40} />
                  </div>
                  <div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight">Từ chối bài viết</h2>
-                    <p className="text-gray-500 font-medium">Bản nháp này chưa đạt tiêu chuẩn. Vui lòng cho biết lý do chính.</p>
+                    <h2 className="text-4xl font-black text-[var(--ds-text-primary)] tracking-tight">Từ chối bài viết</h2>
+                    <p className="text-[var(--ds-text-secondary)] font-medium">Bản nháp này chưa đạt tiêu chuẩn. Vui lòng cho biết lý do chính.</p>
                  </div>
               </div>
               
               <Textarea 
                 placeholder="Ví dụ: Thiếu dữ liệu thực tế, Văn phong không phù hợp, Sai tiêu chuẩn format..."
-                className="w-full h-56 mb-8 border-gray-100 focus:border-red-500 focus:ring-4 focus:ring-red-100 rounded-[32px] p-6 text-lg font-medium shadow-inner"
+                className="w-full h-56 mb-8 border-[var(--ds-border-subtle)] focus:border-[var(--ds-fg-danger)] focus:ring-4 focus:ring-[var(--ds-bg-danger-subtle)] rounded-[32px] p-6 text-lg font-medium shadow-inner"
                 value={rejectionReason}
                 onChange={e => setRejectionReason(e.target.value)}
               />
@@ -270,7 +270,7 @@ export default function ArticleReviewer({ articleId, onBack }: { articleId: stri
                    variant="primary" 
                    fullWidth 
                    size="l" 
-                   className="bg-red-600 hover:bg-red-700 border-red-600 shadow-2xl shadow-red-500/30 rounded-[24px] py-8 text-lg font-black"
+                   className="bg-[var(--ds-fg-danger)] hover:opacity-90 border-none shadow-2xl shadow-[var(--ds-fg-danger)]/30 rounded-[24px] py-8 text-lg font-black"
                    onClick={handleReject}
                  >
                    Xác nhận từ chối
