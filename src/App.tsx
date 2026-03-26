@@ -61,7 +61,7 @@ function AppInner() {
           </main>
         </div>
         <ArticleModal
-          open={!!selectedArticle && currentScreen !== 'article-detail'}
+          open={!!selectedArticle && currentScreen !== 'article-detail' && currentScreen !== 'article-review'}
           article={selectedArticle}
           onOpenChange={(open) => {
             if (!open) dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: null });
