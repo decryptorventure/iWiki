@@ -40,16 +40,20 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, indent = false, rightAc
     className={`w-full group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive
       ? 'bg-[var(--ds-bg-accent-primary-subtle)] text-[var(--ds-text-primary)] font-semibold shadow-sm border border-[var(--ds-border-accent-primary-subtle)]'
       : 'text-[var(--ds-text-secondary)] hover:bg-[var(--ds-bg-tertiary)] hover:text-[var(--ds-text-primary)]'
-      } ${indent ? 'pl-9' : ''} border-none shadow-none text-left justify-start`}
+      } ${indent ? 'pl-9' : ''} border-none shadow-none`}
   >
-    <div className="flex items-center gap-2.5 truncate flex-1">
+    <div className="flex items-center gap-2.5 truncate">
       <div className={`transition-all duration-200 ${isActive ? 'text-[var(--ds-fg-accent-primary)]' : 'text-[var(--ds-icon-secondary)] group-hover:text-[var(--ds-icon-primary)]'}`}>
         <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
       </div>
       <span className="truncate">{label}</span>
     </div>
-    <div className="flex items-center gap-1">
-      {badge && <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[var(--ds-bg-error)] text-[var(--ds-fg-on-contrast)] rounded-full">{badge}</span>}
+    <div className="flex items-center gap-2">
+      {badge && (
+        <span className="flex items-center justify-center min-w-[20px] h-5 text-[10px] font-black px-1.5 bg-[var(--ds-fg-status-error)] text-white rounded-full shadow-sm">
+          {badge}
+        </span>
+      )}
       {rightAction && <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">{rightAction}</div>}
     </div>
   </Button>
@@ -137,7 +141,10 @@ export default function Sidebar() {
                   icon={CheckCircle}
                   label="Duyệt bài viết"
                   isActive={currentScreen === APP_SCREENS.APPROVAL_QUEUE}
-                  badge={state.articles.filter(a => a.status === 'in_review').length.toString()}
+                  badge={(() => {
+                    const count = state.articles.filter(a => a.status === 'in_review').length;
+                    return count > 0 ? count.toString() : undefined;
+                  })()}
                   onClick={() => navigate(APP_SCREENS.APPROVAL_QUEUE)}
                 />
               )}
