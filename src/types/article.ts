@@ -56,6 +56,9 @@ export interface Article {
   likedBy: string[];
   comments: Comment[];
   approval?: ApprovalRecord;
+  isPersonal?: boolean;
+  ownerId?: string;
+  sharedWith?: string[];
   createdAt: string;
   updatedAt: string;
 }

@@ -41,6 +41,20 @@ export function can(user: User, action: PermissionAction, article?: Article, fol
   if (action === 'admin.access') return false;
   if (action === 'manager.access') return user.role === 'manager';
 
+  // Personal Space Logic
+  if (article?.isPersonal) {
+    if (article.ownerId === user.id) return true;
+    if (action === 'article.read' && article.sharedWith?.includes(user.id)) return true;
+    return false;
+  }
+
+  const folder = article?.folderId ? folders.find(f => f.id === article.folderId) : undefined;
+  if (folder?.isPersonal) {
+    if (folder.ownerId === user.id) return true;
+    if (action === 'article.read' && folder.sharedWith?.includes(user.id)) return true;
+    return false;
+  }
+
   const scope = getScopeLevel(user, article?.folderId, folders);
 
   if (action === 'article.read') {

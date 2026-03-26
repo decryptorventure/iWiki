@@ -9,4 +9,7 @@ export interface Folder {
   color?: string;
   children?: Folder[];
   articleCount?: number;
+  isPersonal?: boolean;
+  ownerId?: string;
+  sharedWith?: string[];
 }

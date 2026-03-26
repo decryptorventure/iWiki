@@ -51,7 +51,16 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
   const aiTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isEditing = !!initialData?.id;
-  const allFolders = folders.flatMap(f => [f, ...(f.children || [])]);
+  const allFolders = useMemo(() => {
+    const flat = folders.flatMap(f => [f, ...(f.children || [])]);
+    // Deduplicate by ID
+    const seen = new Set();
+    return flat.filter(f => {
+      if (seen.has(f.id)) return false;
+      seen.add(f.id);
+      return true;
+    });
+  }, [folders]);
 
   const headings = useMemo(() => content.split('\n').map((line, index) => {
     const match = line.match(/^(#{1,3})\s+(.*)/);
@@ -127,14 +136,19 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
 
   const handleSaveDraft = () => {
     if (!title.trim()) { addToast('Vui lòng nhập tiêu đề bài viết', 'warning'); return; }
+    const folder = folders.find(f => f.id === selectedFolderId) || folders.flatMap(f => f.children || []).find(f => f.id === selectedFolderId);
+    const folderName = folder?.name || allFolders.find(f => f.id === selectedFolderId)?.name;
+    
     const article: Article = {
       id: initialData?.id || `a-${Date.now()}`, title: title.trim(), content,
       excerpt: content.slice(0, 150).replace(/[#*\n]/g, ' ').trim() + '...',
-      folderId: selectedFolderId, folderName: allFolders.find(f => f.id === selectedFolderId)?.name, tags,
+      folderId: selectedFolderId, folderName, tags,
       author: { id: currentUser.id, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar },
       status: initialData?.status === 'rejected' ? 'rejected' : 'draft',
       viewPermission, allowComments, views: initialData?.views || 0, likes: initialData?.likes || 0,
       likedBy: initialData?.likedBy || [], comments: initialData?.comments || [],
+      isPersonal: folder?.isPersonal || initialData?.isPersonal,
+      ownerId: folder?.ownerId || initialData?.ownerId || (folder?.isPersonal ? currentUser.id : undefined),
       createdAt: initialData?.createdAt || new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
     };
@@ -148,15 +162,22 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
     if (!selectedFolderId) { addToast('Vui lòng chọn thư mục lưu trữ', 'warning'); return; }
     setIsPublishing(true);
     setTimeout(() => {
+      const folder = folders.find(f => f.id === selectedFolderId) || folders.flatMap(f => f.children || []).find(f => f.id === selectedFolderId);
+      const folderName = folder?.name || allFolders.find(f => f.id === selectedFolderId)?.name;
+      const isPersonal = folder?.isPersonal || initialData?.isPersonal;
+
       const article: Article = {
         id: initialData?.id || `a-${Date.now()}`, title: title.trim(), content,
         excerpt: content.slice(0, 150).replace(/[#*\n]/g, ' ').trim() + '...',
         coverUrl: initialData?.coverUrl, folderId: selectedFolderId,
-        folderName: allFolders.find(f => f.id === selectedFolderId)?.name, tags,
+        folderName, tags,
         author: { id: currentUser.id, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar },
-        status: can(currentUser, 'article.approve', { ...initialData, folderId: selectedFolderId } as Article, folders) || currentUser.role === 'admin' ? 'published' : 'in_review',
+        status: (isPersonal || can(currentUser, 'article.approve', { ...initialData, folderId: selectedFolderId } as Article, folders) || currentUser.role === 'admin') ? 'published' : 'in_review',
         viewPermission, allowComments, views: initialData?.views || 0, likes: initialData?.likes || 0,
         likedBy: initialData?.likedBy || [], comments: initialData?.comments || [],
+        isPersonal,
+        ownerId: folder?.ownerId || initialData?.ownerId || (isPersonal ? currentUser.id : undefined),
+        sharedWith: initialData?.sharedWith,
         createdAt: initialData?.createdAt || new Date().toISOString().split('T')[0],
         updatedAt: new Date().toISOString().split('T')[0],
       };
@@ -164,7 +185,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
       localStorage.removeItem(AUTOSAVE_KEY);
       setIsPublishing(false);
       setIsPublishModalOpen(false);
-      if (currentUser.role === 'manager' || currentUser.role === 'admin') {
+      if (isPersonal || currentUser.role === 'manager' || currentUser.role === 'admin') {
         addToast(isEditing ? 'Bài viết đã được cập nhật' : 'Bài viết đã được xuất bản thành công! 🎉', 'success');
         dispatch({ type: 'TRACK_EVENT', event: { type: 'publish', userId: currentUser.id, articleId: article.id } });
       } else {
@@ -325,7 +346,12 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
 
       {isPublishModalOpen && (
         <EditorPublishModal
-          allFolders={allFolders} selectedFolderId={selectedFolderId} onFolderChange={setSelectedFolderId}
+          isPersonal={initialData?.isPersonal || folders.find(f => f.id === selectedFolderId)?.isPersonal}
+          allFolders={initialData?.isPersonal || folders.find(f => f.id === selectedFolderId)?.isPersonal 
+            ? allFolders.filter(f => (f as any).isPersonal) 
+            : allFolders
+          }
+          selectedFolderId={selectedFolderId} onFolderChange={setSelectedFolderId}
           tags={tags} tagInput={tagInput} onTagInputChange={setTagInput} onTagKeyDown={handleAddTag}
           onRemoveTag={tag => setTags(tags.filter(t => t !== tag))}
           viewPermission={viewPermission} onViewPermissionChange={setViewPermission}

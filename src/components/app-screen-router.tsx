@@ -93,9 +93,12 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
     case 'folder-tech':
       screen = <FolderView folderId="f-tech" title="Phòng Kỹ thuật" description="Tài liệu kỹ thuật nội bộ." breadcrumbs={['Phòng Kỹ thuật']} />;
       break;
-    case APP_SCREENS.EMPTY_FOLDER:
-      screen = <EmptyFolderBounty folderId={state.currentFolderId || 'f-process'} folderName="Process & Checklist" breadcrumbs={['Know-How', 'iKame', 'Process & Checklist']} />;
+    case APP_SCREENS.EMPTY_FOLDER: {
+      const folderId = state.currentFolderId || 'f-process';
+      const folder = state.folders.find(f => f.id === folderId) || state.folders.flatMap(f => f.children || []).find(f => f.id === folderId);
+      screen = <EmptyFolderBounty folderId={folderId} folderName={folder?.name || 'Thư mục'} breadcrumbs={[folder?.name || 'Thư mục']} />;
       break;
+    }
     case APP_SCREENS.APPROVAL_QUEUE:
       screen = <ApprovalQueue />;
       break;

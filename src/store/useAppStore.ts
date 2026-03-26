@@ -134,6 +134,11 @@ export type AppAction =
   | { type: 'TRACK_EVENT'; event: Omit<AnalyticsEvent, 'id' | 'createdAt'> }
   | { type: 'RESET_DEMO_STATE' }
   | { type: 'COMPLETE_ONBOARDING'; userId: string }
+  | { type: 'SHARE_FOLDER'; folderId: string; userIds: string[] }
+  | { type: 'SHARE_ARTICLE'; articleId: string; userIds: string[] }
+  | { type: 'CREATE_PERSONAL_FOLDER'; userId: string; name: string; parentId?: string }
+  | { type: 'DELETE_FOLDER'; folderId: string }
+  | { type: 'EDIT_FOLDER'; folderId: string; name: string; icon?: string }
   | { type: 'TOGGLE_THEME' };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -142,7 +147,23 @@ export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'LOGIN': {
       const user = PRESET_USERS[action.role];
-      newState = { ...state, isLoggedIn: true, currentUser: user, userRole: user.role, currentScreen: 'dashboard' };
+      // Ensure personal folder exists
+      const hasPersonal = state.folders.some(f => f.isPersonal && f.ownerId === user.id);
+      let updatedFolders = state.folders;
+      if (!hasPersonal) {
+        updatedFolders = [
+          ...state.folders,
+          {
+            id: `personal-${user.id}`,
+            name: 'Space Cá Nhân',
+            isPersonal: true,
+            ownerId: user.id,
+            icon: '🔒',
+            children: []
+          }
+        ];
+      }
+      newState = { ...state, isLoggedIn: true, currentUser: user, userRole: user.role, folders: updatedFolders, currentScreen: 'dashboard' };
       break;
     }
     case 'LOGOUT':
@@ -390,6 +411,77 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'TOGGLE_THEME':
       newState = { ...state, theme: state.theme === 'light' ? 'dark' : 'light' };
       break;
+    case 'SHARE_FOLDER':
+      newState = {
+        ...state,
+        folders: state.folders.map(f => f.id === action.folderId ? { ...f, sharedWith: action.userIds } : f)
+      };
+      break;
+    case 'SHARE_ARTICLE':
+      newState = {
+        ...state,
+        articles: state.articles.map(a => a.id === action.articleId ? { ...a, sharedWith: action.userIds } : a)
+      };
+      break;
+    case 'CREATE_PERSONAL_FOLDER': {
+      const newFolder: Folder = {
+        id: `f-p-${Date.now()}`,
+        name: action.name,
+        parentId: action.parentId,
+        isPersonal: true,
+        ownerId: action.userId,
+        children: []
+      };
+
+      // Add to flat list
+      let updatedFolders = [...state.folders, newFolder];
+      
+      // Also update parent's children if parentId is provided
+      if (action.parentId) {
+        updatedFolders = updatedFolders.map(f => {
+          if (f.id === action.parentId) {
+            return { ...f, children: [...(f.children || []), newFolder] };
+          }
+          return f;
+        });
+      }
+
+      newState = { ...state, folders: updatedFolders };
+      break;
+    }
+    case 'DELETE_FOLDER': {
+      const updatedFolders = state.folders
+        .filter(f => f.id !== action.folderId)
+        .map(f => {
+          if (f.children?.some(child => child.id === action.folderId)) {
+            return { ...f, children: f.children.filter(child => child.id !== action.folderId) };
+          }
+          return f;
+        });
+      newState = { ...state, folders: updatedFolders };
+      break;
+    }
+    case 'EDIT_FOLDER': {
+      const updatedFolders = state.folders.map(f => {
+        if (f.id === action.folderId) {
+          return { ...f, name: action.name, icon: action.icon || f.icon };
+        }
+        // Also update if it exists in a children array
+        if (f.children?.some(child => child.id === action.folderId)) {
+          return {
+            ...f,
+            children: f.children.map(child =>
+              child.id === action.folderId
+                ? { ...child, name: action.name, icon: action.icon || child.icon }
+                : child
+            )
+          };
+        }
+        return f;
+      });
+      newState = { ...state, folders: updatedFolders };
+      break;
+    }
     default:
       return state;
   }

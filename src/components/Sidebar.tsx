@@ -5,7 +5,7 @@ import { APP_SCREENS } from '../constants/screens';
 import { can } from '../lib/permissions';
 import { Button } from '@frontend-team/ui-kit';
 
-const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge }: { title: string, children: React.ReactNode, defaultExpanded?: boolean, onAdd?: () => void, badge?: string }) => {
+const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge, icon: Icon }: { title: string, children: React.ReactNode, defaultExpanded?: boolean, onAdd?: () => void, badge?: string, icon?: any }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   return (
     <div className="mt-5 mb-1">
@@ -14,6 +14,7 @@ const SidebarSection = ({ title, children, defaultExpanded = true, onAdd, badge 
           <span className="transition-transform duration-200" style={{ transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
             <ChevronDown size={12} className="text-gray-400" />
           </span>
+          {Icon && <Icon size={14} className="text-gray-400" />}
           <span>{title}</span>
           {badge && <span className="ml-1 px-1.5 py-0.5 bg-[var(--ds-bg-accent-secondary)] text-[var(--ds-fg-accent-secondary)] rounded text-[9px] font-bold tracking-normal normal-case">{badge}</span>}
         </div>
@@ -151,10 +152,10 @@ export default function Sidebar() {
             </div>
           </div>
 
-          {/* Folders */}
+          {/* Folders (Public Spaces) */}
           <div className="px-2">
-            <SidebarSection title="7 Spaces của tôi">
-              {folders.filter(f => !f.parentId && can(currentUser, 'article.read', { folderId: f.id } as any, folders)).map((folder) => (
+            <SidebarSection title="Spaces công ty">
+              {folders.filter(f => !f.parentId && !f.isPersonal && can(currentUser, 'article.read', { folderId: f.id } as any, folders)).map((folder) => (
                 <NavItem
                   key={folder.id}
                   icon={() => <span className="text-lg">{folder.icon || '📁'}</span>}
@@ -164,6 +165,42 @@ export default function Sidebar() {
                 />
               ))}
             </SidebarSection>
+          </div>
+
+          {/* Personal Space */}
+          <div className="px-2">
+            <SidebarSection 
+              title="Space Cá Nhân" 
+              icon={Shield}
+            >
+              {folders.filter(f => f.isPersonal && f.ownerId === currentUser.id && !f.parentId).map((folder) => (
+                <NavItem
+                  key={folder.id}
+                  icon={() => <span className="text-lg">{folder.icon || '🔒'}</span>}
+                  label={folder.name}
+                  isActive={currentScreen === `folder-${folder.id}`}
+                  onClick={() => navigate(`folder-${folder.id}`)}
+                />
+              ))}
+            </SidebarSection>
+          </div>
+
+          {/* Shared Space */}
+          <div className="px-2">
+            {folders.some(f => f.sharedWith?.includes(currentUser.id)) && (
+              <SidebarSection title="Được chia sẻ">
+                {folders.filter(f => f.sharedWith?.includes(currentUser.id)).map((folder) => (
+                  <NavItem
+                    key={folder.id}
+                    icon={() => <span className="text-lg">{folder.icon || '🤝'}</span>}
+                    label={folder.name}
+                    isActive={currentScreen === `folder-${folder.id}`}
+                    onClick={() => navigate(`folder-${folder.id}`)}
+                    badge="Shared"
+                  />
+                ))}
+              </SidebarSection>
+            )}
           </div>
 
           {/* Admin Section */}

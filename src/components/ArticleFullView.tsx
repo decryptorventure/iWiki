@@ -6,7 +6,8 @@ import { useArticleActions } from '../hooks/use-article-actions';
 import ArticleMarkdownRenderer from './article-markdown-renderer';
 import { ArticleToc } from './article-toc';
 import { Button, Textarea, Badge } from '@frontend-team/ui-kit';
-import { Bot } from 'lucide-react';
+import { Bot, Share2 as ShareIcon } from 'lucide-react';
+import SharingModal from './SharingModal';
 
 export default function ArticleFullView() {
   const { state, dispatch } = useApp();
@@ -17,6 +18,7 @@ export default function ArticleFullView() {
   const { isLiked, isFavorited: bookmarked } = actions;
 
   const [comment, setComment] = useState('');
+  const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -70,7 +72,14 @@ export default function ArticleFullView() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <Button variant="subtle" size="icon-m" title="Chia sẻ"><Share2 size={18} /></Button>
+          {(article.isPersonal && article.ownerId === currentUser.id) && (
+            <Button variant="subtle" size="icon-m" title="Chia sẻ quyền truy cập" onClick={() => setIsSharingModalOpen(true)}>
+              <Share2 size={18} className="text-orange-500" />
+            </Button>
+          )}
+          <Button variant="subtle" size="icon-m" title="Copy link bài viết" onClick={() => { navigator.clipboard.writeText(window.location.href); addToast('Đã copy link bài viết!', 'success'); }}>
+            <ShareIcon size={18} />
+          </Button>
           <Button variant={bookmarked ? 'border' : 'subtle'} size="icon-m"
             onClick={() => { actions.toggleFavorite(); addToast(bookmarked ? 'Đã bỏ lưu' : 'Đã lưu bài viết 📌', 'info'); }}
             className={bookmarked ? 'text-orange-600 border-orange-200' : ''}
@@ -233,6 +242,13 @@ export default function ArticleFullView() {
 
         </div>
       </div>
+      <SharingModal 
+        open={isSharingModalOpen} 
+        onOpenChange={setIsSharingModalOpen} 
+        itemId={article.id} 
+        itemType="article"
+        initialSharedWith={article.sharedWith}
+      />
     </div>
   );
 }

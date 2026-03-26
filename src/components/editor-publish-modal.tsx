@@ -1,6 +1,6 @@
 // Publish settings modal for Editor — folder, tags, permissions
 import React, { useState, useRef, useEffect } from 'react';
-import { Folder, Tag, Shield, Globe, Lock, Check, Send, Search, X } from 'lucide-react';
+import { Folder, Tag, Shield, Globe, Lock, Check, Send, Search, X, Share2 } from 'lucide-react';
 import { Button, Input, Modal, Badge, Switch, RadioGroup, RadioGroupItem } from '@frontend-team/ui-kit';
 
 interface FolderItem { id: string; name: string; }
@@ -23,6 +23,7 @@ interface EditorPublishModalProps {
   canPublish: boolean;
   onPublish: (sharedWith: string[]) => void;
   onClose: () => void;
+  isPersonal?: boolean;
 }
 
 const RECENT_FOLDERS_KEY = 'recentFolders';
@@ -43,7 +44,7 @@ export default function EditorPublishModal({
   viewPermission, onViewPermissionChange,
   allowComments, onAllowCommentsChange,
   isPublishing, isEditing, canPublish,
-  onPublish, onClose,
+  onPublish, onClose, isPersonal = false,
 }: EditorPublishModalProps) {
   const [folderSearch, setFolderSearch] = useState('');
   const [folderDropdownOpen, setFolderDropdownOpen] = useState(false);
@@ -153,7 +154,9 @@ export default function EditorPublishModal({
                     </div>
                   )}
                   {!folderSearch && <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tất cả</p>}
-                  {filteredFolders.map(f => (
+                  {filteredFolders
+                    .filter(f => !recentIds.includes(f.id)) // Filter out recent to avoid duplicates in the same list
+                    .map(f => (
                     <Button
                       key={f.id}
                       type="button"
@@ -162,7 +165,14 @@ export default function EditorPublishModal({
                       onClick={() => handleSelectFolder(f.id)}
                       className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors justify-start border-none shadow-none ${selectedFolderId === f.id ? 'text-indigo-600 font-semibold' : 'text-gray-700'}`}
                     >
-                      {f.name}
+                      <div className="flex flex-col items-start">
+                        <span>{f.name}</span>
+                        {(f as any).parentId && (
+                          <span className="text-[10px] text-gray-400">
+                             in {allFolders.find(p => p.id === (f as any).parentId)?.name || 'Parent'}
+                          </span>
+                        )}
+                      </div>
                     </Button>
                   ))}
                   {filteredFolders.length === 0 && <p className="px-3 py-3 text-sm text-gray-400 text-center">Không tìm thấy thư mục</p>}
@@ -203,7 +213,16 @@ export default function EditorPublishModal({
         <section>
           <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2"><Shield size={16} className="text-green-500" /> Quyền truy cập</h4>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            {([{ val: 'public', icon: Globe, label: 'Công khai', desc: 'Mọi người trong iKame' }, { val: 'restricted', icon: Lock, label: 'Hạn chế', desc: 'Chỉ người được cấp quyền' }] as const).map(opt => {
+            {(isPersonal 
+              ? [
+                  { val: 'public' as const, icon: Lock, label: 'Riêng tư', desc: 'Chỉ mình tôi (Space cá nhân)' },
+                  { val: 'restricted' as const, icon: Share2, label: 'Chia sẻ', desc: 'Chọn người cùng xem' }
+                ]
+              : [
+                  { val: 'public' as const, icon: Globe, label: 'Công khai', desc: 'Mọi người trong iKame' },
+                  { val: 'restricted' as const, icon: Lock, label: 'Hạn chế', desc: 'Chỉ người được cấp quyền' }
+                ]
+            ).map(opt => {
               const Icon = opt.icon;
               return (
                 <label key={opt.val} className={`flex cursor-pointer rounded-xl border p-4 transition-all ${viewPermission === opt.val ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}>

@@ -27,6 +27,7 @@ export default function MyArticleCard({
       )}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
         <div className="flex items-center gap-2 mb-1">
+          {article.isPersonal && <Badge color="gray" size="xs">Space Cá Nhân</Badge>}
           {article.status === 'draft' && <Badge color="amber" size="xs">Nháp</Badge>}
           {article.status === 'in_review' && <Badge color="blue" size="xs">Chờ duyệt</Badge>}
           {article.status === 'approved' && <Badge color="green" size="xs">Đã duyệt</Badge>}
