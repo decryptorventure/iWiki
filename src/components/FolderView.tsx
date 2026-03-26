@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Search, Plus, Eye, Flame, MessageSquare, FolderOpen, BookOpen, ArrowRight, Layers } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { can } from '../lib/permissions';
+import { Folder } from '../store/useAppStore';
 import { Button, Input } from '@frontend-team/ui-kit';
 
 interface FolderViewProps {
@@ -18,6 +19,23 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
 
   const parentFolder = folders.find(f => f.id === folderId);
   const isParentFolder = Boolean(parentFolder);
+  
+  // Helper to get all descendant folder IDs recursively
+  const getDescendantIds = (folder: Folder): string[] => {
+    let ids: string[] = [folder.id];
+    if (folder.children) {
+      folder.children.forEach(child => {
+        ids = [...ids, ...getDescendantIds(child)];
+      });
+    }
+    return ids;
+  };
+
+  const allRelevantFolderIds = useMemo(() => {
+    if (!parentFolder) return [folderId];
+    return getDescendantIds(parentFolder);
+  }, [parentFolder, folderId]);
+
   const subfolders = parentFolder?.children || [];
   const childFolderIds = subfolders.map((item) => item.id);
 
@@ -26,8 +44,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
       .filter((article) => {
         if (article.status !== 'published') return false;
         if (!can(currentUser, 'article.read', article, folders)) return false;
-        if (isParentFolder) return childFolderIds.includes(article.folderId);
-        return article.folderId === folderId;
+        return allRelevantFolderIds.includes(article.folderId);
       })
       .filter((article) => {
         if (!searchQuery.trim()) return true;
@@ -46,12 +63,15 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
   const groupedBySubfolder = useMemo(() => {
     if (!isParentFolder) return [];
     return subfolders
-      .map((subfolder) => ({
-        subfolder,
-        articles: scopedArticles.filter((item) => item.folderId === subfolder.id),
-      }))
+      .map((subfolder) => {
+        const descendantIds = getDescendantIds(subfolder);
+        return {
+          subfolder,
+          articles: scopedArticles.filter((item) => descendantIds.includes(item.folderId)),
+        };
+      })
       .filter((item) => item.articles.length > 0);
-  }, [isParentFolder, scopedArticles, subfolders]);
+  }, [isParentFolder, scopedArticles, subfolders, getDescendantIds]);
 
   const openArticle = (id: string) => {
     dispatch({ type: 'SET_SELECTED_ARTICLE', articleId: id });
@@ -105,7 +125,8 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
           <h2 className="text-lg font-bold text-[var(--ds-text-primary)] mb-4">Danh mục nổi bật</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {subfolders.map((sub, i) => {
-              const subArticleCount = scopedArticles.filter((article) => article.folderId === sub.id).length;
+              const descendantIds = getDescendantIds(sub);
+              const subArticleCount = scopedArticles.filter((article) => descendantIds.includes(article.folderId)).length;
               return (
                 <div
                   key={sub.id}

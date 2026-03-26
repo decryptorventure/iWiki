@@ -173,7 +173,7 @@ export default function Sidebar() {
                 }}
                 className="bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
-                Viewer
+                Member
               </Button>
               <Button
                 variant="subtle"
@@ -184,7 +184,7 @@ export default function Sidebar() {
                 }}
                 className="bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
-                Editor
+                Manager
               </Button>
               <Button
                 variant="subtle"
