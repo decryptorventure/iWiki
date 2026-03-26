@@ -12,9 +12,10 @@ interface ArticleModalProps {
   open: boolean;
   article: Article | null;
   onOpenChange: (open: boolean) => void;
+  footerActions?: React.ReactNode;
 }
 
-export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps) {
+export function ArticleModal({ open, article, onOpenChange, footerActions }: ArticleModalProps) {
   const { state, dispatch } = useApp();
   const { addToast } = useToast();
   const { currentUser } = state;
@@ -208,7 +209,14 @@ export function ArticleModal({ open, article, onOpenChange }: ArticleModalProps)
                 ))
               )}
             </div>
-          </div>
+            
+            {/* Custom Footer Actions (e.g. for Review Flow) */}
+            {footerActions && (
+              <div className="mt-12 pt-8 border-t-2 border-dashed border-[var(--ds-border-secondary)] sticky bottom-0 bg-[var(--ds-bg-primary)] pb-4 z-20">
+                {footerActions}
+              </div>
+            )}
+           </div>
         </div>
       </div>
     </div>
