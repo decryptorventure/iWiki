@@ -134,11 +134,11 @@ export default function Sidebar() {
 
           {/* Folders */}
           <div className="px-2">
-            <SidebarSection title="Tài liệu chung" onAdd={() => navigate(APP_SCREENS.DOCUMENTS)}>
-              {folders.map((folder) => (
+            <SidebarSection title="7 Spaces của tôi">
+              {folders.filter(f => !f.parentId && can(currentUser, 'article.read', { folderId: f.id } as any, folders)).map((folder) => (
                 <NavItem
                   key={folder.id}
-                  icon={FolderTree}
+                  icon={() => <span className="text-lg">{folder.icon || '📁'}</span>}
                   label={folder.name}
                   isActive={currentScreen === `folder-${folder.id}`}
                   onClick={() => navigate(`folder-${folder.id}`)}
@@ -148,16 +148,11 @@ export default function Sidebar() {
           </div>
 
           {/* Admin Section */}
-          {(can(currentUser, 'admin.access') || can(currentUser, 'manager.access')) && (
+          {(can(currentUser, 'admin.access', undefined, folders) || can(currentUser, 'manager.access', undefined, folders)) && (
             <div className="px-2">
               <SidebarSection title="Quản trị hệ thống" badge={currentUser.role === 'admin' ? 'Admin' : 'Manager'}>
-                <NavItem icon={BarChart} label="Manager View" isActive={currentScreen === APP_SCREENS.MANAGER_DASHBOARD} onClick={() => navigate(APP_SCREENS.MANAGER_DASHBOARD)} />
-                {can(currentUser, 'admin.access') && (
-                  <>
-                    <NavItem icon={BarChart} label="Dashboard Quản trị" isActive={currentScreen === APP_SCREENS.ADMIN_DASHBOARD} onClick={() => navigate(APP_SCREENS.ADMIN_DASHBOARD)} />
-                    <NavItem icon={FolderTree} label="Quản lý tài liệu" isActive={currentScreen === APP_SCREENS.DOCUMENTS} onClick={() => navigate(APP_SCREENS.DOCUMENTS)} />
-                    <NavItem icon={Shield} label="Phân quyền" isActive={currentScreen === APP_SCREENS.PERMISSIONS} onClick={() => navigate(APP_SCREENS.PERMISSIONS)} />
-                  </>
+                {can(currentUser, 'admin.access', undefined, folders) && (
+                  <NavItem icon={Shield} label="Phân quyền" isActive={currentScreen === APP_SCREENS.PERMISSIONS} onClick={() => navigate(APP_SCREENS.PERMISSIONS)} />
                 )}
               </SidebarSection>
             </div>

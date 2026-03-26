@@ -5,7 +5,7 @@ import { can } from '../lib/permissions';
 import { Button, Input, Textarea, Select, Modal, Tabs } from '@frontend-team/ui-kit';
 import { PermissionRolesGrid } from './permission-roles-grid';
 import { PermissionMatrixTable } from './permission-matrix-table';
-import { PermissionDataTable } from './permission-data-table';
+import { PermissionFolderTreeManager } from './permission-folder-tree-manager';
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Quản trị viên (Admin)' },
@@ -91,18 +91,31 @@ export default function PermissionManagement() {
   const tabItems = [
     {
       value: 'roles',
-      label: <div className="flex items-center gap-2"><Users size={18} /> Danh sách vai trò</div>,
-      content: <PermissionRolesGrid roles={roles} onEditRole={openRoleModal} />,
+      label: <div className="flex items-center gap-2 px-1"><Users size={18} /> Vai trò & Vai nhiệm</div>,
+      content: <div className="mt-8 animate-slide-up bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-[var(--ds-border-subtle)] shadow-xl overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-12 -mt-4 -mr-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+            <Users size={160} />
+          </div>
+          <PermissionRolesGrid roles={roles} onEditRole={openRoleModal} />
+        </div>,
     },
     {
       value: 'matrix',
-      label: <div className="flex items-center gap-2"><Settings size={18} /> Phân quyền tính năng</div>,
-      content: <PermissionMatrixTable roles={roles} modules={modules} isEditingMatrix={isEditingMatrix} onToggle={handleTogglePermission} />,
+      label: <div className="flex items-center gap-2 px-1"><Settings size={18} /> Quyền tính năng</div>,
+      content: <div className="mt-8 animate-slide-up bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-[var(--ds-border-subtle)] shadow-xl">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-bold flex items-center gap-2"><Settings size={20} className="text-orange-500"/> Quản lý quyền theo Module</h3>
+            {editToggleBtn}
+          </div>
+          <PermissionMatrixTable roles={roles} modules={modules} isEditingMatrix={isEditingMatrix} onToggle={handleTogglePermission} />
+        </div>,
     },
     {
       value: 'data',
-      label: <div className="flex items-center gap-2"><Database size={18} /> Phân quyền dữ liệu</div>,
-      content: <PermissionDataTable roles={roles} dataPermissions={dataPermissions} isEditingMatrix={isEditingMatrix} onAccessChange={handleDataPermissionChange} />,
+      label: <div className="flex items-center gap-2 px-1"><Database size={18} /> Quyền dữ liệu (Spaces)</div>,
+      content: <div className="mt-8 animate-slide-up">
+          <PermissionFolderTreeManager />
+        </div>,
     },
   ];
 

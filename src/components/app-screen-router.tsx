@@ -12,10 +12,7 @@ const Bounties = lazy(() => import('./Bounties'));
 const DataJanitor = lazy(() => import('./DataJanitor'));
 const Favorites = lazy(() => import('./Favorites'));
 // Custom Feed removed as requested
-const DocumentManagement = lazy(() => import('./DocumentManagement'));
 const PermissionManagement = lazy(() => import('./PermissionManagement'));
-const AdminDashboard = lazy(() => import('./AdminDashboard'));
-const ManagerDashboard = lazy(() => import('./ManagerDashboard'));
 const IWikiAI = lazy(() => import('./IWikiAI'));
 const EmptyFolderBounty = lazy(() => import('./EmptyFolderBounty'));
 const FolderView = lazy(() => import('./FolderView'));
@@ -38,12 +35,6 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
   const { currentScreen } = state;
 
   const renderProtected = (screen: string, node: React.ReactNode) => {
-    if (screen === APP_SCREENS.ADMIN_DASHBOARD && !can(state.currentUser, 'admin.access')) {
-      return <div className="p-10 text-center text-[var(--ds-text-secondary)]">Bạn không có quyền truy cập trang Admin.</div>;
-    }
-    if (screen === APP_SCREENS.MANAGER_DASHBOARD && !can(state.currentUser, 'manager.access') && state.currentUser.role !== 'admin') {
-      return <div className="p-10 text-center text-gray-500">Bạn không có quyền truy cập Manager View.</div>;
-    }
     return node;
   };
 
@@ -77,17 +68,8 @@ export default function AppScreenRouter({ onSearch }: AppScreenRouterProps) {
     case APP_SCREENS.NOTIFICATIONS:
       screen = <Notifications />;
       break;
-    case APP_SCREENS.DOCUMENTS:
-      screen = renderProtected(APP_SCREENS.DOCUMENTS, <DocumentManagement />);
-      break;
     case APP_SCREENS.PERMISSIONS:
       screen = renderProtected(APP_SCREENS.PERMISSIONS, <PermissionManagement />);
-      break;
-    case APP_SCREENS.ADMIN_DASHBOARD:
-      screen = renderProtected(APP_SCREENS.ADMIN_DASHBOARD, <AdminDashboard />);
-      break;
-    case APP_SCREENS.MANAGER_DASHBOARD:
-      screen = renderProtected(APP_SCREENS.MANAGER_DASHBOARD, <ManagerDashboard />);
       break;
     case APP_SCREENS.ARTICLE_DETAIL:
       screen = <ArticleFullView />;

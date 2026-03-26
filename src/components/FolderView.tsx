@@ -25,7 +25,7 @@ export default function FolderView({ folderId, title, description, breadcrumbs =
     return articles
       .filter((article) => {
         if (article.status !== 'published') return false;
-        if (!can(currentUser, 'article.read', article)) return false;
+        if (!can(currentUser, 'article.read', article, folders)) return false;
         if (isParentFolder) return childFolderIds.includes(article.folderId);
         return article.folderId === folderId;
       })

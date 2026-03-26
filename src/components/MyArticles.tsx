@@ -55,7 +55,7 @@ export default function MyArticles() {
   ] as const;
 
   const submitForReview = (article: Article) => {
-    if (!can(currentUser, 'article.submit_review', article)) { addToast('Bạn không có quyền gửi bài này để duyệt', 'warning'); return; }
+    if (!can(currentUser, 'article.submit_review', article, state.folders)) { addToast('Bạn không có quyền gửi bài này để duyệt', 'warning'); return; }
     dispatch({ type: 'SUBMIT_ARTICLE_REVIEW', articleId: article.id, userId: currentUser.id });
     dispatch({ type: 'TRACK_EVENT', event: { type: 'submit_review', userId: currentUser.id, articleId: article.id } });
     addToast('Đã gửi bài viết sang hàng chờ duyệt', 'success');
