@@ -68,13 +68,9 @@ export default function NotificationBell() {
       >
         <Bell size={20} className="text-gray-900 group-hover:text-[var(--ds-fg-accent-primary)] transition-colors" strokeWidth={2.5} />
         {unreadCount > 0 && (
-          <Badge
-            size="xs"
-            color="red"
-            className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center p-0"
-          >
+          <div className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 bg-[#f97316] text-white text-[10px] font-black rounded-full shadow-[0_2px_10px_rgba(249,115,22,0.4)] flex items-center justify-center animate-pulse-glow border-2 border-white">
             {unreadCount > 99 ? '99+' : unreadCount}
-          </Badge>
+          </div>
         )}
       </Button>
 
