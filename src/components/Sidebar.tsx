@@ -113,7 +113,8 @@ export default function Sidebar() {
               <NavItem icon={Sparkles} label="iWiki AI" isActive={currentScreen === APP_SCREENS.AI} onClick={() => navigate(APP_SCREENS.AI)} />
               <NavItem icon={Home} label="Trang chủ" isActive={currentScreen === APP_SCREENS.DASHBOARD} onClick={() => navigate(APP_SCREENS.DASHBOARD)} />
               <NavItem icon={FileText} label="Bài viết của tôi" isActive={currentScreen === APP_SCREENS.MY_ARTICLES} onClick={() => navigate(APP_SCREENS.MY_ARTICLES)} />
-              {currentUser.role !== 'viewer' && currentUser.role !== 'editor' && (
+              {/* Admin-only features: Bounties & Janitor */}
+              {currentUser.role === 'admin' && (
                 <>
                   <NavItem
                     icon={Target}
@@ -127,16 +128,18 @@ export default function Sidebar() {
                     isActive={currentScreen === APP_SCREENS.JANITOR}
                     onClick={() => navigate(APP_SCREENS.JANITOR)}
                   />
-                  {(currentUser.role === 'manager' || currentUser.role === 'admin') && (
-                    <NavItem
-                      icon={CheckCircle}
-                      label="Duyệt bài viết"
-                      isActive={currentScreen === APP_SCREENS.APPROVAL_QUEUE}
-                      badge={state.articles.filter(a => a.status === 'in_review').length.toString()}
-                      onClick={() => navigate(APP_SCREENS.APPROVAL_QUEUE)}
-                    />
-                  )}
                 </>
+              )}
+
+              {/* Manager & Admin features: Approval Queue */}
+              {(currentUser.role === 'manager' || currentUser.role === 'admin') && (
+                <NavItem
+                  icon={CheckCircle}
+                  label="Duyệt bài viết"
+                  isActive={currentScreen === APP_SCREENS.APPROVAL_QUEUE}
+                  badge={state.articles.filter(a => a.status === 'in_review').length.toString()}
+                  onClick={() => navigate(APP_SCREENS.APPROVAL_QUEUE)}
+                />
               )}
             </div>
           </div>
