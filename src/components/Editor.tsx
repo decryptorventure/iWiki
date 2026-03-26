@@ -154,7 +154,7 @@ export default function Editor({ initialData, onBack }: { initialData?: Partial<
         coverUrl: initialData?.coverUrl, folderId: selectedFolderId,
         folderName: allFolders.find(f => f.id === selectedFolderId)?.name, tags,
         author: { id: currentUser.id, name: currentUser.name, role: currentUser.title, avatar: currentUser.avatar },
-        status: can(state, 'article.approve', { folderId: selectedFolderId, authorId: currentUser.id }) || currentUser.role === 'admin' ? 'published' : 'in_review',
+        status: can(currentUser, 'article.approve', { ...initialData, folderId: selectedFolderId } as Article, folders) || currentUser.role === 'admin' ? 'published' : 'in_review',
         viewPermission, allowComments, views: initialData?.views || 0, likes: initialData?.likes || 0,
         likedBy: initialData?.likedBy || [], comments: initialData?.comments || [],
         createdAt: initialData?.createdAt || new Date().toISOString().split('T')[0],

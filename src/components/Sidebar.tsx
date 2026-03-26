@@ -113,7 +113,7 @@ export default function Sidebar() {
               <NavItem icon={Sparkles} label="iWiki AI" isActive={currentScreen === APP_SCREENS.AI} onClick={() => navigate(APP_SCREENS.AI)} />
               <NavItem icon={Home} label="Trang chủ" isActive={currentScreen === APP_SCREENS.DASHBOARD} onClick={() => navigate(APP_SCREENS.DASHBOARD)} />
               <NavItem icon={FileText} label="Bài viết của tôi" isActive={currentScreen === APP_SCREENS.MY_ARTICLES} onClick={() => navigate(APP_SCREENS.MY_ARTICLES)} />
-              {!can(state, 'article.approve') && (
+              {currentUser.role !== 'viewer' && currentUser.role !== 'editor' && (
                 <>
                   <NavItem
                     icon={Target}
@@ -135,7 +135,7 @@ export default function Sidebar() {
           {/* Folders */}
           <div className="px-2">
             <SidebarSection title="7 Spaces của tôi">
-              {folders.filter(f => !f.parentId && can(state, 'article.read', { folderId: f.id })).map((folder) => (
+              {folders.filter(f => !f.parentId && can(currentUser, 'article.read', { folderId: f.id } as any, folders)).map((folder) => (
                 <NavItem
                   key={folder.id}
                   icon={() => <span className="text-lg">{folder.icon || '📁'}</span>}
@@ -148,10 +148,12 @@ export default function Sidebar() {
           </div>
 
           {/* Admin Section */}
-          {(currentUser.role === 'admin' || currentUser.role === 'super_admin') && (
+          {(can(currentUser, 'admin.access', undefined, folders) || can(currentUser, 'manager.access', undefined, folders)) && (
             <div className="px-2">
-              <SidebarSection title="Quản trị hệ thống" badge={currentUser.role === 'super_admin' ? 'Super' : 'Admin'}>
-                <NavItem icon={Shield} label="Phân quyền" isActive={currentScreen === APP_SCREENS.PERMISSIONS} onClick={() => navigate(APP_SCREENS.PERMISSIONS)} />
+              <SidebarSection title="Quản trị hệ thống" badge={currentUser.role === 'admin' ? 'Admin' : 'Manager'}>
+                {can(currentUser, 'admin.access', undefined, folders) && (
+                  <NavItem icon={Shield} label="Phân quyền" isActive={currentScreen === APP_SCREENS.PERMISSIONS} onClick={() => navigate(APP_SCREENS.PERMISSIONS)} />
+                )}
               </SidebarSection>
             </div>
           )}

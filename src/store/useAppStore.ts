@@ -1,4 +1,6 @@
+// Import domain types for use within this file
 import type {
+  UserRole, AccessLevel, User,
   ArticleStatus, Comment, ApprovalInlineComment, Article,
   Folder,
   Bounty,
@@ -7,11 +9,10 @@ import type {
   AnalyticsEvent,
   RecentReadItem, CustomFeedPrefs,
 } from '../types';
-import type { User, AccessLevel } from '../types/user';
 
 // Re-export so existing imports from this file continue to work without changes
 export type {
-  Badge, User,
+  UserRole, AccessLevel, Badge, ScopeAccess, User,
   ArticleStatus, Comment, ApprovalInlineComment, ApprovalRecord, Article,
   Folder,
   Bounty,
@@ -28,13 +29,8 @@ import {
   INITIAL_ARTICLES_WITH_CONTENT,
   INITIAL_BOUNTIES,
   INITIAL_NOTIFICATIONS,
-  INITIAL_ROLES,
-  INITIAL_TEAMS,
-  INITIAL_SPACE_MEMBERS,
   buildSeedAnalyticsEvents,
 } from '../data/mock-data';
-import { SpaceMember, RoleDefinition, Team, UserRole, AtomicPermission } from '../types/user';
-import { VisibilityType } from '../types/folder';
 import { loadState, saveState } from './persist';
 import { ARTICLE_CONTENTS } from '../data/articleContents';
 
@@ -63,9 +59,6 @@ export interface AppState {
   /** User id -> đã xem onboarding lần đầu (chỉ hiện tour 1 lần mỗi user) */
   onboardingCompletedForUsers: Record<string, boolean>;
   theme: 'light' | 'dark';
-  roles: RoleDefinition[];
-  teams: Team[];
-  spaceMembers: SpaceMember[];
 }
 
 const savedState = loadState<AppState>();
@@ -78,6 +71,9 @@ export const initialState: AppState = {
   currentUser: {
     ...INITIAL_USER,
     ...(savedState.currentUser || {}),
+    scopes: Array.isArray(savedState.currentUser?.scopes)
+      ? savedState.currentUser.scopes
+      : INITIAL_USER.scopes,
   },
   // Re-apply latest article content over any saved articles (keeps content fresh)
   articles: (savedState.articles || INITIAL_ARTICLES_WITH_CONTENT).map((a) => ({
@@ -98,9 +94,6 @@ export const initialState: AppState = {
   recentReadsByUser: savedState.recentReadsByUser || {},
   onboardingCompletedForUsers: savedState.onboardingCompletedForUsers || {},
   theme: savedState.theme || 'light',
-  roles: savedState.roles || INITIAL_ROLES,
-  teams: savedState.teams || INITIAL_TEAMS,
-  spaceMembers: savedState.spaceMembers || INITIAL_SPACE_MEMBERS,
 };
 
 export type AppAction =
@@ -141,10 +134,7 @@ export type AppAction =
   | { type: 'TRACK_EVENT'; event: Omit<AnalyticsEvent, 'id' | 'createdAt'> }
   | { type: 'RESET_DEMO_STATE' }
   | { type: 'COMPLETE_ONBOARDING'; userId: string }
-  | { type: 'TOGGLE_THEME' }
-  | { type: 'SET_SPACE_ROLE'; userId: string; spaceId: string; roleId: any }
-  | { type: 'UPDATE_ROLE_PERMISSIONS'; roleId: string; permissions: AtomicPermission[] }
-  | { type: 'UPDATE_FOLDER_VISIBILITY'; folderId: string; visibilityType: VisibilityType; allowedTeams?: string[] };
+  | { type: 'TOGGLE_THEME' };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   let newState: AppState;
@@ -252,34 +242,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       newState = { ...state, articles: updated };
       break;
     }
-    case 'SET_SPACE_ROLE': {
-      const existing = state.spaceMembers.find(m => m.userId === action.userId && m.spaceId === action.spaceId);
-      const nextMembers = existing
-        ? state.spaceMembers.map(m => (m.userId === action.userId && m.spaceId === action.spaceId) ? { ...m, roleId: action.roleId } : m)
-        : [...state.spaceMembers, { userId: action.userId, spaceId: action.spaceId, roleId: action.roleId }];
-      newState = { ...state, spaceMembers: nextMembers };
-      break;
-    }
-    case 'UPDATE_ROLE_PERMISSIONS': {
-      newState = {
-        ...state,
-        roles: state.roles.map(r => r.id === action.roleId ? { ...r, permissions: action.permissions } : r),
-      };
-      break;
-    }
-    case 'UPDATE_FOLDER_VISIBILITY': {
-      const updateFolder = (folders: Folder[]): Folder[] => {
-        return folders.map(f => {
-          if (f.id === action.folderId) {
-            return { ...f, visibilityType: action.visibilityType, allowedTeams: action.allowedTeams };
-          }
-          if (f.children) {
-            return { ...f, children: updateFolder(f.children) };
-          }
-          return f;
-        });
-      };
-      newState = { ...state, folders: updateFolder(state.folders) };
+    case 'SET_SCOPE_ACCESS': {
+      const previousScopes = Array.isArray(state.currentUser.scopes) ? state.currentUser.scopes : [];
+      const existing = previousScopes.find(s => s.folderId === action.folderId);
+      const nextScopes = existing
+        ? previousScopes.map(s => s.folderId === action.folderId ? { ...s, level: action.level } : s)
+        : [...previousScopes, { folderId: action.folderId, level: action.level }];
+      newState = { ...state, currentUser: { ...state.currentUser, scopes: nextScopes } };
       break;
     }
     case 'TOGGLE_LIKE': {
@@ -439,9 +408,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     recentReadsByUser: newState.recentReadsByUser,
     onboardingCompletedForUsers: newState.onboardingCompletedForUsers,
     theme: newState.theme,
-    roles: newState.roles,
-    teams: newState.teams,
-    spaceMembers: newState.spaceMembers,
   });
 
   return newState;
